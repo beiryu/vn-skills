@@ -22,12 +22,18 @@ jobs:
     if: >-
       github.event.pull_request.head.repo.full_name == github.repository && !github.event.pull_request.draft && !startsWith(github.event.pull_request.title, 'chore(main): release')
     runs-on: ubuntu-latest
+    env:
+      HAS_ANTHROPIC_KEY: ${{ secrets.ANTHROPIC_API_KEY != '' }}
     timeout-minutes: 20
     steps:
+      - name: Skip when ANTHROPIC_API_KEY is not configured
+        if: env.HAS_ANTHROPIC_KEY != 'true'
+        run: echo "::notice::ANTHROPIC_API_KEY secret is not set; agent skipped. See AGENTS.md#setup-maintainers"
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
       - uses: anthropics/claude-code-action@v1
+        if: env.HAS_ANTHROPIC_KEY == 'true'
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
           github_token: ${{ secrets.GITHUB_TOKEN }}

@@ -45,9 +45,14 @@ jobs:
           SENDER: ${{ github.event.sender.login }}
           LABELED_ISSUE: ${{ github.event.issue.number }}
           INPUT_ISSUE: ${{ inputs.issue }}
+          HAS_ANTHROPIC_KEY: ${{ secrets.ANTHROPIC_API_KEY != '' }}
         run: |
           set -euo pipefail
           issue=""
+          if [ "$HAS_ANTHROPIC_KEY" != true ]; then
+            echo "::notice::ANTHROPIC_API_KEY secret is not set; agent skipped. See AGENTS.md#setup-maintainers"
+            echo "issue=" >> "$GITHUB_OUTPUT"; exit 0
+          fi
           case "$EVENT" in
             issues)
               perm=$(gh api "repos/$REPO/collaborators/$SENDER/permission" --jq .permission || echo none)
