@@ -1,0 +1,34 @@
+{
+  "name": "@vn-skills/cli",
+  "version": "0.1.0",
+  "description": "CLI used by the vn-skills Agent Skills: VietQR, Vietnamese addresses (34 provinces), tax IDs, money in words, lunar calendar, e-invoice mock.",
+  "license": "MIT",
+  "type": "module",
+  "bin": {
+    "vn-skills": "./dist/index.js"
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "typecheck": "tsc --noEmit -p tsconfig.json"
+  },
+  "dependencies": {
+    "@vn-skills/core": "workspace:*",
+    "commander": "^13.1.0",
+    "qrcode": "^1.5.4"
+  },
+  "devDependencies": {
+    "@types/qrcode": "^1.5.5"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/beiryu/vn-skills",
+    "directory": "packages/cli"
+  },
+  "engines": {
+    "node": ">=18.17"
+  }
+}

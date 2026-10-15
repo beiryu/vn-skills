@@ -1,0 +1,216 @@
+import { Command } from 'commander';
+import {
+  convertAddress,
+  findProvince,
+  parseAddress,
+  searchWards,
+  PROVINCES,
+  DATASET,
+} from '@vn-skills/core';
+import { failExit, kv, printJson, wantsJson } from '../output.js';
+
+export function registerAddress(program: Command): void {
+  const cmd = program
+    .command('address')
+    .description(
+      'Parse, normalise and convert Vietnamese addresses (34 provinces since 01/07/2025)',
+    );
+
+  cmd
+    .command('parse <text>')
+    .description('Parse free-text address into province / ward / street')
+    .option('--legacy', 'use the pre-2025 catalogue (63 provinces, districts)')
+    .option('--new', 'use only the current catalogue (34 provinces)')
+    .action((text: string, opts, c: Command) => {
+      const r = parseAddress(text, {
+        mode: opts.legacy ? 'legacy' : opts.new ? 'from2025' : 'auto',
+      });
+      if (!r.ok) failExit(c, r.error);
+      const result =
+        r.mode === 'from2025'
+          ? {
+              ok: true,
+              mode: r.mode,
+              province: r.province && {
+                code: r.province.code,
+                name: r.province.name,
+                fullName: r.province.fullName,
+              },
+              ward: r.ward && {
+                code: r.ward.code,
+                name: r.ward.name,
+                fullName: r.ward.fullName,
+                type: r.ward.type,
+                postalCode: r.ward.postalCode,
+              },
+              street: r.street,
+              formatted: r.formatted,
+              confidence: r.confidence,
+              matches: r.matches,
+              warnings: r.warnings,
+            }
+          : {
+              ok: true,
+              mode: r.mode,
+              province: r.province && {
+                code: r.province.code,
+                name: r.province.name,
+                fullName: r.province.fullName,
+              },
+              district: r.district && {
+                code: r.district.code,
+                name: r.district.name,
+                fullName: r.district.fullName,
+              },
+              ward: r.ward && {
+                code: r.ward.code,
+                name: r.ward.name,
+                fullName: r.ward.fullName,
+                type: r.ward.type,
+              },
+              street: r.street,
+              formatted: r.formatted,
+              confidence: r.confidence,
+              matches: r.matches,
+              warnings: r.warnings,
+            };
+      if (wantsJson(c)) printJson(result);
+      else {
+        process.stdout.write(
+          kv([
+            ['Mode', r.mode],
+            ['Formatted', r.formatted],
+            ['Confidence', r.confidence.toFixed(2)],
+          ]) + '\n',
+        );
+        for (const w of r.warnings) process.stderr.write(`warning: ${w}\n`);
+      }
+    });
+
+  cmd
+    .command('convert <text>')
+    .description('Convert a pre-2025 address (province/district/ward) to the new 2-level structure')
+    .action((text: string, _o, c: Command) => {
+      const r = convertAddress(text);
+      if (!r.ok) failExit(c, r.error);
+      const result = {
+        ok: true,
+        input: r.input,
+        mappingType: r.mappingType,
+        old: {
+          province: r.old.province?.fullName,
+          district: r.old.district?.fullName,
+          ward: r.old.ward?.fullName,
+          street: r.old.street,
+          formatted: r.old.formatted,
+        },
+        new: {
+          province: { code: r.new.province.code, fullName: r.new.province.fullName },
+          ward: r.new.ward && {
+            code: r.new.ward.code,
+            fullName: r.new.ward.fullName,
+            postalCode: r.new.ward.postalCode,
+          },
+          street: r.new.street,
+          formatted: r.new.formatted,
+        },
+        candidates: r.candidates.map((x) => ({
+          code: x.ward.code,
+          fullName: x.ward.fullName,
+          province: x.province.fullName,
+          isDefault: x.isDefault,
+        })),
+        confidence: r.confidence,
+        warnings: r.warnings,
+      };
+      if (wantsJson(c)) printJson(result);
+      else {
+        process.stdout.write(
+          kv([
+            ['Old', r.old.formatted],
+            ['New', r.new.formatted],
+            ['Type', r.mappingType],
+            ['Confidence', r.confidence.toFixed(2)],
+          ]) + '\n',
+        );
+        if (r.candidates.length > 1)
+          process.stdout.write(
+            'Candidates: ' +
+              r.candidates
+                .map((x) => `${x.ward.fullName}${x.isDefault ? ' (default)' : ''}`)
+                .join(' | ') +
+              '\n',
+          );
+        for (const w of r.warnings) process.stderr.write(`warning: ${w}\n`);
+      }
+    });
+
+  cmd
+    .command('provinces')
+    .description('List the 34 current provinces')
+    .action((_o, c: Command) => {
+      const list = PROVINCES.map((p) => ({
+        code: p.code,
+        name: p.name,
+        fullName: p.fullName,
+        nameEn: p.nameEn,
+        wards: p.wards.length,
+      }));
+      if (wantsJson(c))
+        printJson({
+          ok: true,
+          version: DATASET.version,
+          decree: DATASET.decree,
+          count: list.length,
+          provinces: list,
+        });
+      else
+        for (const p of list)
+          process.stdout.write(
+            `${p.code}  ${p.fullName.padEnd(32)} ${String(p.wards).padStart(4)} wards\n`,
+          );
+    });
+
+  cmd
+    .command('wards <query>')
+    .description('Search current wards by name, optionally within a province')
+    .option('-p, --province <province>', 'restrict to a province')
+    .option('-l, --limit <n>', 'max results', '10')
+    .action((query: string, opts, c: Command) => {
+      const list = searchWards(query, opts.province, Number(opts.limit));
+      const rows = list.map((x) => ({
+        code: x.ward.code,
+        fullName: x.ward.fullName,
+        province: x.province.fullName,
+        postalCode: x.ward.postalCode,
+        score: x.score,
+      }));
+      if (wantsJson(c)) printJson({ ok: true, count: rows.length, wards: rows });
+      else
+        for (const r of rows)
+          process.stdout.write(
+            `${r.code}  ${r.fullName.padEnd(32)} ${r.province}  (${r.score.toFixed(2)})\n`,
+          );
+    });
+
+  cmd
+    .command('province <query>')
+    .description('Look up one current province by name/alias/code')
+    .action((query: string, _o, c: Command) => {
+      const p = findProvince(query);
+      if (!p)
+        failExit(c, { code: 'PROVINCE_NOT_FOUND', message: `No province matches "${query}"` });
+      const result = {
+        ok: true,
+        code: p.code,
+        name: p.name,
+        fullName: p.fullName,
+        nameEn: p.nameEn,
+        type: p.type,
+        postalPrefix: p.postalPrefix,
+        wards: p.wards.length,
+      };
+      if (wantsJson(c)) printJson(result);
+      else process.stdout.write(kv(Object.entries(result).filter(([k]) => k !== 'ok')) + '\n');
+    });
+}

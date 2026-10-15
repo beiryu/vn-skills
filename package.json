@@ -1,0 +1,39 @@
+{
+  "name": "vn-skills-monorepo",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Agent Skills + core library + MCP server for Vietnam-specific business logic (VietQR, addresses, tax IDs, money words, lunar calendar, e-invoices).",
+  "license": "MIT",
+  "type": "module",
+  "packageManager": "pnpm@12.11.2",
+  "engines": {
+    "node": ">=18.17"
+  },
+  "scripts": {
+    "build": "pnpm -r --filter './packages/*' build",
+    "test": "pnpm build && vitest run",
+    "test:watch": "vitest",
+    "typecheck": "pnpm -r --filter './packages/*' typecheck && tsc --noEmit -p tsconfig.json",
+    "build-data": "tsx scripts/build-data.ts",
+    "build-data:check": "tsx scripts/build-data.ts --check",
+    "vn-skills": "node packages/cli/dist/index.js",
+    "vn-skills-mcp": "node packages/mcp/dist/index.js",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
+  },
+  "devDependencies": {
+    "@modelcontextprotocol/sdk": "^1.32.1",
+    "@types/node": "^22.10.0",
+    "@types/pngjs": "^6.0.5",
+    "@vn-skills/cli": "workspace:*",
+    "@vn-skills/core": "workspace:*",
+    "@vn-skills/mcp": "workspace:*",
+    "jsqr": "^1.4.0",
+    "pngjs": "^7.0.0",
+    "prettier": "^3.4.2",
+    "tsup": "^8.3.5",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2",
+    "vitest": "^3.0.0"
+  }
+}

@@ -1,0 +1,168 @@
+import { describe, expect, it } from 'vitest';
+import { spawnSync } from 'node:child_process';
+import { existsSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join, resolve } from 'node:path';
+import { PNG } from 'pngjs';
+import jsqrModule from 'jsqr';
+import { parseVietQR } from '@vn-skills/core';
+
+const CLI = resolve(__dirname, '..', 'packages', 'cli', 'dist', 'index.js');
+
+// jsqr ships CommonJS; depending on the loader the function is the module itself or its `default`.
+type JsQR = (data: Uint8ClampedArray, width: number, height: number) => { data: string } | null;
+const jsQR: JsQR = (
+  typeof jsqrModule === 'function' ? jsqrModule : (jsqrModule as { default: unknown }).default
+) as JsQR;
+
+function run(args: string[], input?: string) {
+  const r = spawnSync(process.execPath, [CLI, ...args], { encoding: 'utf8', input });
+  return {
+    code: r.status,
+    out: r.stdout,
+    err: r.stderr,
+    json: () => JSON.parse(r.stdout) as Record<string, unknown>,
+  };
+}
+
+describe('vn-skills CLI', () => {
+  it('is built', () => expect(existsSync(CLI)).toBe(true));
+  it('--version', () => expect(run(['--version']).out.trim()).toMatch(/^\d+\.\d+\.\d+$/));
+  it('--help lists commands', () => {
+    const r = run(['--help']);
+    for (const c of ['vietqr', 'address', 'taxid', 'money', 'lunar', 'einvoice'])
+      expect(r.out).toContain(c);
+  });
+
+  it('vietqr build writes a scannable PNG whose payload parses back', () => {
+    const dir = mkdtempSync(join(tmpdir(), 'vn-skills-'));
+    const file = join(dir, 'qr.png');
+    const r = run([
+      'vietqr',
+      'build',
+      '--bank',
+      'VCB',
+      '--account',
+      '0011001234567',
+      '--amount',
+      '500000',
+      '--note',
+      'thanh toan',
+      '--out',
+      file,
+      '--json',
+    ]);
+    expect(r.code).toBe(0);
+    const j = r.json();
+    expect(j.ok).toBe(true);
+    expect(existsSync(file)).toBe(true);
+    const png = PNG.sync.read(readFileSync(file));
+    const decoded = jsQR(new Uint8ClampedArray(png.data), png.width, png.height);
+    expect(decoded?.data).toBe(j.payload);
+    const parsed = parseVietQR(decoded!.data);
+    expect(parsed.ok && parsed.crcValid).toBe(true);
+    expect(parsed.ok && parsed.bin).toBe('970436');
+    expect(parsed.ok && parsed.amount).toBe(500000);
+  });
+  it('vietqr build writes SVG', () => {
+    const dir = mkdtempSync(join(tmpdir(), 'vn-skills-'));
+    const file = join(dir, 'qr.svg');
+    const r = run(['vietqr', 'build', '--bank', '970422', '--account', '123', '--out', file]);
+    expect(r.code).toBe(0);
+    expect(readFileSync(file, 'utf8')).toContain('<svg');
+  });
+  it('vietqr build fails with JSON error for unknown bank', () => {
+    const r = run(['vietqr', 'build', '--bank', 'nope', '--account', '1']);
+    expect(r.code).toBe(1);
+    expect((r.json().error as { code: string }).code).toBe('BANK_NOT_FOUND');
+  });
+  it('vietqr parse', () => {
+    const r = run([
+      'vietqr',
+      'parse',
+      '00020101021238530010A000000727012300069704230109mynamebvh0208QRIBFTTA53037045405500005802VN62080804test6304AB76',
+    ]);
+    expect(r.code).toBe(0);
+    expect(r.json().crcValid).toBe(true);
+    expect(r.json().bin).toBe('970423');
+  });
+  it('vietqr banks', () => {
+    const r = run(['vietqr', 'banks', 'vietcom']);
+    expect((r.json().banks as unknown[]).length).toBeGreaterThan(0);
+  });
+
+  it('taxid validate ok', () => {
+    const r = run(['taxid', 'validate', '0100233488-001']);
+    expect(r.code).toBe(0);
+    expect(r.json().kind).toBe('branch');
+  });
+  it('taxid validate bad', () => {
+    const r = run(['taxid', 'validate', '0100233480']);
+    expect(r.code).toBe(1);
+    expect((r.json().error as { code: string }).code).toBe('INVALID_CHECKSUM');
+  });
+
+  it('money words', () => {
+    const r = run(['money', 'words', '1200000']);
+    expect(r.json().words).toBe('một triệu hai trăm nghìn đồng');
+  });
+  it('money words --pretty prints plain text', () => {
+    expect(run(['money', 'words', '15', '--pretty']).out.trim()).toBe('mười lăm đồng');
+  });
+
+  it('lunar from-solar', () => {
+    const r = run(['lunar', 'from-solar', '29/01/2025']);
+    expect(r.json().text).toBe('Mùng 1 tháng Giêng năm Ất Tỵ');
+  });
+  it('lunar to-solar', () => {
+    const r = run(['lunar', 'to-solar', '1/1/2026']);
+    expect((r.json().solar as { date: string }).date).toBe('2026-02-17');
+  });
+  it('lunar holidays --public', () => {
+    const r = run(['lunar', 'holidays', '2025', '--public']);
+    expect(
+      (r.json().holidays as Array<{ name: string }>).some((h) => h.name.includes('Giỗ Tổ')),
+    ).toBe(true);
+  });
+
+  it('address convert', () => {
+    const r = run(['address', 'convert', '12 Nguyễn Huệ, P. Bến Nghé, Q.1, TP.HCM']);
+    expect(r.code).toBe(0);
+    expect((r.json().new as { ward: { fullName: string } }).ward.fullName).toBe('Phường Sài Gòn');
+  });
+  it('address parse', () => {
+    const r = run(['address', 'parse', 'Phường Hoàn Kiếm, Hà Nội']);
+    expect((r.json().ward as { fullName: string }).fullName).toBe('Phường Hoàn Kiếm');
+  });
+  it('address provinces lists 34', () => {
+    expect(run(['address', 'provinces']).json().count).toBe(34);
+  });
+
+  it('einvoice example | validate | totals | create', () => {
+    const ex = run(['einvoice', 'example']);
+    expect(ex.code).toBe(0);
+    const dir = mkdtempSync(join(tmpdir(), 'vn-skills-'));
+    const file = join(dir, 'inv.json');
+    writeFileSync(file, ex.out);
+    expect(run(['einvoice', 'validate', file]).code).toBe(0);
+    const t = run(['einvoice', 'totals', file]).json();
+    expect(t.grandTotal).toBe(7_660_000);
+    const c = run(['einvoice', 'create', file, '--provider', 'mock']).json();
+    expect(c.status).toBe('issued');
+    expect(c.number).toBe('00000001');
+  });
+  it('einvoice validate from stdin fails on bad data', () => {
+    const r = run(['einvoice', 'validate', '-'], JSON.stringify({ series: 'x' }));
+    expect(r.code).toBe(1);
+    expect((r.json().errors as unknown[]).length).toBeGreaterThan(0);
+  });
+  it('einvoice create with misa reports missing config', () => {
+    const ex = run(['einvoice', 'example']);
+    const dir = mkdtempSync(join(tmpdir(), 'vn-skills-'));
+    const file = join(dir, 'inv.json');
+    writeFileSync(file, ex.out);
+    const r = run(['einvoice', 'create', file, '--provider', 'misa']);
+    expect(r.code).toBe(1);
+    expect((r.json().error as { code: string }).code).toBe('CONFIG_ERROR');
+  });
+});

@@ -1,0 +1,6 @@
+dist
+node_modules
+pnpm-lock.yaml
+packages/core/data/*.json
+tests/golden/*.json
+vn-skills-SPEC.md

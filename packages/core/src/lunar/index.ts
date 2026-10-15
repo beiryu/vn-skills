@@ -1,0 +1,121 @@
+import { jdFromDate, getSolarTermIndex } from './astro.js';
+import { solarToLunar, lunarToSolar, leapMonthOf, VN_TIMEZONE, type LunarDate } from './convert.js';
+import {
+  yearCanChi,
+  monthCanChi,
+  dayCanChi,
+  hourCanChi,
+  lunarMonthName,
+  SOLAR_TERMS,
+  CHI_ANIMALS_EN,
+  CHI,
+} from './canchi.js';
+import { fail, type Result } from '../shared/result.js';
+
+export { jdFromDate, jdToDate, newMoon, sunLongitude } from './astro.js';
+export {
+  solarToLunar,
+  lunarToSolar,
+  leapMonthOf,
+  lunarMonthLength,
+  isValidSolarDate,
+  VN_TIMEZONE,
+  type LunarDate,
+  type SolarDate,
+} from './convert.js';
+export {
+  yearCanChi,
+  monthCanChi,
+  dayCanChi,
+  hourCanChi,
+  lunarMonthName,
+  CAN,
+  CHI,
+  CHI_ANIMALS_EN,
+  SOLAR_TERMS,
+} from './canchi.js';
+export { holidays, type Holiday } from './holidays.js';
+
+export interface LunarInfo extends LunarDate {
+  solar: { day: number; month: number; year: number; date: string; weekday: string };
+  yearCanChi: string;
+  monthCanChi: string;
+  dayCanChi: string;
+  zodiacEn: string;
+  monthName: string;
+  solarTerm: string;
+  /** Human-readable summary, e.g. "Mùng 1 tháng Giêng năm Ất Tỵ". */
+  text: string;
+}
+
+const WEEKDAYS = ['Chủ nhật', 'Thứ hai', 'Thứ ba', 'Thứ tư', 'Thứ năm', 'Thứ sáu', 'Thứ bảy'];
+
+/** Full lunar information for a solar date (conversion + can chi + solar term). */
+export function lunarInfo(
+  dd: number,
+  mm: number,
+  yy: number,
+  timeZone = VN_TIMEZONE,
+): Result<LunarInfo> {
+  const l = solarToLunar(dd, mm, yy, timeZone);
+  if (!l.ok) return l;
+  const jd = jdFromDate(dd, mm, yy);
+  const weekday = WEEKDAYS[(jd + 1) % 7]!;
+  const dayLabel = l.day <= 10 ? `Mùng ${l.day}` : `Ngày ${l.day}`;
+  const monthLabel = `tháng ${lunarMonthName(l.month)}${l.leap ? ' (nhuận)' : ''}`;
+  const yc = yearCanChi(l.year);
+  return {
+    ...l,
+    ok: true,
+    solar: {
+      day: dd,
+      month: mm,
+      year: yy,
+      date: `${yy}-${String(mm).padStart(2, '0')}-${String(dd).padStart(2, '0')}`,
+      weekday,
+    },
+    yearCanChi: yc,
+    monthCanChi: monthCanChi(l.month, l.year, l.leap),
+    dayCanChi: dayCanChi(dd, mm, yy),
+    zodiacEn: CHI_ANIMALS_EN[(((l.year + 8) % 12) + 12) % 12]!,
+    monthName: lunarMonthName(l.month),
+    solarTerm: SOLAR_TERMS[getSolarTermIndex(jd, timeZone)]!,
+    text: `${dayLabel} ${monthLabel} năm ${yc}`,
+  };
+}
+
+/** Parse "dd/mm/yyyy", "dd-mm-yyyy" or ISO "yyyy-mm-dd" into numbers. */
+export function parseDateInput(
+  input: string,
+): Result<{ day: number; month: number; year: number }> {
+  const s = String(input ?? '').trim();
+  let m = /^(\d{1,2})[/\-.](\d{1,2})[/\-.](\d{4})$/.exec(s);
+  if (m) return { ok: true, day: Number(m[1]), month: Number(m[2]), year: Number(m[3]) };
+  m = /^(\d{4})-(\d{1,2})-(\d{1,2})$/.exec(s);
+  if (m) return { ok: true, day: Number(m[3]), month: Number(m[2]), year: Number(m[1]) };
+  return fail('INVALID_DATE', `Cannot parse date "${input}"`, 'Use dd/mm/yyyy or yyyy-mm-dd.');
+}
+
+/** Solar date of Tết (lunar 1/1) for a given lunar year. */
+export function tetDate(lunarYear: number): Result<{
+  day: number;
+  month: number;
+  year: number;
+  date: string;
+  canChi: string;
+  zodiacEn: string;
+}> {
+  const s = lunarToSolar(1, 1, lunarYear);
+  if (!s.ok) return s;
+  return {
+    ok: true,
+    day: s.day,
+    month: s.month,
+    year: s.year,
+    date: `${s.year}-${String(s.month).padStart(2, '0')}-${String(s.day).padStart(2, '0')}`,
+    canChi: yearCanChi(lunarYear),
+    zodiacEn: CHI_ANIMALS_EN[(((lunarYear + 8) % 12) + 12) % 12]!,
+  };
+}
+
+export { CHI as LUNAR_CHI };

@@ -1,0 +1,109 @@
+# vn-skills
+
+> Teach your AI agent to work with VietQR, e-invoices, the new 34-province addresses and more — with one command.
+
+[Tiếng Việt](README.vi.md)
+
+Coding agents (Claude Code, Codex, Cursor, …) get Vietnam-specific tasks wrong: they invent bank BINs, use the
+pre-2025 provinces and districts, misread amounts in words, or confuse the Chinese and Vietnamese lunar calendars.
+**vn-skills** fixes that with three layers built on one offline core:
+
+| Layer            | What                                                                          | Install                                             |
+| ---------------- | ----------------------------------------------------------------------------- | --------------------------------------------------- |
+| **Agent Skills** | `skills/*/SKILL.md` following the [Agent Skills](https://agentskills.io) spec | copy a folder into your agent's skills directory    |
+| **CLI**          | `@vn-skills/cli` — `npx -y @vn-skills/cli …` (JSON output for agents)         | nothing; the skills call it                         |
+| **MCP server**   | `@vn-skills/mcp` — the same functions as MCP tools                            | `claude mcp add vn-skills -- npx -y @vn-skills/mcp` |
+| **Library**      | `@vn-skills/core` — pure TypeScript, no network, data bundled                 | `npm i @vn-skills/core`                             |
+
+<!-- TODO: GIF — agent builds a VietQR and converts an address in 15 seconds -->
+
+## Skills
+
+| Skill                                              | Does                                                                                                                   | Example                                                                                                   |
+| -------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
+| [`vietqr`](skills/vietqr/SKILL.md)                 | Build/parse VietQR (NAPAS 247, EMVCo) payloads, CRC16, PNG/SVG, bank BIN lookup                                        | `vn-skills vietqr build --bank VCB --account 0011001234567 --amount 500000 --note "don 123" --out qr.png` |
+| [`vn-address`](skills/vn-address/SKILL.md)         | Parse/normalise addresses; convert 63-province + district addresses to the 34-province, 2-level structure (01/07/2025) | `vn-skills address convert "P. Bến Nghé, Q.1, TP.HCM"` → `Phường Sài Gòn, Thành phố Hồ Chí Minh`          |
+| [`vn-tax-id`](skills/vn-tax-id/SKILL.md)           | Validate tax IDs (10 / 13 digits, check digit, branch suffix; 12-digit personal ID) offline                            | `vn-skills taxid validate 0100233488-001`                                                                 |
+| [`vn-money-words`](skills/vn-money-words/SKILL.md) | Amount → Vietnamese words (nghìn/ngàn, lẻ/linh, mốt/lăm/tư, tỷ tỷ)                                                     | `vn-skills money words 1200000` → `một triệu hai trăm nghìn đồng`                                         |
+| [`vn-lunar`](skills/vn-lunar/SKILL.md)             | Solar ↔ lunar, leap months, can chi, Tết, holidays (Hồ Ngọc Đức algorithm, UTC+7)                                      | `vn-skills lunar tet 2027` → `2027-02-06 Đinh Mùi`                                                        |
+| [`vn-einvoice`](skills/vn-einvoice/SKILL.md)       | E-invoice schema validation, VAT/totals, amount in words, mock provider; MISA/Viettel/VNPT adapter skeletons           | `vn-skills einvoice totals invoice.json`                                                                  |
+
+## Install the skills
+
+**Claude Code** (project or user scope):
+
+```bash
+git clone https://github.com/beiryu/vn-skills
+cp -r vn-skills/skills/vietqr ~/.claude/skills/          # or .claude/skills/ inside your project
+```
+
+Then ask: _"tạo QR chuyển 500k vào VCB số tài khoản 0011001234567"_ → Claude runs the skill and returns `qr.png`.
+
+**Cursor / Codex / other agents:** copy the same folders into the agent's skills directory
+(`.cursor/skills/`, `.codex/skills/`, or wherever your agent discovers `SKILL.md`). The skills only need Node.js 18+ because
+they call `npx -y @vn-skills/cli`.
+
+**Inside this repository** (before the packages are published) use `pnpm vn-skills …` instead of `npx -y @vn-skills/cli …`.
+
+## MCP server
+
+```bash
+claude mcp add vn-skills -- npx -y @vn-skills/mcp
+```
+
+or in any MCP client config:
+
+```json
+{ "mcpServers": { "vn-skills": { "command": "npx", "args": ["-y", "@vn-skills/mcp"] } } }
+```
+
+Tools: `vietqr_build`, `vietqr_parse`, `vietqr_banks`, `vn_address_parse`, `vn_address_convert`, `vn_address_search_wards`,
+`vn_tax_id_validate`, `vn_money_to_words`, `vn_lunar_from_solar`, `vn_lunar_to_solar`, `vn_lunar_holidays`,
+`vn_einvoice_validate`, `vn_einvoice_totals`, `vn_einvoice_mock_issue`.
+
+## Library
+
+```ts
+import {
+  buildVietQR,
+  convertAddress,
+  validateTaxId,
+  moneyToWords,
+  lunarInfo,
+  computeTotals,
+} from '@vn-skills/core';
+
+buildVietQR({ bank: 'VCB', account: '0011001234567', amount: 500000, note: 'don 123' }).payload;
+convertAddress('12 Nguyễn Huệ, P. Bến Nghé, Q.1, TP.HCM').new.formatted; // "12 Nguyễn Huệ, Phường Sài Gòn, Thành phố Hồ Chí Minh"
+validateTaxId('0100233488-001').kind; // "branch"
+moneyToWords(1_200_000).words; // "một triệu hai trăm nghìn đồng"
+lunarInfo(29, 1, 2025).text; // "Mùng 1 tháng Giêng năm Ất Tỵ"
+```
+
+Every function returns `{ ok: true, ... }` or `{ ok: false, error: { code, message, hint } }` — no exceptions for bad input.
+
+## Development
+
+```bash
+pnpm install && pnpm build && pnpm test
+pnpm build-data          # refresh bundled datasets from pinned upstream commits (network)
+```
+
+Data sources, licenses and dates are listed in [packages/core/data/SOURCES.md](packages/core/data/SOURCES.md).
+See [CONTRIBUTING.md](CONTRIBUTING.md).
+
+## Roadmap
+
+- `vn-id` (CCCD format, province/sex/year decoding), `vn-holidays` (yearly official days off), `vn-bank-statement`
+- Python package `vn-skills` on PyPI
+- Real e-invoice adapters against provider sandboxes (MISA meInvoice, Viettel S-Invoice, VNPT)
+
+## Disclaimer
+
+This project provides technical tooling only. It is not tax, legal or accounting advice, does not query or scrape any
+government system, and does not guarantee that a tax ID is registered or that an address is accepted by a carrier.
+Verify with the competent authority where it matters.
+
+## License
+
+MIT. Bundled data is derived from MIT-licensed community datasets (see SOURCES.md); lunar algorithm after Hồ Ngọc Đức.

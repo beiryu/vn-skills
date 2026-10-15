@@ -1,0 +1,33 @@
+name: Release
+
+# Publishes @vn-skills/core, @vn-skills/cli and @vn-skills/mcp to npm.
+# Trigger: push a tag like v0.1.0 (package versions must already match) or run manually.
+# Requires the NPM_TOKEN secret (npm automation token) on the repository.
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write # npm provenance
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          registry-url: https://registry.npmjs.org
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build
+      - run: pnpm exec vitest run
+      - name: Publish
+        run: pnpm -r --filter './packages/*' publish --access public --no-git-checks --provenance
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

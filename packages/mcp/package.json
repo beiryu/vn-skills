@@ -1,0 +1,35 @@
+{
+  "name": "@vn-skills/mcp",
+  "version": "0.1.0",
+  "description": "MCP server exposing vn-skills tools (VietQR, Vietnamese addresses, tax IDs, money in words, lunar calendar, e-invoice) over stdio.",
+  "license": "MIT",
+  "type": "module",
+  "bin": {
+    "vn-skills-mcp": "./dist/index.js"
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "typecheck": "tsc --noEmit -p tsconfig.json"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.32.1",
+    "@vn-skills/core": "workspace:*",
+    "qrcode": "^1.5.4",
+    "zod": "^4.0.0"
+  },
+  "devDependencies": {
+    "@types/qrcode": "^1.5.5"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/beiryu/vn-skills",
+    "directory": "packages/mcp"
+  },
+  "engines": {
+    "node": ">=18.17"
+  }
+}
