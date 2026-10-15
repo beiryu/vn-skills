@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { join, resolve } from 'node:path';
+import { loadGolden } from './golden.js';
 
 const SKILLS_DIR = resolve(__dirname, '..', 'skills');
 const dirs = readdirSync(SKILLS_DIR).filter((d) => statSync(join(SKILLS_DIR, d)).isDirectory());
@@ -56,6 +57,11 @@ describe('skills/ follow the Agent Skills spec', () => {
         for (const m of text.matchAll(/\]\((references\/[^)]+)\)/g)) {
           expect(existsSync(join(SKILLS_DIR, dir, m[1]!)), m[1]).toBe(true);
         }
+      });
+      it('has golden fixtures with at least 20 cases', () => {
+        const groups = Object.values(loadGolden<Record<string, unknown>>(dir));
+        const count = groups.reduce<number>((n, g) => n + (Array.isArray(g) ? g.length : 0), 0);
+        expect(count).toBeGreaterThanOrEqual(20);
       });
     });
   }

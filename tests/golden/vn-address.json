@@ -1,0 +1,223 @@
+{
+  "skill": "vn-address",
+  "cases": {
+    "findProvince": [
+      { "input": "Hà Nội", "expected": { "code": "01" } },
+      { "input": "ha noi", "expected": { "code": "01" } },
+      { "input": "HN", "expected": { "code": "01" } },
+      { "input": "TP.HCM", "expected": { "code": "79" } },
+      { "input": "tphcm", "expected": { "code": "79" } },
+      { "input": "Sài Gòn", "expected": { "code": "79" } },
+      { "input": "Thành phố Hồ Chí Minh", "expected": { "code": "79" } },
+      { "input": "Đà Nẵng", "expected": { "code": "48" } },
+      { "input": "Gia Lai", "expected": { "code": "52" } },
+      { "input": "Lâm Đồng", "expected": { "code": "68" } },
+      { "input": "Tỉnh Nghệ An", "expected": { "code": "40" } },
+      { "input": "79", "expected": { "code": "79" } },
+      { "name": "merged-away province", "input": "Bình Dương", "expected": null },
+      { "name": "junk", "input": "Atlantis", "expected": null }
+    ],
+    "parseAddress2025": [
+      {
+        "name": "fully qualified address",
+        "input": "12 Nguyễn Huệ, Phường Sài Gòn, Thành phố Hồ Chí Minh",
+        "expected": {
+          "ok": true,
+          "province": { "code": "79" },
+          "ward": { "fullName": "Phường Sài Gòn" },
+          "street": "12 Nguyễn Huệ",
+          "formatted": "12 Nguyễn Huệ, Phường Sài Gòn, Thành phố Hồ Chí Minh"
+        }
+      },
+      {
+        "name": "without diacritics",
+        "input": "12 nguyen hue, phuong sai gon, tp ho chi minh",
+        "expected": { "ok": true, "ward": { "fullName": "Phường Sài Gòn" } }
+      },
+      {
+        "name": "abbreviations P. and TP.HCM",
+        "input": "12 Nguyễn Huệ, P. Sài Gòn, TP.HCM",
+        "expected": { "ok": true, "province": { "code": "79" }, "ward": { "fullName": "Phường Sài Gòn" } }
+      },
+      {
+        "name": "ward without prefix",
+        "input": "Sài Gòn, Hồ Chí Minh",
+        "expected": { "ok": true, "ward": { "fullName": "Phường Sài Gòn" } }
+      },
+      {
+        "name": "Hà Nội ward",
+        "input": "Số 1 Hàng Bài, Phường Hoàn Kiếm, Hà Nội",
+        "expected": {
+          "ok": true,
+          "province": { "code": "01" },
+          "ward": { "fullName": "Phường Hoàn Kiếm" }
+        }
+      },
+      {
+        "name": "commune (xã) in a merged province",
+        "input": "Xã Tuy Phước, Tỉnh Gia Lai",
+        "expected": { "ok": true, "ward": { "fullName": "Xã Tuy Phước" } }
+      },
+      {
+        "name": "đặc khu",
+        "input": "Đặc khu Phú Quốc, An Giang",
+        "expected": { "ok": true, "ward": { "fullName": "Đặc khu Phú Quốc" } }
+      },
+      {
+        "name": "no-separator input",
+        "input": "12 Nguyen Hue Phuong Sai Gon TP Ho Chi Minh",
+        "expected": { "ok": true, "province": { "code": "79" }, "ward": { "fullName": "Phường Sài Gòn" } }
+      },
+      {
+        "name": "fails without province",
+        "input": "12 Nguyễn Huệ",
+        "expected": { "ok": false, "error": { "code": "PROVINCE_NOT_FOUND" } }
+      },
+      { "name": "fails on empty", "input": "", "expected": { "ok": false } },
+      {
+        "name": "diacritic-only difference: Văn Lang",
+        "input": "Xã Văn Lang, Thái Nguyên",
+        "expected": { "ok": true, "ward": { "fullName": "Xã Văn Lang" } }
+      },
+      {
+        "name": "diacritic-only difference: Văn Lăng",
+        "input": "Xã Văn Lăng, Thái Nguyên",
+        "expected": { "ok": true, "ward": { "fullName": "Xã Văn Lăng" } }
+      }
+    ],
+    "parseAddressLegacy": [
+      {
+        "name": "province/district/ward",
+        "input": "12 Nguyễn Huệ, Phường Bến Nghé, Quận 1, TP. Hồ Chí Minh",
+        "expected": {
+          "ok": true,
+          "province": { "code": "79" },
+          "district": { "fullName": "Quận 1" },
+          "ward": { "fullName": "Phường Bến Nghé" },
+          "street": "12 Nguyễn Huệ"
+        }
+      },
+      {
+        "name": "Q.1 / P. abbreviations",
+        "input": "P. Bến Nghé, Q.1, TPHCM",
+        "expected": {
+          "ok": true,
+          "district": { "fullName": "Quận 1" },
+          "ward": { "fullName": "Phường Bến Nghé" }
+        }
+      },
+      {
+        "name": "old province Bình Dương",
+        "input": "Phường Phú Lợi, Thành phố Thủ Dầu Một, Bình Dương",
+        "expected": {
+          "ok": true,
+          "province": { "fullName": "Tỉnh Bình Dương" },
+          "district": { "fullName": "Thành phố Thủ Dầu Một" }
+        }
+      },
+      {
+        "name": "no-separator legacy address",
+        "input": "Phuong Ben Nghe Quan 1 Ho Chi Minh",
+        "expected": { "ok": true, "district": { "fullName": "Quận 1" } }
+      },
+      { "name": "fails on empty", "input": "", "expected": { "ok": false } }
+    ],
+    "parseAddress": [
+      {
+        "name": "picks legacy when a district is present",
+        "input": "P. Bến Nghé, Q.1, TP.HCM",
+        "expected": { "ok": true, "mode": "legacy" }
+      },
+      {
+        "name": "picks current when the ward exists in the new catalogue",
+        "input": "Phường Sài Gòn, TP.HCM",
+        "expected": { "ok": true, "mode": "from2025" }
+      }
+    ],
+    "convertAddress": [
+      {
+        "name": "Bến Nghé, Q.1 -> Phường Sài Gòn",
+        "input": "12 Nguyễn Huệ, P. Bến Nghé, Q.1, TP.HCM",
+        "expected": {
+          "ok": true,
+          "mappingType": "merged",
+          "new": {
+            "ward": { "fullName": "Phường Sài Gòn" },
+            "province": { "code": "79" },
+            "street": "12 Nguyễn Huệ",
+            "formatted": "12 Nguyễn Huệ, Phường Sài Gòn, Thành phố Hồ Chí Minh"
+          }
+        }
+      },
+      {
+        "name": "Bình Dương -> Thành phố Hồ Chí Minh",
+        "input": "Phường Phú Lợi, Thành phố Thủ Dầu Một, Tỉnh Bình Dương",
+        "expected": {
+          "ok": true,
+          "new": { "province": { "code": "79" }, "ward": { "fullName": "Phường Phú Lợi" } }
+        }
+      },
+      {
+        "name": "Bình Định -> Gia Lai",
+        "input": "Phường Trần Phú, Thành phố Quy Nhơn, Bình Định",
+        "expected": {
+          "ok": true,
+          "new": { "province": { "fullName": "Tỉnh Gia Lai" }, "ward": { "fullName": "Phường Quy Nhơn" } }
+        }
+      },
+      {
+        "name": "structured input",
+        "input": {
+          "province": "Hà Nội",
+          "district": "Quận Hoàn Kiếm",
+          "ward": "Phường Hàng Bạc",
+          "street": "5 Hàng Bạc"
+        },
+        "expected": {
+          "ok": true,
+          "new": { "ward": { "fullName": "Phường Hoàn Kiếm" }, "street": "5 Hàng Bạc" }
+        }
+      },
+      {
+        "name": "divided ward (Xã Tân Thạnh, huyện Thới Lai, Cần Thơ was split)",
+        "input": "Xã Tân Thạnh, Huyện Thới Lai, Cần Thơ",
+        "expected": { "ok": true, "mappingType": "divided" }
+      },
+      {
+        "name": "district-level unit without wards (Hoàng Sa)",
+        "input": "Huyện Hoàng Sa, Đà Nẵng",
+        "expected": { "ok": true, "new": { "ward": { "fullName": "Đặc khu Hoàng Sa" } } }
+      },
+      {
+        "name": "already-new address passes through",
+        "input": "Phường Sài Gòn, Thành phố Hồ Chí Minh",
+        "expected": { "ok": true, "mappingType": "already-new" }
+      },
+      {
+        "name": "province only when ward unknown",
+        "input": "Quận 1, TP.HCM",
+        "expected": { "ok": true, "mappingType": "province-only", "new": { "province": { "code": "79" } } }
+      },
+      { "name": "fails without province", "input": "Phường Bến Nghé", "expected": { "ok": false } },
+      {
+        "name": "unchanged ward keeps its name",
+        "input": "Xã Tuy Phước, Huyện Tuy Phước, Bình Định",
+        "expected": { "ok": true, "new": { "ward": { "fullName": "Xã Tuy Phước" } } }
+      }
+    ],
+    "searchWardsFirst": [
+      {
+        "name": "restricts to a province",
+        "input": ["Sài Gòn", "HCM"],
+        "expected": { "ward": { "fullName": "Phường Sài Gòn" } }
+      }
+    ],
+    "formatAddress": [
+      {
+        "name": "joins parts",
+        "input": { "street": "1 A", "ward": "Phường X", "province": "Tỉnh Y" },
+        "expected": "1 A, Phường X, Tỉnh Y"
+      }
+    ]
+  }
+}

@@ -1,0 +1,180 @@
+{
+  "skill": "vn-lunar",
+  "cases": {
+    "tetDate": [
+      { "input": 2018, "expected": { "ok": true, "date": "2018-02-16", "canChi": "Mậu Tuất" } },
+      { "input": 2019, "expected": { "ok": true, "date": "2019-02-05", "canChi": "Kỷ Hợi" } },
+      { "input": 2020, "expected": { "ok": true, "date": "2020-01-25", "canChi": "Canh Tý" } },
+      { "input": 2021, "expected": { "ok": true, "date": "2021-02-12", "canChi": "Tân Sửu" } },
+      { "input": 2022, "expected": { "ok": true, "date": "2022-02-01", "canChi": "Nhâm Dần" } },
+      { "input": 2023, "expected": { "ok": true, "date": "2023-01-22", "canChi": "Quý Mão" } },
+      { "input": 2024, "expected": { "ok": true, "date": "2024-02-10", "canChi": "Giáp Thìn" } },
+      { "input": 2025, "expected": { "ok": true, "date": "2025-01-29", "canChi": "Ất Tỵ" } },
+      { "input": 2026, "expected": { "ok": true, "date": "2026-02-17", "canChi": "Bính Ngọ" } },
+      { "input": 2027, "expected": { "ok": true, "date": "2027-02-06", "canChi": "Đinh Mùi" } },
+      { "input": 2028, "expected": { "ok": true, "date": "2028-01-26", "canChi": "Mậu Thân" } },
+      { "input": 2029, "expected": { "ok": true, "date": "2029-02-13", "canChi": "Kỷ Dậu" } },
+      {
+        "name": "2030: new moon at 16:07 UT on 2 Feb -> 23:07 in UTC+7 (Vietnam: 2 Feb) but 00:07 on 3 Feb in UTC+8 (China: 3 Feb)",
+        "input": 2030,
+        "expected": { "ok": true, "date": "2030-02-02", "canChi": "Canh Tuất" }
+      }
+    ],
+    "solarToLunar": [
+      {
+        "name": "2025-01-29 is 1/1 Ất Tỵ",
+        "input": [29, 1, 2025],
+        "expected": { "ok": true, "day": 1, "month": 1, "year": 2025, "leap": false }
+      },
+      {
+        "name": "2025-01-28 is 29/12 Giáp Thìn",
+        "input": [28, 1, 2025],
+        "expected": { "ok": true, "day": 29, "month": 12, "year": 2024 }
+      },
+      {
+        "name": "2024-01-01 is 20/11 Quý Mão",
+        "input": [1, 1, 2024],
+        "expected": { "ok": true, "day": 20, "month": 11, "year": 2023 }
+      },
+      {
+        "name": "2023-03-22 is 1/2 leap (nhuận) Quý Mão",
+        "input": [22, 3, 2023],
+        "expected": { "ok": true, "day": 1, "month": 2, "year": 2023, "leap": true }
+      },
+      {
+        "name": "2023-02-20 is 1/2 (not leap) Quý Mão",
+        "input": [20, 2, 2023],
+        "expected": { "ok": true, "day": 1, "month": 2, "leap": false }
+      },
+      {
+        "name": "2020-05-23 is 1/4 leap Canh Tý",
+        "input": [23, 5, 2020],
+        "expected": { "ok": true, "day": 1, "month": 4, "leap": true }
+      },
+      {
+        "name": "2025-07-25 is 1/6 leap Ất Tỵ",
+        "input": [25, 7, 2025],
+        "expected": { "ok": true, "day": 1, "month": 6, "leap": true }
+      },
+      {
+        "name": "Giỗ Tổ 2024 (10/3 âm) = 2024-04-18",
+        "input": [18, 4, 2024],
+        "expected": { "ok": true, "day": 10, "month": 3 }
+      },
+      {
+        "name": "Trung thu 2024 (15/8 âm) = 2024-09-17",
+        "input": [17, 9, 2024],
+        "expected": { "ok": true, "day": 15, "month": 8 }
+      },
+      { "name": "rejects invalid date", "input": [31, 2, 2024], "expected": { "ok": false } },
+      { "name": "rejects out-of-range year", "input": [1, 1, 1500], "expected": { "ok": false } }
+    ],
+    "lunarToSolar": [
+      {
+        "name": "1/1/2026 -> 2026-02-17",
+        "input": [1, 1, 2026],
+        "expected": { "ok": true, "day": 17, "month": 2, "year": 2026 }
+      },
+      {
+        "name": "leap 2/2023 day 1 -> 2023-03-22",
+        "input": [1, 2, 2023, true],
+        "expected": { "ok": true, "day": 22, "month": 3, "year": 2023 }
+      },
+      {
+        "name": "rejects leap flag on non-leap month",
+        "input": [1, 3, 2023, true],
+        "expected": { "ok": false, "error": { "code": "NOT_LEAP_MONTH" } }
+      },
+      {
+        "name": "rejects leap flag in a year without leap month",
+        "input": [1, 2, 2024, true],
+        "expected": { "ok": false }
+      },
+      {
+        "name": "rejects day 30 in a 29-day month",
+        "input": [30, 12, 2024],
+        "expected": { "ok": false }
+      },
+      { "name": "rejects nonsense", "input": [0, 13, 2024], "expected": { "ok": false } }
+    ],
+    "lunarMonthLength": [
+      {
+        "name": "29/12 Giáp Thìn was the last day before Tết 2025",
+        "input": [12, 2024],
+        "expected": 29
+      }
+    ],
+    "leapMonthOf": [
+      { "input": 2020, "expected": 4 },
+      { "input": 2023, "expected": 2 },
+      { "input": 2025, "expected": 6 },
+      { "input": 2028, "expected": 5 },
+      { "input": 2017, "expected": 6 },
+      { "input": 2014, "expected": 9 },
+      { "input": 2021, "expected": null },
+      { "input": 2022, "expected": null },
+      { "input": 2024, "expected": null },
+      { "input": 2026, "expected": null },
+      { "input": 2027, "expected": null }
+    ],
+    "yearCanChi": [
+      { "input": 2024, "expected": "Giáp Thìn" },
+      { "input": 2025, "expected": "Ất Tỵ" },
+      { "input": 2026, "expected": "Bính Ngọ" },
+      { "input": 1984, "expected": "Giáp Tý" }
+    ],
+    "dayCanChi": [
+      { "input": [29, 1, 2025], "expected": "Mậu Tuất" },
+      { "name": "2025-01-28 (giao thừa)", "input": [28, 1, 2025], "expected": "Đinh Dậu" },
+      { "input": [1, 1, 2000], "expected": "Mậu Ngọ" }
+    ],
+    "lunarInfo": [
+      {
+        "name": "text for Tết 2025",
+        "input": [29, 1, 2025],
+        "expected": {
+          "ok": true,
+          "text": "Mùng 1 tháng Giêng năm Ất Tỵ",
+          "zodiacEn": "Snake",
+          "solar": { "weekday": "Thứ tư" }
+        }
+      },
+      {
+        "name": "solar term around Đông chí",
+        "input": [22, 12, 2024],
+        "expected": { "ok": true, "solarTerm": "Đông chí" }
+      }
+    ],
+    "holidays": [
+      {
+        "name": "2025 public holidays include Tết and Giỗ Tổ on the right dates",
+        "input": [2025, { "publicOnly": true }],
+        "expected": {
+          "Tết Nguyên Đán (mùng 1)": "2025-01-29",
+          "Giỗ Tổ Hùng Vương": "2025-04-07",
+          "Quốc khánh": "2025-09-02",
+          "Giao thừa (Tất niên)": "2025-01-28"
+        }
+      },
+      {
+        "name": "2024 Trung thu is 2024-09-17",
+        "input": [2024],
+        "expected": { "Tết Trung Thu": "2024-09-17" }
+      }
+    ],
+    "parseDateInput": [
+      {
+        "name": "dd/mm/yyyy",
+        "input": "29/01/2025",
+        "expected": { "day": 29, "month": 1, "year": 2025 }
+      },
+      {
+        "name": "yyyy-mm-dd",
+        "input": "2025-01-29",
+        "expected": { "day": 29, "month": 1, "year": 2025 }
+      },
+      { "name": "dd-mm-yyyy", "input": "1-2-2025", "expected": { "day": 1, "month": 2, "year": 2025 } },
+      { "name": "rejects junk", "input": "tomorrow", "expected": { "ok": false } }
+    ]
+  }
+}

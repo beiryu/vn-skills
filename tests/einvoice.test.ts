@@ -8,155 +8,63 @@ import {
   ConfigError,
   roundVnd,
   MisaMeInvoiceProvider,
-  type Party,
-  type InvoiceLine,
 } from '@vn-skills/core';
+import { loadGolden, mergePatch, title } from './golden.js';
 
-type LooseLine = Partial<Omit<InvoiceLine, 'vatRate'>> & { name: string; vatRate: unknown };
-type LooseInvoice = {
-  series: string;
-  issueDate: string;
-  seller: Party;
-  buyer: Party;
-  lines: LooseLine[];
-};
+type Subset = Record<string, unknown>;
 
-const base = (): LooseInvoice => ({
-  series: '1C25TAA',
-  issueDate: '2025-10-15',
-  seller: { name: 'Công ty A', taxId: '0100233488', address: 'Hà Nội' },
-  buyer: { name: 'Công ty B', taxId: '0314409058', address: 'TP.HCM' },
-  lines: [
-    { name: 'Tư vấn', unit: 'giờ', quantity: 10, unitPrice: 500000, vatRate: 10 },
-    { name: 'Máy chủ', unit: 'tháng', quantity: 1, unitPrice: 2000000, vatRate: 8 },
-  ],
-});
+/** Either a literal `input` or an RFC 7396 merge `patch` applied to `base`. */
+interface InvoiceCase {
+  name: string;
+  input?: unknown;
+  patch?: Subset;
+}
 
-describe('validateInvoice', () => {
-  it('accepts a valid invoice', () => {
-    const v = validateInvoice(base());
-    expect(v.ok).toBe(true);
-    expect(v.errors).toEqual([]);
-    expect(v.invoice?.lines[0]?.no).toBe(1);
-  });
-  it('rejects non-object', () => expect(validateInvoice('x').ok).toBe(false));
-  it('rejects missing series', () => {
-    const inv = base() as Record<string, unknown>;
-    delete inv.series;
-    expect(validateInvoice(inv).errors.some((e) => e.path === 'series')).toBe(true);
-  });
-  it('warns on odd series pattern', () => {
-    expect(
-      validateInvoice({ ...base(), series: 'ABC' }).warnings.some((w) => w.path === 'series'),
-    ).toBe(true);
-  });
-  it('rejects bad issueDate', () => {
-    expect(
-      validateInvoice({ ...base(), issueDate: '15/10/2025' }).errors.some(
-        (e) => e.path === 'issueDate',
-      ),
-    ).toBe(true);
-  });
-  it('rejects non-VND currency', () => {
-    expect(
-      validateInvoice({ ...base(), currency: 'USD' }).errors.some((e) => e.path === 'currency'),
-    ).toBe(true);
-  });
-  it('rejects seller without tax id', () => {
-    const inv = base();
-    inv.seller = { name: 'A', address: 'x' } as typeof inv.seller;
-    expect(validateInvoice(inv).errors.some((e) => e.path === 'seller.taxId')).toBe(true);
-  });
-  it('rejects invalid seller tax id checksum', () => {
-    const inv = base();
-    inv.seller.taxId = '0100233480';
-    expect(validateInvoice(inv).errors.some((e) => e.path === 'seller.taxId')).toBe(true);
-  });
-  it('warns when retail buyer has no ids', () => {
-    const inv = base();
-    inv.buyer = { name: 'Khách lẻ', address: '' } as typeof inv.buyer;
-    const v = validateInvoice(inv);
-    expect(v.ok).toBe(true);
-    expect(v.warnings.some((w) => w.path === 'buyer.taxId')).toBe(true);
-  });
-  it('rejects empty lines', () => expect(validateInvoice({ ...base(), lines: [] }).ok).toBe(false));
-  it('rejects zero quantity', () => {
-    const inv = base();
-    inv.lines[0]!.quantity = 0;
-    expect(validateInvoice(inv).errors.some((e) => e.path === 'lines[0].quantity')).toBe(true);
-  });
-  it('rejects negative price', () => {
-    const inv = base();
-    inv.lines[0]!.unitPrice = -1;
-    expect(validateInvoice(inv).ok).toBe(false);
-  });
-  it('rejects unknown VAT rate', () => {
-    const inv = base();
-    (inv.lines[0] as { vatRate: unknown }).vatRate = 7;
-    expect(validateInvoice(inv).errors.some((e) => e.path === 'lines[0].vatRate')).toBe(true);
-  });
-  it('accepts KCT / KKKNT rates', () => {
-    const inv = base();
-    (inv.lines[0] as { vatRate: unknown }).vatRate = 'KCT';
-    (inv.lines[1] as { vatRate: unknown }).vatRate = 'KKKNT';
-    expect(validateInvoice(inv).ok).toBe(true);
-  });
-  it('accepts note lines', () => {
-    const inv = base();
-    (inv.lines as unknown[]).push({ name: 'Ghi chú', isNote: true });
-    const v = validateInvoice(inv);
-    expect(v.ok).toBe(true);
-    expect(v.invoice?.lines[2]?.isNote).toBe(true);
-  });
-  it('warns on decimal unit price', () => {
-    const inv = base();
-    inv.lines[0]!.unitPrice = 1000.5;
-    expect(validateInvoice(inv).warnings.some((w) => w.path === 'lines[0].unitPrice')).toBe(true);
+const golden = loadGolden<{
+  base: Subset;
+  validateInvoice: Array<
+    InvoiceCase & {
+      expected: Subset & { errorPaths?: string[]; warningPaths?: string[] };
+    }
+  >;
+  computeTotals: Array<
+    InvoiceCase & {
+      options?: Parameters<typeof computeTotals>[1];
+      expected: Subset;
+      vatByRate?: Record<string, number>;
+    }
+  >;
+  roundVnd: Array<{ name: string; input: number; expected: number }>;
+}>('vn-einvoice');
+
+const input = (c: InvoiceCase) => ('input' in c ? c.input : mergePatch(golden.base, c.patch));
+const base = () => input({ name: 'base', patch: {} });
+
+describe('validateInvoice (golden)', () => {
+  it.each(golden.validateInvoice.map((c) => [title(c), c] as const))('%s', (_, c) => {
+    const { errorPaths = [], warningPaths = [], ...expected } = c.expected;
+    const v = validateInvoice(input(c));
+    expect(v).toMatchObject(expected);
+    for (const path of errorPaths) expect(v.errors.map((e) => e.path)).toContain(path);
+    for (const path of warningPaths) expect(v.warnings.map((w) => w.path)).toContain(path);
   });
 });
 
-describe('computeTotals', () => {
-  it('computes VAT per rate and total in words', () => {
-    const v = validateInvoice(base());
-    const t = computeTotals(v.invoice!);
-    expect(t.subtotal).toBe(7_000_000);
-    expect(t.vatTotal).toBe(500_000 + 160_000);
-    expect(t.grandTotal).toBe(7_660_000);
-    expect(t.byRate.find((b) => b.rate === 10)?.vat).toBe(500_000);
-    expect(t.byRate.find((b) => b.rate === 8)?.vat).toBe(160_000);
-    expect(t.totalInWords).toBe('Bảy triệu sáu trăm sáu mươi nghìn đồng');
+describe('computeTotals (golden)', () => {
+  it.each(golden.computeTotals.map((c) => [title(c), c] as const))('%s', (_, c) => {
+    const v = validateInvoice(input(c));
+    if (!v.invoice) throw new Error(JSON.stringify(v.errors));
+    const t = computeTotals(v.invoice, c.options);
+    expect(t).toMatchObject(c.expected);
+    for (const [rate, vat] of Object.entries(c.vatByRate ?? {}))
+      expect(t.byRate.find((b) => String(b.rate) === rate)?.vat).toBe(vat);
   });
-  it('applies discounts', () => {
-    const inv = base();
-    inv.lines = [{ name: 'X', quantity: 2, unitPrice: 100_000, discount: 50_000, vatRate: 10 }];
-    const t = computeTotals(validateInvoice(inv).invoice!);
-    expect(t.subtotal).toBe(150_000);
-    expect(t.discountTotal).toBe(50_000);
-    expect(t.vatTotal).toBe(15_000);
-  });
-  it('rounds VAT to whole VND', () => {
-    const inv = base();
-    inv.lines = [{ name: 'X', quantity: 3, unitPrice: 33_333, vatRate: 8 }];
-    const t = computeTotals(validateInvoice(inv).invoice!);
-    expect(t.lines[0]?.amount).toBe(99_999);
-    expect(t.lines[0]?.vatAmount).toBe(8_000); // 7999.92 -> 8000
-  });
-  it('KCT lines carry no VAT', () => {
-    const inv = base();
-    inv.lines = [{ name: 'X', quantity: 1, unitPrice: 1000, vatRate: 'KCT' as never }];
-    const t = computeTotals(validateInvoice(inv).invoice!);
-    expect(t.vatTotal).toBe(0);
-    expect(t.grandTotal).toBe(1000);
-  });
-  it('southern wording option', () => {
-    const t = computeTotals(validateInvoice(base()).invoice!, { thousand: 'ngàn' });
-    expect(t.totalInWords).toContain('ngàn');
-  });
-  it('roundVnd half away from zero', () => {
-    expect(roundVnd(0.5)).toBe(1);
-    expect(roundVnd(-0.5)).toBe(-1);
-    expect(roundVnd(2.4)).toBe(2);
-  });
+});
+
+describe('roundVnd (golden)', () => {
+  it.each(golden.roundVnd.map((c) => [title(c), c] as const))('%s', (_, c) =>
+    expect(roundVnd(c.input)).toBe(c.expected),
+  );
 });
 
 describe('MockProvider', () => {

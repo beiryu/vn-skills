@@ -1,0 +1,145 @@
+{
+  "skill": "vietqr",
+  "cases": {
+    "crc16CcittFalse": [
+      {
+        "name": "EMVCo reference vector (TPBank golden payload without CRC)",
+        "input": "00020101021238530010A000000727012300069704230109mynamebvh0208QRIBFTTA53037045405500005802VN62080804test6304",
+        "expected": "AB76"
+      },
+      { "name": "known CRC of 123456789", "input": "123456789", "expected": "29B1" },
+      { "name": "empty input", "input": "", "expected": "FFFF" }
+    ],
+    "findBank": [
+      { "name": "by BIN", "input": "970436", "expected": { "shortName": "Vietcombank" } },
+      { "name": "by code", "input": "VCB", "expected": { "bin": "970436" } },
+      { "name": "by lowercase code", "input": "tcb", "expected": { "bin": "970407" } },
+      {
+        "name": "by name with diacritics",
+        "input": "Ngân hàng TMCP Á Châu",
+        "expected": { "code": "ACB" }
+      },
+      { "name": "by alias MB", "input": "MB", "expected": { "bin": "970422" } },
+      { "name": "by alias vietin", "input": "Vietin", "expected": { "bin": "970415" } },
+      { "name": "BIDV", "input": "BIDV", "expected": { "bin": "970418" } },
+      { "name": "Agribank", "input": "agribank", "expected": { "bin": "970405" } },
+      { "name": "junk", "input": "zzzz-not-a-bank", "expected": null },
+      { "name": "empty", "input": "", "expected": null }
+    ],
+    "searchBanksFirst": [{ "name": "exact match first", "input": "vcb", "expected": { "bin": "970436" } }],
+    "buildVietQR": [
+      {
+        "name": "reproduces the golden payload",
+        "input": { "bank": "970423", "account": "mynamebvh", "amount": 50000, "note": "test" },
+        "expected": {
+          "ok": true,
+          "payload": "00020101021238530010A000000727012300069704230109mynamebvh0208QRIBFTTA53037045405500005802VN62080804test6304AB76",
+          "crc": "AB76",
+          "dynamic": true
+        }
+      },
+      {
+        "name": "static QR without amount/note",
+        "input": { "bank": "VCB", "account": "0011001234567" },
+        "expected": { "ok": true, "dynamic": false }
+      },
+      {
+        "name": "amount as formatted string",
+        "input": { "bank": "VCB", "account": "123", "amount": "1.500.000 đ" },
+        "expected": { "ok": true, "amount": 1500000 }
+      },
+      {
+        "name": "amount with comma separators",
+        "input": { "bank": "VCB", "account": "123", "amount": "1,500,000" },
+        "expected": { "ok": true, "amount": 1500000 }
+      },
+      {
+        "name": "accepts 500.000",
+        "input": { "bank": "VCB", "account": "123", "amount": "500.000" },
+        "expected": { "ok": true, "amount": 500000 }
+      },
+      {
+        "name": "rejects decimal amount 100.5",
+        "input": { "bank": "VCB", "account": "123", "amount": "100.5" },
+        "expected": { "ok": false, "error": { "code": "INVALID_AMOUNT" } }
+      },
+      {
+        "name": "rejects 1.5",
+        "input": { "bank": "VCB", "account": "123", "amount": "1.5" },
+        "expected": { "ok": false }
+      },
+      {
+        "name": "rejects 1,25",
+        "input": { "bank": "VCB", "account": "123", "amount": "1,25" },
+        "expected": { "ok": false }
+      },
+      {
+        "name": "rejects zero amount",
+        "input": { "bank": "VCB", "account": "123", "amount": 0 },
+        "expected": { "ok": false }
+      },
+      {
+        "name": "rejects negative amount",
+        "input": { "bank": "VCB", "account": "123", "amount": -5 },
+        "expected": { "ok": false }
+      },
+      {
+        "name": "rejects unknown bank",
+        "input": { "bank": "Ngân hàng không tồn tại", "account": "123" },
+        "expected": { "ok": false, "error": { "code": "BANK_NOT_FOUND" } }
+      },
+      {
+        "name": "rejects invalid account",
+        "input": { "bank": "VCB", "account": "12-34" },
+        "expected": { "ok": false, "error": { "code": "INVALID_ACCOUNT" } }
+      },
+      {
+        "name": "strips spaces in account",
+        "input": { "bank": "VCB", "account": "0011 0012 3456" },
+        "expected": { "ok": true, "account": "001100123456" }
+      },
+      {
+        "name": "sanitizes diacritics in note",
+        "input": { "bank": "VCB", "account": "123", "note": "Thanh toán đơn hàng #42" },
+        "expected": { "ok": true, "note": "Thanh toan don hang 42" }
+      }
+    ],
+    "parseVietQR": [
+      {
+        "name": "parses the golden payload",
+        "input": "00020101021238530010A000000727012300069704230109mynamebvh0208QRIBFTTA53037045405500005802VN62080804test6304AB76",
+        "expected": {
+          "ok": true,
+          "bin": "970423",
+          "bank": { "shortName": "TPBank" },
+          "account": "mynamebvh",
+          "amount": 50000,
+          "note": "test",
+          "service": "QRIBFTTA",
+          "currency": "704",
+          "country": "VN",
+          "crcValid": true,
+          "warnings": []
+        }
+      },
+      {
+        "name": "flags a bad CRC",
+        "input": "00020101021238530010A000000727012300069704230109mynamebvh0208QRIBFTTA53037045405500005802VN62080804test63040000",
+        "expected": { "ok": true, "crcValid": false }
+      },
+      {
+        "name": "fails on truncated payload",
+        "input": "00020101021238530010A0000007270123000697",
+        "expected": { "ok": false }
+      },
+      { "name": "fails on garbage", "input": "hello world", "expected": { "ok": false } },
+      { "name": "fails on empty", "input": "", "expected": { "ok": false } },
+      {
+        "name": "tolerates surrounding whitespace",
+        "input": "  00020101021238530010A000000727012300069704230109mynamebvh0208QRIBFTTA53037045405500005802VN62080804test6304AB76\n",
+        "expected": { "ok": true, "crcValid": true }
+      }
+    ],
+    "sanitizeNote": [{ "name": "collapses whitespace", "input": "  a   b  ", "expected": "a b" }]
+  }
+}

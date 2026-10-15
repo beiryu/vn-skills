@@ -1,0 +1,107 @@
+{
+  "skill": "vn-money-words",
+  "cases": {
+    "moneyToWords": [
+      { "input": 0, "expected": "không đồng" },
+      { "input": 1, "expected": "một đồng" },
+      { "input": 5, "expected": "năm đồng" },
+      { "input": 10, "expected": "mười đồng" },
+      { "input": 11, "expected": "mười một đồng" },
+      { "input": 15, "expected": "mười lăm đồng" },
+      { "input": 20, "expected": "hai mươi đồng" },
+      { "input": 21, "expected": "hai mươi mốt đồng" },
+      { "name": "24 uses tư by default", "input": 24, "expected": "hai mươi tư đồng" },
+      {
+        "name": "24 with useTu=false",
+        "input": 24,
+        "options": { "useTu": false },
+        "expected": "hai mươi bốn đồng"
+      },
+      { "input": 25, "expected": "hai mươi lăm đồng" },
+      { "input": 100, "expected": "một trăm đồng" },
+      { "input": 101, "expected": "một trăm lẻ một đồng" },
+      {
+        "name": "105 with linh",
+        "input": 105,
+        "options": { "odd": "linh" },
+        "expected": "một trăm linh năm đồng"
+      },
+      { "input": 110, "expected": "một trăm mười đồng" },
+      { "input": 999, "expected": "chín trăm chín mươi chín đồng" },
+      { "input": 1000, "expected": "một nghìn đồng" },
+      { "input": 1005, "expected": "một nghìn không trăm lẻ năm đồng" },
+      { "input": 1050, "expected": "một nghìn không trăm năm mươi đồng" },
+      { "input": 1100, "expected": "một nghìn một trăm đồng" },
+      { "input": 10000, "expected": "mười nghìn đồng" },
+      {
+        "name": "21000 southern",
+        "input": 21000,
+        "options": { "thousand": "ngàn" },
+        "expected": "hai mươi mốt ngàn đồng"
+      },
+      { "input": 1000000, "expected": "một triệu đồng" },
+      { "input": 1200000, "expected": "một triệu hai trăm nghìn đồng" },
+      { "input": 1000001, "expected": "một triệu không trăm lẻ một đồng" },
+      {
+        "name": "2500000 (invoice style)",
+        "input": 2500000,
+        "options": { "capitalize": true },
+        "expected": "Hai triệu năm trăm nghìn đồng"
+      },
+      { "input": 1000000000, "expected": "một tỷ đồng" },
+      {
+        "input": 1234567890,
+        "expected": "một tỷ hai trăm ba mươi tư triệu năm trăm sáu mươi bảy nghìn tám trăm chín mươi đồng"
+      },
+      { "name": "10^12", "input": 1000000000000, "expected": "một nghìn tỷ đồng" },
+      {
+        "name": "10^15 as bigint",
+        "input": "1000000000000000",
+        "inputType": "bigint",
+        "expected": "một triệu tỷ đồng"
+      },
+      {
+        "name": "10^18 as string",
+        "input": "1000000000000000000",
+        "expected": "một tỷ tỷ đồng"
+      },
+      {
+        "name": "2^63 as bigint",
+        "input": "9223372036854775808",
+        "inputType": "bigint",
+        "expected": "chín tỷ tỷ hai trăm hai mươi ba triệu tỷ ba trăm bảy mươi hai nghìn tỷ không trăm ba mươi sáu tỷ tám trăm năm mươi tư triệu bảy trăm bảy mươi lăm nghìn tám trăm lẻ tám đồng"
+      },
+      {
+        "name": "chẵn suffix",
+        "input": 1000000,
+        "options": { "chan": true },
+        "expected": "một triệu đồng chẵn"
+      },
+      {
+        "name": "no chẵn for odd amounts",
+        "input": 1000500,
+        "options": { "chan": true },
+        "expected": "một triệu năm trăm đồng"
+      },
+      { "name": "custom unit", "input": 3, "options": { "unit": "USD" }, "expected": "ba USD" },
+      { "name": "empty unit", "input": 3, "options": { "unit": "" }, "expected": "ba" },
+      { "name": "negative", "input": -15, "expected": "âm mười lăm đồng" },
+      {
+        "name": "vi separators",
+        "input": "1.200.000",
+        "expected": "một triệu hai trăm nghìn đồng"
+      },
+      {
+        "name": "en separators",
+        "input": "1,200,000",
+        "expected": "một triệu hai trăm nghìn đồng"
+      }
+    ],
+    "moneyToWordsInvalid": [
+      { "name": "rejects decimals", "input": 12.5 },
+      { "name": "rejects decimal string", "input": "12.5" },
+      { "name": "rejects text", "input": "abc" }
+    ],
+    "numberToWords": [{ "input": 2024, "expected": "hai nghìn không trăm hai mươi tư" }]
+  }
+}
