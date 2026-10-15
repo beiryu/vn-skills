@@ -97,13 +97,14 @@ jobs:
           git checkout -b "$BRANCH"
 
       - uses: anthropics/claude-code-action@v1
+        id: claude
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
           claude_args: >-
             --model ${{ vars.AGENT_IMPLEMENT_MODEL || 'claude-opus-5-5' }}
             --max-turns 120
-            --allowedTools "Read,Write,Edit,Glob,Grep,Bash(pnpm:*),Bash(node:*),Bash(git status:*),Bash(git diff:*),Bash(git add:*),Bash(git commit:*),Bash(git log:*),Bash(gh issue view:*),Bash(ls:*),Bash(cat:*),Bash(mkdir:*)"
+            --allowedTools "Read,Write,Edit,Glob,Grep,Bash(pnpm:*),Bash(node:*),Bash(git status:*),Bash(git diff:*),Bash(git add:*),Bash(git commit:*),Bash(git log:*),Bash(gh issue view:*),Bash(ls:*),Bash(cat:*),Bash(mkdir:*),Bash(cp:*),Bash(mv:*),Bash(rm:*),Bash(touch:*),Bash(find:*),Bash(grep:*),Bash(head:*),Bash(tail:*),Bash(wc:*),Bash(sort:*),Bash(diff:*),Bash(echo:*),Bash(test:*),Bash(git rm:*),Bash(git mv:*),Bash(git show:*),Bash(git restore:*)"
           prompt: |
             Implement issue #${{ needs.pick.outputs.issue }} of ${{ github.repository }}. You are on branch ${{ env.BRANCH }}.
             Follow AGENTS.md ("Implementer" section and "Rules for coding agents") and CONTRIBUTING.md exactly.
@@ -142,9 +143,22 @@ jobs:
 
       - name: Hand back to a human
         if: failure() || steps.verify.outputs.result == 'blocked' || steps.verify.outputs.result == 'empty'
+        env:
+          EXEC_FILE: ${{ steps.claude.outputs.execution_file }}
         run: |
           reason="The agent run did not produce a mergeable change."
           [ -f ".agent/blocked.md" ] && reason=$(cat ".agent/blocked.md")
+          # Full agent output is hidden on public repos; surface only which tool calls were denied.
+          denials=""
+          if [ -n "$EXEC_FILE" ] && [ -f "$EXEC_FILE" ]; then
+            denials=$(jq -r '[.. | objects | select(has("permission_denials")) | .permission_denials[]?
+              | "- `\(.tool_name)`: `\((.tool_input.command // .tool_input.file_path // "") | tostring | .[0:120])`"]
+              | unique | .[]' "$EXEC_FILE" 2>/dev/null || true)
+            err=$(jq -r '[.. | objects | select(.type? == "result" and .is_error? == true)
+              | (.result // .errors // .subtype) | tostring][0] // empty | .[0:600]' "$EXEC_FILE" 2>/dev/null || true)
+            [ -n "$err" ] && reason=$(printf '%s\n\nAgent error:\n```\n%s\n```' "$reason" "$err")
+          fi
+          [ -n "$denials" ] && reason=$(printf '%s\n\nTool calls denied by the allowlist (add them to `--allowedTools` if safe):\n%s' "$reason" "$denials")
           gh issue edit "$ISSUE" --add-label 'agent: needs-human' --remove-label 'agent: working'
           printf '%s\n\nRun: %s\n' "$reason" "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}" \
             | gh issue comment "$ISSUE" --body-file -
