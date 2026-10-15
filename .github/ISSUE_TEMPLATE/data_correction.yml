@@ -1,0 +1,30 @@
+name: Data correction / Sửa dữ liệu
+description: Wrong or missing bank BIN, province, ward, old→new mapping or holiday.
+title: 'data(<dataset>): '
+labels: ['type: data', 'status: needs-triage']
+body:
+  - type: dropdown
+    id: dataset
+    attributes:
+      label: Dataset
+      options:
+        - banks.json (VietQR BIN)
+        - provinces-2025.json (34 provinces / wards)
+        - mapping-old-new.json (63 → 34)
+        - legacy-63.json
+        - holidays
+    validations:
+      required: true
+  - type: textarea
+    id: wrong
+    attributes:
+      label: What is wrong
+    validations:
+      required: true
+  - type: input
+    id: source
+    attributes:
+      label: Official source (URL / legal document number)
+      description: Data changes are only accepted with a verifiable source.
+    validations:
+      required: true

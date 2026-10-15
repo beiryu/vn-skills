@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Question / Hỏi đáp
+    url: https://github.com/beiryu/vn-skills/discussions
+    about: Ask usage questions in Discussions instead of opening an issue.
+  - name: Security vulnerability
+    url: https://github.com/beiryu/vn-skills/security/advisories/new
+    about: Report vulnerabilities privately. Do not open a public issue.

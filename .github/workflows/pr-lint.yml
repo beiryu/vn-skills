@@ -1,0 +1,63 @@
+name: PR lint
+
+# Enforces Conventional Commits. PRs are squash-merged, so the PR title becomes the commit on main
+# and drives release-please's version bump and changelog.
+
+on:
+  pull_request:
+    types: [opened, edited, synchronize, reopened]
+
+permissions:
+  pull-requests: read
+  contents: read
+
+jobs:
+  title:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: amannn/action-semantic-pull-request@v5
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          types: |
+            feat
+            fix
+            data
+            docs
+            test
+            refactor
+            perf
+            build
+            ci
+            chore
+            revert
+          scopes: |
+            vietqr
+            vn-address
+            vn-tax-id
+            vn-money-words
+            vn-lunar
+            vn-einvoice
+            core
+            cli
+            mcp
+            skill
+            data
+            deps
+            repo
+            release
+          requireScope: false
+  commits:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: commitlint
+        run: pnpm exec commitlint --from ${{ github.event.pull_request.base.sha }} --to ${{ github.event.pull_request.head.sha }} --verbose

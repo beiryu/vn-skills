@@ -19,9 +19,13 @@
     "vn-skills": "node packages/cli/dist/index.js",
     "vn-skills-mcp": "node packages/mcp/dist/index.js",
     "format": "prettier --write .",
-    "format:check": "prettier --check ."
+    "format:check": "prettier --check .",
+    "prepare": "simple-git-hooks",
+    "commitlint": "commitlint --edit"
   },
   "devDependencies": {
+    "@commitlint/cli": "^21.2.3",
+    "@commitlint/config-conventional": "^21.2.3",
     "@modelcontextprotocol/sdk": "^1.32.1",
     "@types/node": "^22.10.0",
     "@types/pngjs": "^6.0.5",
@@ -31,9 +35,13 @@
     "jsqr": "^1.4.0",
     "pngjs": "^7.0.0",
     "prettier": "^3.4.2",
+    "simple-git-hooks": "^2.14.0",
     "tsup": "^8.3.5",
     "tsx": "^4.19.2",
     "typescript": "^5.7.2",
     "vitest": "^3.0.0"
+  },
+  "simple-git-hooks": {
+    "commit-msg": "pnpm exec commitlint --edit \"$1\""
   }
 }

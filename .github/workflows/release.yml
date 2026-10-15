@@ -1,20 +1,36 @@
 name: Release
 
-# Publishes @vn-skills/core, @vn-skills/cli and @vn-skills/mcp to npm.
-# Trigger: push a tag like v0.1.0 (package versions must already match) or run manually.
-# Requires the NPM_TOKEN secret (npm automation token) on the repository.
+# 1. release-please keeps a "chore(main): release x.y.z" PR open, built from Conventional Commits on main.
+#    It bumps the root and all packages/*/package.json versions together and writes CHANGELOG.md.
+# 2. Merging that PR creates the vX.Y.Z tag + GitHub Release, and the publish job pushes
+#    @vn-skills/core, @vn-skills/cli and @vn-skills/mcp to npm with provenance.
+# Requires the NPM_TOKEN secret. workflow_dispatch publishes the current versions (recovery path).
 
 on:
   push:
-    tags: ['v*']
+    branches: [main]
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
+  pull-requests: write
   id-token: write # npm provenance
 
 jobs:
+  release-please:
+    runs-on: ubuntu-latest
+    outputs:
+      released: ${{ steps.rp.outputs.release_created }}
+    steps:
+      - id: rp
+        uses: googleapis/release-please-action@v4
+        with:
+          config-file: release-please-config.json
+          manifest-file: .release-please-manifest.json
+
   publish:
+    needs: release-please
+    if: needs.release-please.outputs.released == 'true' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4

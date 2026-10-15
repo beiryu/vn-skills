@@ -1,0 +1,58 @@
+# Source of truth for repository labels; synced by .github/workflows/labels.yml.
+# type
+- { name: 'type: bug', color: 'd73a4a', description: 'Wrong result or crash' }
+- { name: 'type: feature', color: 'a2eeef', description: 'New capability' }
+- {
+    name: 'type: data',
+    color: 'fbca04',
+    description: 'Bundled dataset change (banks, provinces, mapping, holidays)',
+  }
+- { name: 'type: docs', color: '0075ca', description: 'Documentation only' }
+- { name: 'type: chore', color: 'cfd3d7', description: 'Tooling, CI, refactor' }
+# area
+- { name: 'area: skill', color: 'c5def5', description: 'skills/*/SKILL.md' }
+- { name: 'area: core', color: 'c5def5', description: 'packages/core' }
+- { name: 'area: cli', color: 'c5def5', description: 'packages/cli' }
+- { name: 'area: mcp', color: 'c5def5', description: 'packages/mcp' }
+- { name: 'area: vietqr', color: 'bfdadc', description: '' }
+- { name: 'area: address', color: 'bfdadc', description: '' }
+- { name: 'area: tax-id', color: 'bfdadc', description: '' }
+- { name: 'area: money', color: 'bfdadc', description: '' }
+- { name: 'area: lunar', color: 'bfdadc', description: '' }
+- { name: 'area: einvoice', color: 'bfdadc', description: '' }
+- { name: 'area: infra', color: 'bfdadc', description: 'CI, release, repo automation' }
+# priority / size
+- { name: 'priority: p0', color: 'b60205', description: 'Blocks a release' }
+- { name: 'priority: p1', color: 'e99695', description: 'Next milestone' }
+- { name: 'priority: p2', color: 'f9d0c4', description: 'Later' }
+- { name: 'size: s', color: 'ededed', description: '< 1 day' }
+- { name: 'size: m', color: 'ededed', description: '1–3 days' }
+- { name: 'size: l', color: 'ededed', description: '> 3 days; split before implementing' }
+# status
+- {
+    name: 'status: needs-triage',
+    color: 'fef2c0',
+    description: 'Not yet reviewed by a maintainer or the triage agent',
+  }
+- { name: 'status: blocked', color: '000000', description: 'Waiting on a decision or upstream' }
+# community
+- {
+    name: 'good first issue',
+    color: '7057ff',
+    description: 'Small, well-specified, good for newcomers',
+  }
+- { name: 'help wanted', color: '008672', description: 'Maintainers would welcome a contributor' }
+# agent pipeline (see AGENTS.md)
+- { name: 'roadmap', color: '5319e7', description: 'Filed from ROADMAP.md by the planner agent' }
+- {
+    name: 'agent: ready',
+    color: '0e8a16',
+    description: 'Fully specified; the implementer agent may pick it up',
+  }
+- { name: 'agent: working', color: '1d76db', description: 'Implementer agent is working on it' }
+- {
+    name: 'agent: needs-human',
+    color: 'd93f0b',
+    description: 'Agent stopped; needs a maintainer decision',
+  }
+- { name: 'agent: pr-open', color: 'bfd4f2', description: 'Agent opened a PR for this issue' }
