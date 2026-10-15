@@ -1,0 +1,4 @@
+# Every PR needs a review from a code owner before merge.
+*                         @beiryu
+/packages/core/data/      @beiryu
+/.github/                 @beiryu

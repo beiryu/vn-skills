@@ -1,0 +1,30 @@
+name: New skill / Đề xuất skill mới
+description: Propose a Vietnam-specific task that coding agents get wrong.
+title: 'feat(skill): '
+labels: ['type: feature', 'area: skill', 'status: needs-triage']
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What do agents get wrong today?
+      description: A concrete prompt and the wrong answer an agent produced.
+    validations:
+      required: true
+  - type: textarea
+    id: spec
+    attributes:
+      label: Rules / specification
+      description: Link the official spec, law or standard. Skills must run offline and must not scrape government systems.
+    validations:
+      required: true
+  - type: textarea
+    id: examples
+    attributes:
+      label: Input → output examples
+      description: At least 5; these become golden tests.
+  - type: checkboxes
+    id: help
+    attributes:
+      label: Contribution
+      options:
+        - label: I want to implement this myself.

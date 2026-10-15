@@ -81,9 +81,13 @@ Nguồn dữ liệu, license và ngày cập nhật: [packages/core/data/SOURCES
 
 ## Lộ trình
 
-- `vn-id` (định dạng CCCD, giải mã tỉnh/giới tính/năm sinh), `vn-holidays` (lịch nghỉ chính thức hằng năm), `vn-bank-statement`
-- Gói Python `vn-skills` trên PyPI
-- Adapter hóa đơn gọi sandbox thật (MISA meInvoice, Viettel S-Invoice, VNPT)
+Sắp tới: `vn-id` (giải mã CCCD), `vn-holidays`, `vn-phone`, `vn-number-format`, lệnh `vn-skills install`, bản Python và
+adapter hóa đơn gọi sandbox thật. Danh sách đầy đủ kèm tiêu chí hoàn thành: [ROADMAP.md](ROADMAP.md).
+
+## Cộng đồng
+
+[Đóng góp](CONTRIBUTING.md) · [Quản trị dự án](GOVERNANCE.md) · [Quy tắc ứng xử](CODE_OF_CONDUCT.md) ·
+[Bảo mật](SECURITY.md) · [Chính sách tên & thương hiệu](TRADEMARK.md) · [Tài trợ](https://github.com/sponsors/beiryu)
 
 ## Lưu ý
 

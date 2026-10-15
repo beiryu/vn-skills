@@ -1,0 +1,54 @@
+name: Bug report / Báo lỗi
+description: A function, CLI command, MCP tool or skill returns a wrong result.
+title: 'bug(<skill>): '
+labels: ['type: bug', 'status: needs-triage']
+body:
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - vietqr
+        - vn-address
+        - vn-tax-id
+        - vn-money-words
+        - vn-lunar
+        - vn-einvoice
+        - cli
+        - mcp
+        - other
+    validations:
+      required: true
+  - type: textarea
+    id: input
+    attributes:
+      label: Input
+      description: The exact input (command, function call or MCP tool arguments). Remove real account numbers / tax IDs if private.
+      render: shell
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual output
+      render: json
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected output and source
+      description: What it should be, and the authoritative source (NAPAS spec, Nghị quyết, Thông tư, bank app, …).
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Version
+      placeholder: '@vn-skills/cli 0.1.0, Node 22'
+  - type: checkboxes
+    id: agent
+    attributes:
+      label: Can an agent fix this?
+      options:
+        - label: The expected output is unambiguous and a golden test can be written from this issue.

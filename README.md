@@ -94,9 +94,13 @@ See [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## Roadmap
 
-- `vn-id` (CCCD format, province/sex/year decoding), `vn-holidays` (yearly official days off), `vn-bank-statement`
-- Python package `vn-skills` on PyPI
-- Real e-invoice adapters against provider sandboxes (MISA meInvoice, Viettel S-Invoice, VNPT)
+Next up: `vn-id` (CCCD decoding), `vn-holidays`, `vn-phone`, `vn-number-format`, a `vn-skills install` command, a Python
+port and real e-invoice sandbox adapters. Full list with acceptance criteria: [ROADMAP.md](ROADMAP.md).
+
+## Community
+
+[Contributing](CONTRIBUTING.md) · [Governance](GOVERNANCE.md) · [Code of Conduct](CODE_OF_CONDUCT.md) ·
+[Security](SECURITY.md) · [Name & brand policy](TRADEMARK.md) · [Sponsor](https://github.com/sponsors/beiryu)
 
 ## Disclaimer
 
