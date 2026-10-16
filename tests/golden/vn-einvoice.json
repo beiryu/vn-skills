@@ -1,0 +1,167 @@
+{
+  "skill": "vn-einvoice",
+  "cases": {
+    "base": {
+      "series": "1C25TAA",
+      "issueDate": "2025-10-15",
+      "seller": { "name": "Công ty A", "taxId": "0100233488", "address": "Hà Nội" },
+      "buyer": { "name": "Công ty B", "taxId": "0314409058", "address": "TP.HCM" },
+      "lines": [
+        { "name": "Tư vấn", "unit": "giờ", "quantity": 10, "unitPrice": 500000, "vatRate": 10 },
+        { "name": "Máy chủ", "unit": "tháng", "quantity": 1, "unitPrice": 2000000, "vatRate": 8 }
+      ]
+    },
+    "validateInvoice": [
+      {
+        "name": "accepts a valid invoice",
+        "patch": {},
+        "expected": { "ok": true, "errors": [], "invoice": { "lines": [{ "no": 1 }, { "no": 2 }] } }
+      },
+      { "name": "rejects non-object", "input": "x", "expected": { "ok": false } },
+      {
+        "name": "rejects missing series",
+        "patch": { "series": null },
+        "expected": { "ok": false, "errorPaths": ["series"] }
+      },
+      {
+        "name": "warns on odd series pattern",
+        "patch": { "series": "ABC" },
+        "expected": { "warningPaths": ["series"] }
+      },
+      {
+        "name": "rejects bad issueDate",
+        "patch": { "issueDate": "15/10/2025" },
+        "expected": { "ok": false, "errorPaths": ["issueDate"] }
+      },
+      {
+        "name": "rejects non-VND currency",
+        "patch": { "currency": "USD" },
+        "expected": { "ok": false, "errorPaths": ["currency"] }
+      },
+      {
+        "name": "rejects seller without tax id",
+        "patch": { "seller": { "name": "A", "taxId": null, "address": "x" } },
+        "expected": { "ok": false, "errorPaths": ["seller.taxId"] }
+      },
+      {
+        "name": "rejects invalid seller tax id checksum",
+        "patch": { "seller": { "taxId": "0100233480" } },
+        "expected": { "ok": false, "errorPaths": ["seller.taxId"] }
+      },
+      {
+        "name": "warns when retail buyer has no ids",
+        "patch": { "buyer": { "name": "Khách lẻ", "taxId": null, "address": "" } },
+        "expected": { "ok": true, "warningPaths": ["buyer.taxId"] }
+      },
+      { "name": "rejects empty lines", "patch": { "lines": [] }, "expected": { "ok": false } },
+      {
+        "name": "rejects zero quantity",
+        "patch": {
+          "lines": [
+            { "name": "Tư vấn", "unit": "giờ", "quantity": 0, "unitPrice": 500000, "vatRate": 10 },
+            { "name": "Máy chủ", "unit": "tháng", "quantity": 1, "unitPrice": 2000000, "vatRate": 8 }
+          ]
+        },
+        "expected": { "ok": false, "errorPaths": ["lines[0].quantity"] }
+      },
+      {
+        "name": "rejects negative price",
+        "patch": {
+          "lines": [
+            { "name": "Tư vấn", "unit": "giờ", "quantity": 10, "unitPrice": -1, "vatRate": 10 },
+            { "name": "Máy chủ", "unit": "tháng", "quantity": 1, "unitPrice": 2000000, "vatRate": 8 }
+          ]
+        },
+        "expected": { "ok": false }
+      },
+      {
+        "name": "rejects unknown VAT rate",
+        "patch": {
+          "lines": [
+            { "name": "Tư vấn", "unit": "giờ", "quantity": 10, "unitPrice": 500000, "vatRate": 7 },
+            { "name": "Máy chủ", "unit": "tháng", "quantity": 1, "unitPrice": 2000000, "vatRate": 8 }
+          ]
+        },
+        "expected": { "ok": false, "errorPaths": ["lines[0].vatRate"] }
+      },
+      {
+        "name": "accepts KCT / KKKNT rates",
+        "patch": {
+          "lines": [
+            { "name": "Tư vấn", "unit": "giờ", "quantity": 10, "unitPrice": 500000, "vatRate": "KCT" },
+            {
+              "name": "Máy chủ",
+              "unit": "tháng",
+              "quantity": 1,
+              "unitPrice": 2000000,
+              "vatRate": "KKKNT"
+            }
+          ]
+        },
+        "expected": { "ok": true }
+      },
+      {
+        "name": "accepts note lines",
+        "patch": {
+          "lines": [
+            { "name": "Tư vấn", "unit": "giờ", "quantity": 10, "unitPrice": 500000, "vatRate": 10 },
+            { "name": "Máy chủ", "unit": "tháng", "quantity": 1, "unitPrice": 2000000, "vatRate": 8 },
+            { "name": "Ghi chú", "isNote": true }
+          ]
+        },
+        "expected": { "ok": true, "invoice": { "lines": [{}, {}, { "isNote": true }] } }
+      },
+      {
+        "name": "warns on decimal unit price",
+        "patch": {
+          "lines": [
+            { "name": "Tư vấn", "unit": "giờ", "quantity": 10, "unitPrice": 1000.5, "vatRate": 10 },
+            { "name": "Máy chủ", "unit": "tháng", "quantity": 1, "unitPrice": 2000000, "vatRate": 8 }
+          ]
+        },
+        "expected": { "warningPaths": ["lines[0].unitPrice"] }
+      }
+    ],
+    "computeTotals": [
+      {
+        "name": "computes VAT per rate and total in words",
+        "patch": {},
+        "expected": {
+          "subtotal": 7000000,
+          "vatTotal": 660000,
+          "grandTotal": 7660000,
+          "totalInWords": "Bảy triệu sáu trăm sáu mươi nghìn đồng"
+        },
+        "vatByRate": { "10": 500000, "8": 160000 }
+      },
+      {
+        "name": "applies discounts",
+        "patch": {
+          "lines": [{ "name": "X", "quantity": 2, "unitPrice": 100000, "discount": 50000, "vatRate": 10 }]
+        },
+        "expected": { "subtotal": 150000, "discountTotal": 50000, "vatTotal": 15000 }
+      },
+      {
+        "name": "rounds VAT to whole VND (7999.92 -> 8000)",
+        "patch": { "lines": [{ "name": "X", "quantity": 3, "unitPrice": 33333, "vatRate": 8 }] },
+        "expected": { "lines": [{ "amount": 99999, "vatAmount": 8000 }] }
+      },
+      {
+        "name": "KCT lines carry no VAT",
+        "patch": { "lines": [{ "name": "X", "quantity": 1, "unitPrice": 1000, "vatRate": "KCT" }] },
+        "expected": { "vatTotal": 0, "grandTotal": 1000 }
+      },
+      {
+        "name": "southern wording option",
+        "patch": {},
+        "options": { "thousand": "ngàn" },
+        "expected": { "totalInWords": "Bảy triệu sáu trăm sáu mươi ngàn đồng" }
+      }
+    ],
+    "roundVnd": [
+      { "name": "half away from zero (positive)", "input": 0.5, "expected": 1 },
+      { "name": "half away from zero (negative)", "input": -0.5, "expected": -1 },
+      { "name": "rounds down below half", "input": 2.4, "expected": 2 }
+    ]
+  }
+}

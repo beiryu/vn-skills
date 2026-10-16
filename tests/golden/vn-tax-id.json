@@ -1,0 +1,83 @@
+{
+  "skill": "vn-tax-id",
+  "cases": {
+    "taxIdCheckDigit": [
+      { "input": "010023348", "expected": 8 },
+      { "input": "031440905", "expected": 8 }
+    ],
+    "validateTaxId": [
+      {
+        "name": "accepts 0100233488 (known valid)",
+        "input": "0100233488",
+        "expected": { "ok": true, "kind": "enterprise", "prefix": "01", "checksumValid": true }
+      },
+      {
+        "name": "rejects wrong check digit",
+        "input": "0100233480",
+        "expected": { "ok": false, "error": { "code": "INVALID_CHECKSUM" } }
+      },
+      {
+        "name": "rejects all-zero sequence",
+        "input": "0100000000",
+        "expected": { "ok": false, "error": { "code": "INVALID_SEQUENCE" } }
+      },
+      { "name": "rejects 9 digits", "input": "010023348", "expected": { "ok": false } },
+      { "name": "rejects 11 digits", "input": "01002334880", "expected": { "ok": false } },
+      {
+        "name": "rejects letters",
+        "input": "01002334A8",
+        "expected": { "ok": false, "error": { "code": "INVALID_FORMAT" } }
+      },
+      { "name": "rejects empty", "input": "", "expected": { "ok": false } },
+      {
+        "name": "accepts branch 0100233488-001",
+        "input": "0100233488-001",
+        "expected": {
+          "ok": true,
+          "kind": "branch",
+          "root": "0100233488",
+          "branch": "001",
+          "formatted": "0100233488-001",
+          "normalized": "0100233488001"
+        }
+      },
+      {
+        "name": "accepts 13 digits without dash",
+        "input": "0100233488002",
+        "expected": { "ok": true }
+      },
+      { "name": "accepts en-dash separator", "input": "0100233488–003", "expected": { "ok": true } },
+      {
+        "name": "rejects branch 000",
+        "input": "0100233488-000",
+        "expected": { "ok": false, "error": { "code": "INVALID_BRANCH" } }
+      },
+      {
+        "name": "rejects branch with bad root checksum",
+        "input": "0100233480-001",
+        "expected": { "ok": false }
+      },
+      { "name": "rejects dashed 10-2", "input": "0100233488-01", "expected": { "ok": false } },
+      { "name": "rejects dashed 11-2", "input": "01002334880-01", "expected": { "ok": false } },
+      { "name": "rejects dashed 9-4", "input": "010023348-8001", "expected": { "ok": false } },
+      {
+        "name": "accepts 12-digit CCCD as personal tax id with format-only check",
+        "input": "079123456789",
+        "expected": { "ok": true, "kind": "personal-id", "checksumValid": null }
+      }
+    ],
+    "isValidTaxId": [
+      { "name": "accepts 0314409058 (known valid)", "input": "0314409058", "expected": true },
+      { "name": "accepts spaces", "input": " 0100 233 488 ", "expected": true },
+      { "name": "accepts dotted form", "input": "0100.233.488", "expected": true }
+    ],
+    "formatTaxId": [
+      { "name": "adds dash for 13 digits", "input": "0100233488001", "expected": "0100233488-001" },
+      { "name": "leaves 10 digits alone", "input": "0100233488", "expected": "0100233488" }
+    ],
+    "normalizeTaxId": [
+      { "name": "strips separators", "input": "0100-233.488", "expected": "0100233488" },
+      { "name": "returns null on letters", "input": "MST 0100233488", "expected": null }
+    ]
+  }
+}
