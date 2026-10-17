@@ -5,6 +5,7 @@ export * from './numfmt/index.js';
 export * from './lunar/index.js';
 export * from './address/index.js';
 export * from './einvoice/index.js';
+export * from './name/index.js';
 export { removeDiacritics, normalizeText, compactKey } from './shared/diacritics.js';
 export { tlvEncode, tlvDecode, type TlvNode } from './shared/tlv.js';
 export type { Result, VnError } from './shared/result.js';
