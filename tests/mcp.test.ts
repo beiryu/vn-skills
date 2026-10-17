@@ -34,6 +34,7 @@ describe('vn-skills MCP server', () => {
         'vn_address_search_wards',
         'vn_tax_id_validate',
         'vn_money_to_words',
+        'vn_number_format',
         'vn_lunar_from_solar',
         'vn_lunar_to_solar',
         'vn_lunar_holidays',

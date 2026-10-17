@@ -24,13 +24,14 @@ function frontmatter(text: string): { fields: Record<string, string>; body: stri
 }
 
 describe('skills/ follow the Agent Skills spec', () => {
-  it('has the six MVP skills', () => {
+  it('has the MVP skills plus vn-number-format', () => {
     expect(dirs.sort()).toEqual([
       'vietqr',
       'vn-address',
       'vn-einvoice',
       'vn-lunar',
       'vn-money-words',
+      'vn-number-format',
       'vn-tax-id',
     ]);
   });
