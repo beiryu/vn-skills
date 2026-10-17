@@ -4,3 +4,6 @@ pnpm-lock.yaml
 packages/core/data/*.json
 tests/golden/*.json
 vn-skills-SPEC.md
+# Written by release-please on every release, in its own format.
+CHANGELOG.md
+.release-please-manifest.json
