@@ -71,7 +71,7 @@ Needs a human screen recording.
 
 ### RM-004 · repo: skill trigger evals
 
-- status: done (#25)
+- status: done (#27)
 - milestone: v0.2
 - labels: type: chore, area: skill
 - size: m
