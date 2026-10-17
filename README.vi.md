@@ -40,6 +40,15 @@ cp -r vn-skills/skills/vietqr ~/.claude/skills/        # hoặc .claude/skills/ 
 
 Rồi hỏi: _"tạo QR chuyển 500k vào VCB số tài khoản 0011001234567"_ → Claude chạy skill và trả về `qr.png`.
 
+Hoặc dùng CLI (skill đã được đóng gói sẵn):
+
+```bash
+npx -y @vn-skills/cli install vietqr --agent claude        # .claude/skills/vietqr (project)
+npx -y @vn-skills/cli install all --agent cursor --global  # ~/.cursor/skills/*
+```
+
+`--agent` là `claude`, `cursor` hoặc `codex`. Không ghi đè thư mục có sẵn nếu thiếu `--force`; `--dry-run` chỉ in các bước.
+
 **Cursor / Codex / agent khác:** copy đúng thư mục đó vào nơi agent tìm `SKILL.md` (`.cursor/skills/`, `.codex/skills/`…).
 Skill chỉ cần Node.js 18+ vì gọi `npx -y @vn-skills/cli`.
 
