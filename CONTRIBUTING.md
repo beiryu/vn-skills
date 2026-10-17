@@ -38,6 +38,8 @@ pnpm vn-skills --help    # run the CLI from the repo
 - One logical change per PR. PRs are **squash-merged**, so the PR title must also be a valid Conventional Commit — it
   becomes the changelog entry (`feat` → minor, `fix`/`data` → patch, `!` or `BREAKING CHANGE:` → major).
 - Every PR needs green CI and one approval from a code owner. See [GOVERNANCE.md](GOVERNANCE.md).
+- Maintainers use AI coding tools; every change is reviewed and merged by a maintainer. Contributors may use them too,
+  under the same rules: you are responsible for what you submit.
 - Link the issue (`Closes #123`). For roadmap work, keep the `RM-NNN` id in the PR body.
 - Language: English for code, commits, issues and PRs. Vietnamese is welcome in issue discussions and is required in
   `README.vi.md` and SKILL.md trigger words.
@@ -47,8 +49,7 @@ pnpm vn-skills --help    # run the CLI from the repo
 - [`good first issue`](https://github.com/beiryu/vn-skills/labels/good%20first%20issue) and
   [`help wanted`](https://github.com/beiryu/vn-skills/labels/help%20wanted) issues are reserved for humans.
 - [ROADMAP.md](ROADMAP.md) lists planned work; comment on the issue before starting a `size: m` or larger item.
-- Issues labelled `agent: ready` may be picked up by the implementer agent ([AGENTS.md](AGENTS.md)). If you want one,
-  comment and a maintainer will remove the label.
+- Issues assigned to a maintainer are being worked on; if you want one, comment and we will hand it over.
 
 ## Adding a skill
 
