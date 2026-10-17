@@ -28,6 +28,7 @@ pre-2025 provinces and districts, misread amounts in words, or confuse the Chine
 | [`vn-lunar`](skills/vn-lunar/SKILL.md)             | Solar ↔ lunar, leap months, can chi, Tết, holidays (Hồ Ngọc Đức algorithm, UTC+7)                                      | `vn-skills lunar tet 2027` → `2027-02-06 Đinh Mùi`                                                        |
 | [`vn-einvoice`](skills/vn-einvoice/SKILL.md)       | E-invoice schema validation, VAT/totals, amount in words, mock provider; MISA/Viettel/VNPT adapter skeletons           | `vn-skills einvoice totals invoice.json`                                                                  |
 | [`vn-name`](skills/vn-name/SKILL.md)               | Split họ / tên đệm / tên, compound surnames, Vietnamese collation sort, unaccented slugs and initials                  | `vn-skills name split "Tôn Thất Tùng"`                                                                    |
+| [`vn-number-format`](skills/vn-number-format/SKILL.md) | Format/parse Vietnamese numbers, ₫ amounts and dd/MM/yyyy dates; parse "1tr2", "500k", "1,5 tỷ"                        | `vn-skills numfmt parse "1tr2"` → `1200000`                                                               |
 
 ## Install the skills
 
@@ -96,7 +97,7 @@ See [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## Roadmap
 
-Next up: `vn-id` (CCCD decoding), `vn-holidays`, `vn-phone`, `vn-number-format`, a `vn-skills install` command, a Python
+Next up: `vn-id` (CCCD decoding), `vn-holidays`, `vn-phone`, a `vn-skills install` command, a Python
 port and real e-invoice sandbox adapters. Full list with acceptance criteria: [ROADMAP.md](ROADMAP.md).
 
 ## Community

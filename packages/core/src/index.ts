@@ -1,6 +1,7 @@
 export * from './vietqr/index.js';
 export * from './taxid/index.js';
 export * from './money/index.js';
+export * from './numfmt/index.js';
 export * from './lunar/index.js';
 export * from './address/index.js';
 export * from './einvoice/index.js';

@@ -1,5 +1,5 @@
 name: Roadmap task
-description: A scoped task from ROADMAP.md (usually filed by the roadmap agent).
+description: A scoped task from ROADMAP.md.
 title: '[RM-000] '
 labels: ['status: needs-triage']
 body:
@@ -20,7 +20,7 @@ body:
     id: acceptance
     attributes:
       label: Acceptance criteria
-      description: Checklist that a reviewer (human or agent) can verify.
+      description: Checklist that a reviewer can verify.
       value: |
         - [ ] 
         - [ ] Tests added (≥ 20 cases for a new skill, golden test for a fix)

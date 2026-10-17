@@ -14,6 +14,11 @@ import {
   searchWards,
   validateTaxId,
   moneyToWords,
+  formatNumber,
+  formatVnd,
+  formatCompactVnd,
+  formatDate,
+  parseAmount,
   lunarInfo,
   lunarToSolar,
   tetInfo,
@@ -307,6 +312,37 @@ export function createServer(): McpServer {
       return r.ok
         ? json({ ok: true, amount: r.amount, words: r.words })
         : json({ ok: false, error: r.error }, true);
+    },
+  );
+
+  server.registerTool(
+    'vn_number_format',
+    {
+      title: 'Vietnamese number formatting and parsing',
+      description:
+        'Format numbers/VND/dates the Vietnamese way (1.234.567,89; 1.200.000 ₫; 1,2 triệu; dd/MM/yyyy) or parse typed amounts ("1tr2", "500k", "1,5 tỷ"; "1.500" = 1500).',
+      inputSchema: {
+        mode: z.enum(['number', 'vnd', 'compact', 'date', 'parse']),
+        value: z.union([z.number(), z.string()]),
+      },
+    },
+    async ({ mode, value }) => {
+      const s = String(value);
+      if (mode === 'parse') {
+        const r = parseAmount(s);
+        return r.ok
+          ? json({ ok: true, value: r.value })
+          : json({ ok: false, error: r.error }, true);
+      }
+      const r =
+        mode === 'date'
+          ? formatDate(s)
+          : mode === 'vnd'
+            ? formatVnd(Number(s))
+            : mode === 'compact'
+              ? formatCompactVnd(Number(s))
+              : formatNumber(Number(s));
+      return r.ok ? json({ ok: true, text: r.text }) : json({ ok: false, error: r.error }, true);
     },
   );
 

@@ -32,5 +32,5 @@ publishing happens from CI only.
 ## Sponsorship
 
 Funding goes through [GitHub Sponsors](https://github.com/sponsors/beiryu) (see `.github/FUNDING.yml`). Funds pay for
-CI/API costs of the agent pipeline, provider sandbox accounts for e-invoice adapters, and contributor bounties on
+CI and tooling costs, provider sandbox accounts for e-invoice adapters, and contributor bounties on
 issues labelled `help wanted`. Sponsors get no say over the roadmap or merges.

@@ -28,6 +28,7 @@ trên cùng một lõi chạy offline:
 | [`vn-lunar`](skills/vn-lunar/SKILL.md)             | Dương ↔ âm lịch, tháng nhuận, can chi, Tết, ngày lễ (thuật toán Hồ Ngọc Đức, UTC+7)                      | `vn-skills lunar tet 2027` → `2027-02-06 Đinh Mùi`                                                        |
 | [`vn-einvoice`](skills/vn-einvoice/SKILL.md)       | Schema hóa đơn điện tử, tính thuế/tổng, số tiền bằng chữ, provider mock; khung adapter MISA/Viettel/VNPT | `vn-skills einvoice totals invoice.json`                                                                  |
 | [`vn-name`](skills/vn-name/SKILL.md)               | Tách họ / tên đệm / tên, họ kép, sắp xếp theo tên (collation tiếng Việt), slug không dấu và chữ cái đầu  | `vn-skills name split "Tôn Thất Tùng"`                                                                    |
+| [`vn-number-format`](skills/vn-number-format/SKILL.md) | Định dạng/đọc số, tiền ₫, ngày dd/MM/yyyy kiểu Việt Nam; đọc "1tr2", "500k", "1,5 tỷ"                    | `vn-skills numfmt parse "1tr2"` → `1200000`                                                               |
 
 ## Cài skill
 
@@ -87,7 +88,7 @@ Nguồn dữ liệu, license và ngày cập nhật: [packages/core/data/SOURCES
 
 ## Lộ trình
 
-Sắp tới: `vn-id` (giải mã CCCD), `vn-holidays`, `vn-phone`, `vn-number-format`, lệnh `vn-skills install`, bản Python và
+Sắp tới: `vn-id` (giải mã CCCD), `vn-holidays`, `vn-phone`, lệnh `vn-skills install`, bản Python và
 adapter hóa đơn gọi sandbox thật. Danh sách đầy đủ kèm tiêu chí hoàn thành: [ROADMAP.md](ROADMAP.md).
 
 ## Cộng đồng

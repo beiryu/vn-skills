@@ -49,6 +49,6 @@ body:
   - type: checkboxes
     id: agent
     attributes:
-      label: Can an agent fix this?
+      label: Is it testable?
       options:
         - label: The expected output is unambiguous and a golden test can be written from this issue.
