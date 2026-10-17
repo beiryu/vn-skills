@@ -40,6 +40,12 @@ describe('vn-skills MCP server', () => {
         'vn_einvoice_validate',
         'vn_einvoice_totals',
         'vn_einvoice_mock_issue',
+        'vn_lunar_tet',
+        'vn_lunar_canchi',
+        'vn_tax_id_check_digit',
+        'vn_address_provinces',
+        'vn_address_province',
+        'vn_einvoice_example',
       ].sort(),
     );
     for (const t of tools) expect(t.description?.length ?? 0).toBeGreaterThan(30);
@@ -136,5 +142,71 @@ describe('vn-skills MCP server', () => {
       }),
     );
     expect((j.holidays as unknown[]).length).toBeGreaterThan(5);
+  });
+  it('vn_lunar_tet', async () => {
+    const j = text(await client.callTool({ name: 'vn_lunar_tet', arguments: { year: 2026 } }));
+    expect(j).toMatchObject({ ok: true, date: '2026-02-17', canChi: 'Bính Ngọ' });
+  });
+  it('vn_lunar_tet error is flagged', async () => {
+    const r = await client.callTool({ name: 'vn_lunar_tet', arguments: { year: 1 } });
+    expect(r.isError).toBe(true);
+    expect(text(r)).toMatchObject({ ok: false, error: { code: expect.any(String) } });
+  });
+  it('vn_lunar_canchi', async () => {
+    const j = text(await client.callTool({ name: 'vn_lunar_canchi', arguments: { year: 2024 } }));
+    expect(j).toMatchObject({ ok: true, year: 2024, canChi: 'Giáp Thìn' });
+  });
+  it('vn_lunar_canchi error is flagged', async () => {
+    const r = await client.callTool({ name: 'vn_lunar_canchi', arguments: { year: 'abc' } });
+    expect(r.isError).toBe(true);
+  });
+  it('vn_lunar_canchi out-of-range year returns error result', async () => {
+    const r = await client.callTool({ name: 'vn_lunar_canchi', arguments: { year: 5000 } });
+    expect(r.isError).toBe(true);
+    expect(text(r)).toMatchObject({ ok: false, error: { code: 'OUT_OF_RANGE' } });
+  });
+  it('vn_tax_id_check_digit', async () => {
+    const j = text(
+      await client.callTool({ name: 'vn_tax_id_check_digit', arguments: { first9: '010023348' } }),
+    );
+    expect(j).toMatchObject({ ok: true, first9: '010023348', checkDigit: 8, taxId: '0100233488' });
+  });
+  it('vn_tax_id_check_digit error is flagged', async () => {
+    const r = await client.callTool({
+      name: 'vn_tax_id_check_digit',
+      arguments: { first9: '12345' },
+    });
+    expect(r.isError).toBe(true);
+    expect(text(r)).toMatchObject({ ok: false, error: { code: expect.any(String) } });
+  });
+  it('vn_address_provinces', async () => {
+    const j = text(await client.callTool({ name: 'vn_address_provinces', arguments: {} }));
+    expect(j.ok).toBe(true);
+    expect(j.count).toBe(34);
+    expect((j.provinces as unknown[]).length).toBe(34);
+  });
+  it('vn_address_province', async () => {
+    const j = text(
+      await client.callTool({ name: 'vn_address_province', arguments: { query: 'TP.HCM' } }),
+    );
+    expect(j).toMatchObject({ ok: true, code: '79' });
+  });
+  it('vn_address_province error is flagged', async () => {
+    const r = await client.callTool({
+      name: 'vn_address_province',
+      arguments: { query: 'zzzz không tồn tại' },
+    });
+    expect(r.isError).toBe(true);
+    expect(text(r)).toMatchObject({ ok: false, error: { code: expect.any(String) } });
+  });
+  it('vn_einvoice_example', async () => {
+    const j = text(await client.callTool({ name: 'vn_einvoice_example', arguments: {} }));
+    expect(j.series).toBe('1C25TAA');
+    expect((j.seller as { taxId: string }).taxId).toBe('0100233488');
+  });
+  it('vn_einvoice_example result validates', async () => {
+    const invoice = text(await client.callTool({ name: 'vn_einvoice_example', arguments: {} }));
+    const v = text(await client.callTool({ name: 'vn_einvoice_validate', arguments: { invoice } }));
+    expect(v.ok).toBe(true);
   });
 });

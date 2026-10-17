@@ -34,6 +34,15 @@ export function taxIdCheckDigit(first9: string): number | null {
   return check === 10 ? null : check;
 }
 
+/** Check-digit computation with input validation, returned in the ok/error result shape. */
+export function taxIdCheckDigitResult(
+  first9: string,
+): Result<{ first9: string; checkDigit: number | null; taxId: string | null }> {
+  if (!/^\d{9}$/.test(first9)) return fail('INVALID_FORMAT', 'Expected exactly 9 digits');
+  const checkDigit = taxIdCheckDigit(first9);
+  return { ok: true, first9, checkDigit, taxId: checkDigit === null ? null : first9 + checkDigit };
+}
+
 /** Strip spaces, dots and dashes. Keeps digits only. Returns null when other characters are present. */
 export function normalizeTaxId(input: string): string | null {
   const stripped = String(input ?? '')
