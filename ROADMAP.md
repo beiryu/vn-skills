@@ -33,7 +33,7 @@ judgement or real third-party APIs need a maintainer to drive them.
 
 ### RM-001 · repo: golden fixtures shared by TS and future Python port
 
-- status: planned
+- status: done (#12)
 - milestone: v0.2
 - labels: type: chore, area: core
 - size: m
@@ -47,7 +47,7 @@ Acceptance:
 
 ### RM-002 · cli: `vn-skills install <skill|all> --agent claude|cursor|codex`
 
-- status: planned
+- status: filed (#3)
 - milestone: v0.2
 - labels: type: feature, area: cli
 - size: m
@@ -71,7 +71,7 @@ Needs a human screen recording.
 
 ### RM-004 · repo: skill trigger evals
 
-- status: planned
+- status: filed (#4)
 - milestone: v0.2
 - labels: type: chore, area: skill
 - size: m
@@ -86,7 +86,7 @@ Acceptance:
 
 ### RM-005 · ci: monthly data-freshness check
 
-- status: planned
+- status: filed (#5)
 - milestone: v0.2
 - labels: type: chore, area: infra, type: data
 - size: s
@@ -104,7 +104,7 @@ Acceptance:
 
 ### RM-010 · vn-id: validate and decode CCCD (12-digit citizen ID)
 
-- status: planned
+- status: filed (#6)
 - milestone: v0.3
 - labels: type: feature, area: skill, area: core
 - size: m
@@ -120,7 +120,7 @@ Acceptance:
 
 ### RM-011 · vn-holidays: official days off per year
 
-- status: planned
+- status: filed (#7)
 - milestone: v0.3
 - labels: type: feature, area: skill, area: lunar
 - size: m
@@ -137,7 +137,7 @@ Acceptance:
 
 ### RM-012 · vn-phone: normalise and classify Vietnamese phone numbers
 
-- status: planned
+- status: filed (#8)
 - milestone: v0.3
 - labels: type: feature, area: skill, area: core
 - size: s
@@ -151,7 +151,7 @@ Acceptance:
 
 ### RM-013 · vn-number-format: Vietnamese number, currency and date formatting
 
-- status: planned
+- status: filed (#9)
 - milestone: v0.3
 - labels: type: feature, area: skill, area: money
 - size: s
@@ -163,7 +163,7 @@ Acceptance:
 
 ### RM-014 · vn-name: split and sort Vietnamese full names
 
-- status: planned
+- status: filed (#10)
 - milestone: v0.3
 - labels: type: feature, area: skill, area: core
 - size: s
@@ -216,7 +216,7 @@ Needs sandbox credentials (maintainer-owned). Same for Viettel S-Invoice (RM-022
 
 ### RM-024 · vietqr: decode VietQR from an image
 
-- status: planned
+- status: filed (#11)
 - milestone: v0.4
 - labels: type: feature, area: vietqr, area: cli
 - size: s
