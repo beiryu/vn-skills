@@ -6,6 +6,10 @@ import {
   parseVietQR,
   searchBanks,
   parseAddress,
+  splitName,
+  slugifyName,
+  initials,
+  sortNames,
   convertAddress,
   searchWards,
   validateTaxId,
@@ -254,6 +258,32 @@ export function createServer(): McpServer {
       return r.ok
         ? json({ ...r, valid: true })
         : json({ ok: false, valid: false, error: r.error }, true);
+    },
+  );
+
+  server.registerTool(
+    'vn_name',
+    {
+      title: 'Vietnamese name tools',
+      description:
+        'Split a Vietnamese full name into họ / tên đệm / tên (handles Tôn Thất, Nguyễn Phúc), plus slug and initials; or sort a list of names by tên with Vietnamese collation.',
+      inputSchema: {
+        name: z.string().optional().describe('Full name to split'),
+        names: z.array(z.string()).optional().describe('Names to sort'),
+        ascii: z.boolean().optional().describe('Strip diacritics from initials'),
+      },
+    },
+    async ({ name, names, ascii }) => {
+      if (names) return json({ ok: true, sorted: sortNames(names) });
+      if (name === undefined) {
+        return json(
+          { ok: false, error: { code: 'MISSING_INPUT', message: 'Provide name or names' } },
+          true,
+        );
+      }
+      const r = splitName(name);
+      if (!r.ok) return json(r, true);
+      return json({ ...r, slug: slugifyName(name), initials: initials(name, { ascii }) });
     },
   );
 

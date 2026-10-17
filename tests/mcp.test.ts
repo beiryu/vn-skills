@@ -46,6 +46,7 @@ describe('vn-skills MCP server', () => {
         'vn_address_provinces',
         'vn_address_province',
         'vn_einvoice_example',
+        'vn_name',
       ].sort(),
     );
     for (const t of tools) expect(t.description?.length ?? 0).toBeGreaterThan(30);
