@@ -29,11 +29,7 @@
 - { name: 'size: m', color: 'ededed', description: '1–3 days' }
 - { name: 'size: l', color: 'ededed', description: '> 3 days; split before implementing' }
 # status
-- {
-    name: 'status: needs-triage',
-    color: 'fef2c0',
-    description: 'Not yet reviewed by a maintainer or the triage agent',
-  }
+- { name: 'status: needs-triage', color: 'fef2c0', description: 'Not yet reviewed by a maintainer' }
 - { name: 'status: blocked', color: '000000', description: 'Waiting on a decision or upstream' }
 # community
 - {
@@ -42,17 +38,5 @@
     description: 'Small, well-specified, good for newcomers',
   }
 - { name: 'help wanted', color: '008672', description: 'Maintainers would welcome a contributor' }
-# agent pipeline (see AGENTS.md)
-- { name: 'roadmap', color: '5319e7', description: 'Filed from ROADMAP.md by the planner agent' }
-- {
-    name: 'agent: ready',
-    color: '0e8a16',
-    description: 'Fully specified; the implementer agent may pick it up',
-  }
-- { name: 'agent: working', color: '1d76db', description: 'Implementer agent is working on it' }
-- {
-    name: 'agent: needs-human',
-    color: 'd93f0b',
-    description: 'Agent stopped; needs a maintainer decision',
-  }
-- { name: 'agent: pr-open', color: 'bfd4f2', description: 'Agent opened a PR for this issue' }
+# planning
+- { name: 'roadmap', color: '5319e7', description: 'Planned in ROADMAP.md' }
