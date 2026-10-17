@@ -1,4 +1,5 @@
 dist
+packages/cli/skills
 node_modules
 pnpm-lock.yaml
 packages/core/data/*.json

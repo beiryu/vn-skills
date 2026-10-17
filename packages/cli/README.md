@@ -13,4 +13,10 @@ npx -y @vn-skills/cli lunar from-solar 29/01/2025
 npx -y @vn-skills/cli einvoice totals invoice.json
 ```
 
+Install skills into an agent (`--agent claude|cursor|codex`, `--global` for the home directory, `--force`, `--dry-run`):
+
+```bash
+npx -y @vn-skills/cli install <skill|all> --agent claude
+```
+
 Run `npx -y @vn-skills/cli --help` for all commands.

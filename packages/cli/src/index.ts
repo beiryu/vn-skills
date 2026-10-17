@@ -7,6 +7,7 @@ import { registerMoney } from './commands/money.js';
 import { registerNumfmt } from './commands/numfmt.js';
 import { registerLunar } from './commands/lunar.js';
 import { registerEinvoice } from './commands/einvoice.js';
+import { registerInstall } from './commands/install.js';
 
 const program = new Command();
 program
@@ -26,6 +27,7 @@ registerMoney(program);
 registerNumfmt(program);
 registerLunar(program);
 registerEinvoice(program);
+registerInstall(program);
 
 program.parseAsync(process.argv).catch((err) => {
   process.stderr.write(`${err instanceof Error ? err.message : String(err)}\n`);
