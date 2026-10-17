@@ -1,5 +1,5 @@
 import { Command } from 'commander';
-import { validateTaxId, taxIdCheckDigit } from '@vn-skills/core';
+import { validateTaxId, taxIdCheckDigitResult } from '@vn-skills/core';
 import { failExit, kv, printJson, wantsJson } from '../output.js';
 
 export function registerTaxid(program: Command): void {
@@ -29,14 +29,12 @@ export function registerTaxid(program: Command): void {
     .command('check-digit <first9>')
     .description('Compute the 10th digit for the first 9 digits')
     .action((first9: string, _o, c: Command) => {
-      if (!/^\d{9}$/.test(first9))
-        failExit(c, { code: 'INVALID_FORMAT', message: 'Expected exactly 9 digits' });
-      const d = taxIdCheckDigit(first9);
-      if (wantsJson(c))
-        printJson({ ok: true, first9, checkDigit: d, taxId: d === null ? null : first9 + d });
+      const r = taxIdCheckDigitResult(first9);
+      if (!r.ok) failExit(c, r.error);
+      if (wantsJson(c)) printJson(r);
       else
         process.stdout.write(
-          d === null ? 'No valid check digit exists for this sequence\n' : `${first9}${d}\n`,
+          r.taxId === null ? 'No valid check digit exists for this sequence\n' : `${r.taxId}\n`,
         );
     });
 }

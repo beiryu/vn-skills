@@ -12,6 +12,12 @@ import {
   moneyToWords,
   lunarInfo,
   lunarToSolar,
+  tetInfo,
+  canChiOfYear,
+  taxIdCheckDigitResult,
+  lookupProvince,
+  provincesList,
+  exampleInvoice,
   holidays,
   parseDateInput,
   validateInvoice,
@@ -378,6 +384,78 @@ export function createServer(): McpServer {
       const issued = await mock.createInvoice(v.invoice!);
       return json({ ok: true, ...issued });
     },
+  );
+
+  server.registerTool(
+    'vn_lunar_tet',
+    {
+      title: 'Date of Tết',
+      description: 'Solar date of Tết (lunar new year) for a year, with can chi and leap month.',
+      inputSchema: { year: z.number().int().describe('Year, e.g. 2026') },
+    },
+    async ({ year }) => {
+      const r = tetInfo(year);
+      return json(r, !r.ok);
+    },
+  );
+
+  server.registerTool(
+    'vn_lunar_canchi',
+    {
+      title: 'Can chi of a year',
+      description: 'Can chi (e.g. Giáp Thìn) of a lunar year, with its leap month if any.',
+      inputSchema: { year: z.number().int().describe('Year, e.g. 2024') },
+    },
+    async ({ year }) => {
+      const r = canChiOfYear(year);
+      return json(r, !r.ok);
+    },
+  );
+
+  server.registerTool(
+    'vn_tax_id_check_digit',
+    {
+      title: 'Tax ID check digit',
+      description: 'Compute the 10th check digit of a Vietnamese tax ID from its first 9 digits.',
+      inputSchema: { first9: z.string().describe('Exactly 9 digits') },
+    },
+    async ({ first9 }) => {
+      const r = taxIdCheckDigitResult(first9);
+      return json(r, !r.ok);
+    },
+  );
+
+  server.registerTool(
+    'vn_address_provinces',
+    {
+      title: 'List provinces',
+      description: 'List the 34 current Vietnamese provinces (since 01/07/2025) with ward counts.',
+      inputSchema: {},
+    },
+    async () => json(provincesList()),
+  );
+
+  server.registerTool(
+    'vn_address_province',
+    {
+      title: 'Look up a province',
+      description: 'Look up one current province by name, alias (e.g. "TP.HCM") or 2-digit code.',
+      inputSchema: { query: z.string().describe('Province name, alias or code') },
+    },
+    async ({ query }) => {
+      const r = lookupProvince(query);
+      return json(r, !r.ok);
+    },
+  );
+
+  server.registerTool(
+    'vn_einvoice_example',
+    {
+      title: 'Example e-invoice',
+      description: 'Return a valid example invoice object to start from.',
+      inputSchema: {},
+    },
+    async () => json(exampleInvoice()),
   );
 
   return server;

@@ -118,4 +118,19 @@ export function tetDate(lunarYear: number): Result<{
   };
 }
 
+/** Tết date plus the leap month of that lunar year. */
+export function tetInfo(lunarYear: number) {
+  const r = tetDate(lunarYear);
+  return r.ok ? { ...r, leapMonth: leapMonthOf(lunarYear) } : r;
+}
+
+/** Can chi of a lunar year with its leap month; errors outside the supported 1800-2199 range. */
+export function canChiOfYear(
+  year: number,
+): Result<{ year: number; canChi: string; leapMonth: number | null }> {
+  if (!Number.isInteger(year)) return fail('INVALID_YEAR', `Invalid year "${year}"`);
+  if (year < 1800 || year > 2199) return fail('OUT_OF_RANGE', 'Supported years: 1800-2199');
+  return { ok: true, year, canChi: yearCanChi(year), leapMonth: leapMonthOf(year) };
+}
+
 export { CHI as LUNAR_CHI };

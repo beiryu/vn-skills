@@ -4,9 +4,8 @@ import {
   lunarToSolar,
   parseDateInput,
   holidays,
-  tetDate,
-  yearCanChi,
-  leapMonthOf,
+  tetInfo,
+  canChiOfYear,
 } from '@vn-skills/core';
 import { failExit, kv, printJson, wantsJson } from '../output.js';
 
@@ -79,9 +78,9 @@ export function registerLunar(program: Command): void {
     .command('tet <year>')
     .description('Date of Tết (lunar new year) for a year')
     .action((year: string, _o, c: Command) => {
-      const r = tetDate(Number(year));
+      const r = tetInfo(Number(year));
       if (!r.ok) failExit(c, r.error);
-      if (wantsJson(c)) printJson({ ...r, ok: true, leapMonth: leapMonthOf(Number(year)) });
+      if (wantsJson(c)) printJson(r);
       else process.stdout.write(`${r.date}  ${r.canChi} (${r.zodiacEn})\n`);
     });
 
@@ -89,9 +88,9 @@ export function registerLunar(program: Command): void {
     .command('canchi <year>')
     .description('Can chi of a lunar year')
     .action((year: string, _o, c: Command) => {
-      const y = Number(year);
-      if (wantsJson(c))
-        printJson({ ok: true, year: y, canChi: yearCanChi(y), leapMonth: leapMonthOf(y) });
-      else process.stdout.write(`${yearCanChi(y)}\n`);
+      const r = canChiOfYear(Number(year));
+      if (!r.ok) failExit(c, r.error);
+      if (wantsJson(c)) printJson(r);
+      else process.stdout.write(`${r.canChi}\n`);
     });
 }

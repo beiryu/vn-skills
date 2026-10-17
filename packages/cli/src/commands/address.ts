@@ -1,11 +1,10 @@
 import { Command } from 'commander';
 import {
   convertAddress,
-  findProvince,
+  lookupProvince,
+  provincesList,
   parseAddress,
   searchWards,
-  PROVINCES,
-  DATASET,
 } from '@vn-skills/core';
 import { failExit, kv, printJson, wantsJson } from '../output.js';
 
@@ -149,23 +148,10 @@ export function registerAddress(program: Command): void {
     .command('provinces')
     .description('List the 34 current provinces')
     .action((_o, c: Command) => {
-      const list = PROVINCES.map((p) => ({
-        code: p.code,
-        name: p.name,
-        fullName: p.fullName,
-        nameEn: p.nameEn,
-        wards: p.wards.length,
-      }));
-      if (wantsJson(c))
-        printJson({
-          ok: true,
-          version: DATASET.version,
-          decree: DATASET.decree,
-          count: list.length,
-          provinces: list,
-        });
+      const r = provincesList();
+      if (wantsJson(c)) printJson(r);
       else
-        for (const p of list)
+        for (const p of r.provinces)
           process.stdout.write(
             `${p.code}  ${p.fullName.padEnd(32)} ${String(p.wards).padStart(4)} wards\n`,
           );
@@ -197,19 +183,8 @@ export function registerAddress(program: Command): void {
     .command('province <query>')
     .description('Look up one current province by name/alias/code')
     .action((query: string, _o, c: Command) => {
-      const p = findProvince(query);
-      if (!p)
-        failExit(c, { code: 'PROVINCE_NOT_FOUND', message: `No province matches "${query}"` });
-      const result = {
-        ok: true,
-        code: p.code,
-        name: p.name,
-        fullName: p.fullName,
-        nameEn: p.nameEn,
-        type: p.type,
-        postalPrefix: p.postalPrefix,
-        wards: p.wards.length,
-      };
+      const result = lookupProvince(query);
+      if (!result.ok) failExit(c, result.error);
       if (wantsJson(c)) printJson(result);
       else process.stdout.write(kv(Object.entries(result).filter(([k]) => k !== 'ok')) + '\n');
     });

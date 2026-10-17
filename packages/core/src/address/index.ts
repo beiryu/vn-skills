@@ -28,7 +28,8 @@ export {
   type ConvertInput,
 } from './convert.js';
 export { splitAddress, tokenize, dice, ABBREVIATIONS } from './fuzzy.js';
-import { PROVINCES, type Province, type Ward } from './data.js';
+import { PROVINCES, DATASET, type Province, type Ward } from './data.js';
+import { fail, type Result } from '../shared/result.js';
 import { matchUnit, tokenize, expandAbbreviation } from './fuzzy.js';
 import { provinceByKey } from './data.js';
 
@@ -41,6 +42,41 @@ export function findProvince(query: string): Province | undefined {
   const abbr = expandAbbreviation(t);
   if (abbr) return provinceByKey.get(abbr);
   return matchUnit(t, PROVINCES, 0.85)[0]?.item;
+}
+
+/** Summary of a current province, as shown by the CLI/MCP lookups. */
+export function provinceInfo(p: Province) {
+  return {
+    code: p.code,
+    name: p.name,
+    fullName: p.fullName,
+    nameEn: p.nameEn,
+    type: p.type,
+    postalPrefix: p.postalPrefix,
+    wards: p.wards.length,
+  };
+}
+
+/** All current provinces with ward counts, in the ok/error result shape used by CLI and MCP. */
+export function provincesList() {
+  const provinces = PROVINCES.map((p) => {
+    const { type: _t, postalPrefix: _p, ...rest } = provinceInfo(p);
+    return rest;
+  });
+  return {
+    ok: true as const,
+    version: DATASET.version,
+    decree: DATASET.decree,
+    count: provinces.length,
+    provinces,
+  };
+}
+
+/** Look up one current province by name/alias/code; returns the ok/error result shape. */
+export function lookupProvince(query: string): Result<ReturnType<typeof provinceInfo>> {
+  const p = findProvince(query);
+  if (!p) return fail('PROVINCE_NOT_FOUND', `No province matches "${query}"`);
+  return { ok: true, ...provinceInfo(p) };
 }
 
 /** Search wards (optionally within a province). Returns up to `limit` matches. */
