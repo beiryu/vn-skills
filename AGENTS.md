@@ -21,50 +21,52 @@ Humans: see [CONTRIBUTING.md](CONTRIBUTING.md) and [GOVERNANCE.md](GOVERNANCE.md
 
 ## Pipeline
 
+Agents run **locally on the maintainer's machine** ([maintainer-bot](https://github.com/beiryu/maintainer-bot)), not in
+GitHub Actions: GitHub Copilot CLI inside a Docker sandbox, with the maintainer approving from a terminal inbox.
+
 ```
-ROADMAP.md ──(planner)──▶ issues [RM-NNN] + labels ──(agent: ready)──▶ implementer ──▶ PR ──▶ reviewer agent + human ──▶ merge
-                                       ▲                                    │
-new issues from people ──(triage)──────┘   maintainer adds `agent: ready`   └─▶ `agent: needs-human` when stuck
+ROADMAP.md + repo audit ──(auditor)──▶ proposals ──(maintainer approves)──▶ issues [RM-NNN] + `agent: ready`
+issues `agent: ready` ──(implementer: failing test → change → gate → reviewer agent)──▶ PR ──(maintainer)──▶ merge
+                                            └─▶ `agent: needs-human` + comment when it cannot finish
+open PRs: CI failure / review comments / behind main ──(follow-up agent)──▶ drafted fix or reply, sent after approval
 ```
 
-| Agent       | Workflow              | Trigger                                                 | Can                                              |
-| ----------- | --------------------- | ------------------------------------------------------- | ------------------------------------------------ |
-| Planner     | `agent-planner.yml`   | push to `ROADMAP.md`, weekly, manual                    | create/label issues from `status: planned` items |
-| Triage      | `agent-triage.yml`    | issue opened by a person                                | add type/area/size labels, ask for missing info  |
-| Implementer | `agent-implement.yml` | `agent: ready` added by a maintainer, every 6 h, manual | branch, commit, open one PR                      |
-| Reviewer    | `agent-review.yml`    | same-repo PR opened/updated                             | comment, never approve                           |
-| @claude     | `claude.yml`          | maintainer mentions `@claude`                           | follow-up changes on a PR                        |
+| Step        | Who                   | Can                                                                                  |
+| ----------- | --------------------- | ------------------------------------------------------------------------------------ |
+| Auditor     | maintainer-bot, daily | read the repo, ROADMAP.md, open issues, upstream data sources; **propose** issues    |
+| Filing      | maintainer            | approve/edit/reject each proposal; approved ones become issues with `agent: ready`   |
+| Implementer | maintainer-bot        | write the failing test, implement, run the gate, pass an adversarial review, open PR |
+| Follow-up   | maintainer-bot        | draft replies/fixes for review comments or red CI; the maintainer sends them         |
+| Merge       | maintainer            | review the PR on GitHub and merge                                                    |
 
-### Planner
+Label lifecycle on an issue the bot works: `agent: ready` → `agent: working` → `agent: pr-open`, or
+`agent: needs-human` with a comment saying why it stopped. Issues labelled `status: blocked`, `help wanted` or
+`good first issue` are never picked up (the last two are reserved for people).
 
-Files exactly one issue per `status: planned` roadmap item, titled `[RM-NNN] …`, deduplicated by that prefix. Labels
-come from the item; `agent: ready` only for `agent: yes`, size s/m, dependencies closed. It never edits `ROADMAP.md` —
-maintainers update statuses when PRs merge.
+### Gate (runs in the sandbox before any PR)
 
-### Triage
+`pnpm install --frozen-lockfile`, `pnpm build`, `pnpm typecheck`, `pnpm exec vitest run`, `pnpm format:check`,
+`pnpm build-data:check`. The PR title is checked against the same types/scopes as `pr-lint.yml`. The bot never edits
+`.github/`, `CODEOWNERS`, `TRADEMARK.md`, `GOVERNANCE.md`, release config, `pnpm-lock.yaml` or
+`packages/core/data/` (data goes through `scripts/build-data.ts`).
 
-Labels issues from people. It may recommend, but never applies, `agent: *` labels.
+### Roadmap
 
-### Implementer
+Items are `### RM-NNN · scope: title` with a `- status:` line (see [ROADMAP.md](ROADMAP.md)). The auditor proposes
+issues for `planned`/`idea` items it can specify from the repository alone; the PR that implements an item also sets
+its status to `done (#PR)`. `status:` lines may lag behind the issue list, which is the source of truth for what is filed.
 
-Works on one issue at a time (`concurrency: agent-implement`). Label lifecycle:
-`agent: ready` → `agent: working` → `agent: pr-open` (success) or `agent: needs-human` (blocked/failed, with a comment).
-The acceptance checklist in the issue is the spec. If it is ambiguous, the agent stops instead of guessing.
+### Upstream data
 
-### Reviewer
-
-Checks correctness against the issue and cited sources, edge-case tests, the offline/no-scraping rules and data
-provenance. Comments only. A code owner must approve every PR, including agent PRs.
+The sources pinned in `scripts/build-data.ts` / `packages/core/data/SOURCES.md` are compared with upstream on each
+audit; drift becomes a proposal with the upstream commits as evidence. Data updates still go through
+`pnpm build-data` with a deliberate SHA bump.
 
 ## Setup (maintainers)
 
-1. Secrets: `ANTHROPIC_API_KEY`; `AGENT_GITHUB_TOKEN` (GitHub App installation token or fine-grained PAT with contents,
-   issues and pull-requests write) so agent pushes trigger CI; `NPM_TOKEN` for releases.
-2. Optional variables to change models: `AGENT_PLANNER_MODEL`, `AGENT_TRIAGE_MODEL`, `AGENT_IMPLEMENT_MODEL`,
-   `AGENT_REVIEW_MODEL`.
-3. Run the **Labels** workflow once (or push a change to `.github/labels.yml`).
-4. Branch protection on `main`: require PR, 1 code-owner approval, status checks `test`, `title`, `commits`; squash only;
-   dismiss stale approvals; restrict who can push. Enable "Allow GitHub Actions to create and approve pull requests"
-   (create only — approvals stay human).
-5. Enable Discussions and private vulnerability reporting.
-6. To pause all agents, disable the `Agent · *` workflows in the Actions tab.
+1. Run the **Labels** workflow once (or push a change to `.github/labels.yml`).
+2. Install maintainer-bot locally and add this repo (`maintainer-bot repo add beiryu/vn-skills`); its per-repo config
+   carries the gate, the PR-lint scopes and the rules above.
+3. Branch protection on `main` is optional: the bot pushes as the maintainer and the maintainer merges. If you require
+   code-owner approval, allow the maintainer to bypass it or the bot's PRs cannot be merged.
+4. To pause: `maintainer-bot pause`, or remove the `agent: ready` label from an issue.
