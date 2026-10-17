@@ -19,14 +19,15 @@ trên cùng một lõi chạy offline:
 
 ## Các skill
 
-| Skill                                              | Làm gì                                                                                                   | Ví dụ                                                                                                     |
-| -------------------------------------------------- | -------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
-| [`vietqr`](skills/vietqr/SKILL.md)                 | Tạo/đọc chuỗi VietQR (NAPAS 247, EMVCo), CRC16, xuất PNG/SVG, tra BIN ngân hàng                          | `vn-skills vietqr build --bank VCB --account 0011001234567 --amount 500000 --note "don 123" --out qr.png` |
-| [`vn-address`](skills/vn-address/SKILL.md)         | Chuẩn hóa địa chỉ; đổi địa chỉ cũ (63 tỉnh, có huyện) sang mới (34 tỉnh, 2 cấp, từ 01/07/2025)           | `vn-skills address convert "P. Bến Nghé, Q.1, TP.HCM"` → `Phường Sài Gòn, Thành phố Hồ Chí Minh`          |
-| [`vn-tax-id`](skills/vn-tax-id/SKILL.md)           | Kiểm tra MST offline (10/13 số, chữ số kiểm tra, hậu tố chi nhánh; CCCD 12 số)                           | `vn-skills taxid validate 0100233488-001`                                                                 |
-| [`vn-money-words`](skills/vn-money-words/SKILL.md) | Đọc số tiền bằng chữ (nghìn/ngàn, lẻ/linh, mốt/lăm/tư, tỷ tỷ)                                            | `vn-skills money words 1200000` → `một triệu hai trăm nghìn đồng`                                         |
-| [`vn-lunar`](skills/vn-lunar/SKILL.md)             | Dương ↔ âm lịch, tháng nhuận, can chi, Tết, ngày lễ (thuật toán Hồ Ngọc Đức, UTC+7)                      | `vn-skills lunar tet 2027` → `2027-02-06 Đinh Mùi`                                                        |
-| [`vn-einvoice`](skills/vn-einvoice/SKILL.md)       | Schema hóa đơn điện tử, tính thuế/tổng, số tiền bằng chữ, provider mock; khung adapter MISA/Viettel/VNPT | `vn-skills einvoice totals invoice.json`                                                                  |
+| Skill                                                  | Làm gì                                                                                                   | Ví dụ                                                                                                     |
+| ------------------------------------------------------ | -------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
+| [`vietqr`](skills/vietqr/SKILL.md)                     | Tạo/đọc chuỗi VietQR (NAPAS 247, EMVCo), CRC16, xuất PNG/SVG, tra BIN ngân hàng                          | `vn-skills vietqr build --bank VCB --account 0011001234567 --amount 500000 --note "don 123" --out qr.png` |
+| [`vn-address`](skills/vn-address/SKILL.md)             | Chuẩn hóa địa chỉ; đổi địa chỉ cũ (63 tỉnh, có huyện) sang mới (34 tỉnh, 2 cấp, từ 01/07/2025)           | `vn-skills address convert "P. Bến Nghé, Q.1, TP.HCM"` → `Phường Sài Gòn, Thành phố Hồ Chí Minh`          |
+| [`vn-tax-id`](skills/vn-tax-id/SKILL.md)               | Kiểm tra MST offline (10/13 số, chữ số kiểm tra, hậu tố chi nhánh; CCCD 12 số)                           | `vn-skills taxid validate 0100233488-001`                                                                 |
+| [`vn-money-words`](skills/vn-money-words/SKILL.md)     | Đọc số tiền bằng chữ (nghìn/ngàn, lẻ/linh, mốt/lăm/tư, tỷ tỷ)                                            | `vn-skills money words 1200000` → `một triệu hai trăm nghìn đồng`                                         |
+| [`vn-lunar`](skills/vn-lunar/SKILL.md)                 | Dương ↔ âm lịch, tháng nhuận, can chi, Tết, ngày lễ (thuật toán Hồ Ngọc Đức, UTC+7)                      | `vn-skills lunar tet 2027` → `2027-02-06 Đinh Mùi`                                                        |
+| [`vn-einvoice`](skills/vn-einvoice/SKILL.md)           | Schema hóa đơn điện tử, tính thuế/tổng, số tiền bằng chữ, provider mock; khung adapter MISA/Viettel/VNPT | `vn-skills einvoice totals invoice.json`                                                                  |
+| [`vn-number-format`](skills/vn-number-format/SKILL.md) | Định dạng/đọc số, tiền ₫, ngày dd/MM/yyyy kiểu Việt Nam; đọc "1tr2", "500k", "1,5 tỷ"                    | `vn-skills numfmt parse "1tr2"` → `1200000`                                                               |
 
 ## Cài skill
 
@@ -86,7 +87,7 @@ Nguồn dữ liệu, license và ngày cập nhật: [packages/core/data/SOURCES
 
 ## Lộ trình
 
-Sắp tới: `vn-id` (giải mã CCCD), `vn-holidays`, `vn-phone`, `vn-number-format`, lệnh `vn-skills install`, bản Python và
+Sắp tới: `vn-id` (giải mã CCCD), `vn-holidays`, `vn-phone`, lệnh `vn-skills install`, bản Python và
 adapter hóa đơn gọi sandbox thật. Danh sách đầy đủ kèm tiêu chí hoàn thành: [ROADMAP.md](ROADMAP.md).
 
 ## Cộng đồng

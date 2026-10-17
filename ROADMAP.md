@@ -151,7 +151,7 @@ Acceptance:
 
 ### RM-013 · vn-number-format: Vietnamese number, currency and date formatting
 
-- status: filed (#9)
+- status: done (#24)
 - milestone: v0.3
 - labels: type: feature, area: skill, area: money
 - size: s
