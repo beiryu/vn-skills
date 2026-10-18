@@ -47,7 +47,7 @@ Acceptance:
 
 ### RM-002 · cli: `vn-skills install <skill|all> --agent claude|cursor|codex`
 
-- status: filed (#3)
+- status: done (#26)
 - milestone: v0.2
 - labels: type: feature, area: cli
 - size: m
