@@ -64,6 +64,53 @@ describe('vn-skills CLI', () => {
     expect(parsed.ok && parsed.bin).toBe('970436');
     expect(parsed.ok && parsed.amount).toBe(500000);
   });
+  it('vietqr decode reads back the fields of a PNG written by build', () => {
+    const dir = mkdtempSync(join(tmpdir(), 'vn-skills-'));
+    const file = join(dir, 'qr.png');
+    const built = run([
+      'vietqr',
+      'build',
+      '--bank',
+      'MB',
+      '--account',
+      '0123456789',
+      '--amount',
+      '150000',
+      '--note',
+      'don hang 42',
+      '--out',
+      file,
+      '--json',
+    ]).json();
+    const r = run(['vietqr', 'decode', file, '--json']);
+    expect(r.code).toBe(0);
+    const j = r.json();
+    expect(j.payload).toBe(built.payload);
+    expect(j.crcValid).toBe(true);
+    expect(j.isVietQR).toBe(true);
+    expect(j.bin).toBe('970422');
+    expect(j.account).toBe('0123456789');
+    expect(j.amount).toBe(150000);
+    expect(j.note).toBe(built.note);
+  });
+  it('vietqr decode fails clearly for an image without a QR', () => {
+    const dir = mkdtempSync(join(tmpdir(), 'vn-skills-'));
+    const file = join(dir, 'blank.png');
+    const png = new PNG({ width: 64, height: 64 });
+    png.data.fill(255);
+    writeFileSync(file, PNG.sync.write(png));
+    const r = run(['vietqr', 'decode', file, '--json']);
+    expect(r.code).not.toBe(0);
+    expect(r.out + r.err).toMatch(/no QR code found/);
+  });
+  it('vietqr decode fails clearly for a file that is not a PNG', () => {
+    const dir = mkdtempSync(join(tmpdir(), 'vn-skills-'));
+    const file = join(dir, 'qr.jpg');
+    writeFileSync(file, 'not an image');
+    const r = run(['vietqr', 'decode', file]);
+    expect(r.code).not.toBe(0);
+    expect(r.out + r.err).toMatch(/cannot read .* as PNG/);
+  });
   it('vietqr build writes SVG', () => {
     const dir = mkdtempSync(join(tmpdir(), 'vn-skills-'));
     const file = join(dir, 'qr.svg');
