@@ -48,7 +48,7 @@
     "simple-git-hooks": "^2.14.0",
     "tsup": "^9.0.0",
     "tsx": "^4.19.2",
-    "typescript": "^5.7.2",
+    "typescript": "^6.0.3",
     "typescript-eslint": "^8.71.2",
     "vitest": "^5.0.4"
   },
