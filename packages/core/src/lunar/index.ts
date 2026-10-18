@@ -4,7 +4,6 @@ import {
   yearCanChi,
   monthCanChi,
   dayCanChi,
-  hourCanChi,
   lunarMonthName,
   SOLAR_TERMS,
   CHI_ANIMALS_EN,

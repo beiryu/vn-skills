@@ -7,7 +7,7 @@ export interface OutputOptions {
 
 /** Decide whether to print JSON: explicit flag wins, otherwise JSON when stdout is not a TTY (agents). */
 export function wantsJson(cmd: Command): boolean {
-  const opts = cmd.optsWithGlobals() as OutputOptions;
+  const opts = cmd.optsWithGlobals<OutputOptions>();
   if (opts.json === true) return true;
   if (opts.pretty === true) return false;
   return !process.stdout.isTTY;
@@ -15,7 +15,7 @@ export function wantsJson(cmd: Command): boolean {
 
 export function printJson(data: unknown): void {
   process.stdout.write(
-    JSON.stringify(data, (_k, v) => (typeof v === 'bigint' ? v.toString() : v), 2) + '\n',
+    JSON.stringify(data, (_k, v: unknown) => (typeof v === 'bigint' ? v.toString() : v), 2) + '\n',
   );
 }
 

@@ -186,7 +186,7 @@ export function validateInvoice(input: unknown): InvoiceValidation {
       if (raw.isNote === true) {
         lines.push({
           no: i + 1,
-          name: String(raw.name ?? ''),
+          name: isStr(raw.name) ? raw.name : '',
           quantity: 0,
           unitPrice: 0,
           vatRate: 'KKKNT',
@@ -228,7 +228,7 @@ export function validateInvoice(input: unknown): InvoiceValidation {
       }
       lines.push({
         no: isNum(raw.no) ? raw.no : i + 1,
-        name: String(raw.name ?? ''),
+        name: isStr(raw.name) ? raw.name : '',
         unit: isStr(raw.unit) ? raw.unit : undefined,
         quantity: isNum(raw.quantity) ? raw.quantity : 0,
         unitPrice: isNum(raw.unitPrice) ? raw.unitPrice : 0,

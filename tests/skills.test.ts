@@ -70,3 +70,20 @@ describe('skills/ follow the Agent Skills spec', () => {
     });
   }
 });
+
+describe('PR lint', () => {
+  it('accepts every skill name as a scope', () => {
+    const lint = readFileSync(
+      resolve(__dirname, '..', '.github', 'workflows', 'pr-lint.yml'),
+      'utf8',
+    );
+    const block = /scopes: \|\n((?:\s+[\w-]+\n)+)/.exec(lint);
+    const scopes = new Set(
+      (block?.[1] ?? '')
+        .split('\n')
+        .map((s) => s.trim())
+        .filter(Boolean),
+    );
+    expect(dirs.filter((d) => !scopes.has(d))).toEqual([]);
+  });
+});
