@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.1](https://github.com/beiryu/vn-skills/compare/v0.3.0...v0.3.1) (2026-10-18)
+
+
+### Documentation
+
+* **repo:** list all MCP tools and refresh README roadmap ([#47](https://github.com/beiryu/vn-skills/issues/47)) ([93b870a](https://github.com/beiryu/vn-skills/commit/93b870a779b8c9e1d21942d1992eff6432485713)), closes [#46](https://github.com/beiryu/vn-skills/issues/46)
+
 ## [0.3.0](https://github.com/beiryu/vn-skills/compare/v0.2.1...v0.3.0) (2026-10-18)
 
 
