@@ -86,7 +86,7 @@ Acceptance:
 
 ### RM-005 · ci: monthly data-freshness check
 
-- status: filed (#5)
+- status: done (#28)
 - milestone: v0.2
 - labels: type: chore, area: infra, type: data
 - size: s
