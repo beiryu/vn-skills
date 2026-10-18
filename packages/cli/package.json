@@ -1,6 +1,6 @@
 {
   "name": "@vn-skills/cli",
-  "version": "0.2.1",
+  "version": "0.3.0",
   "description": "CLI used by the vn-skills Agent Skills: VietQR, Vietnamese addresses (34 provinces), tax IDs, money in words, lunar calendar, e-invoice mock.",
   "license": "MIT",
   "type": "module",
