@@ -137,7 +137,7 @@ Acceptance:
 
 ### RM-012 · vn-phone: normalise and classify Vietnamese phone numbers
 
-- status: done (#PR)
+- status: done (#30)
 - milestone: v0.3
 - labels: type: feature, area: skill, area: core
 - size: s
