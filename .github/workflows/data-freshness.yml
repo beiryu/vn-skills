@@ -1,0 +1,48 @@
+name: Data freshness
+
+on:
+  schedule:
+    - cron: '0 3 1 * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Rebuild data from upstream HEAD
+        id: check
+        continue-on-error: true
+        run: pnpm build-data --check --latest 2> >(tee report.txt >&2)
+      - name: Open an issue if upstream data changed
+        if: steps.check.outcome == 'failure'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TITLE: 'data: upstream datasets changed since the pinned commits'
+        run: |
+          if [ -n "$(gh issue list --state open --search "in:title \"$TITLE\"" --json number --jq '.[].number')" ]; then
+            echo "An open issue already tracks this."
+            exit 0
+          fi
+          {
+            echo 'The monthly check rebuilt `packages/core/data` from the latest upstream commits and the output differs from what is committed.'
+            echo
+            echo '```'
+            cat report.txt
+            echo '```'
+            echo
+            echo 'Review the upstream changes, bump the pinned SHAs in `scripts/build-data.ts`, run `pnpm build-data` and open a PR.'
+            echo
+            echo "Run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          } > body.md
+          gh issue create --title "$TITLE" --label 'type: data' --body-file body.md
