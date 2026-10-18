@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.1](https://github.com/beiryu/vn-skills/compare/v0.2.0...v0.2.1) (2026-10-18)
+
+
+### Bug Fixes
+
+* **core:** keep VERSION in step with the released version ([#34](https://github.com/beiryu/vn-skills/issues/34)) ([e7c679d](https://github.com/beiryu/vn-skills/commit/e7c679d098d6546fc88044871f013de5159c4623))
+
 ## [0.2.0](https://github.com/beiryu/vn-skills/compare/v0.1.1...v0.2.0) (2026-10-18)
 
 
