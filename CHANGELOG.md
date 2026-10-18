@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.3.0](https://github.com/beiryu/vn-skills/compare/v0.2.1...v0.3.0) (2026-10-18)
+
+
+### ⚠ BREAKING CHANGES
+
+* **repo:** @vn-skills/core, @vn-skills/cli and @vn-skills/mcp require Node.js 22.12 or later.
+
+### Build
+
+* **repo:** require Node.js 22.12 or later ([#44](https://github.com/beiryu/vn-skills/issues/44)) ([f01b157](https://github.com/beiryu/vn-skills/commit/f01b15718594e9f9fb55cedae5023a479c8181a6))
+
 ## [0.2.1](https://github.com/beiryu/vn-skills/compare/v0.2.0...v0.2.1) (2026-10-18)
 
 
