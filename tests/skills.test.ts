@@ -33,6 +33,7 @@ describe('skills/ follow the Agent Skills spec', () => {
       'vn-money-words',
       'vn-name',
       'vn-number-format',
+      'vn-phone',
       'vn-tax-id',
     ]);
   });

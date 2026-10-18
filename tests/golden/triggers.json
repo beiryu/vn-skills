@@ -26,5 +26,9 @@
   "vn-tax-id": {
     "vi": ["mã số thuế", "MST", "MST này có hợp lệ không", "CCCD"],
     "en": ["tax", "validate", "check-digit"]
+  },
+  "vn-phone": {
+    "vi": ["số điện thoại", "đầu số", "mã vùng", "nhà mạng"],
+    "en": ["phone", "E.164", "carrier"]
   }
 }

@@ -8,6 +8,7 @@ import { registerMoney } from './commands/money.js';
 import { registerNumfmt } from './commands/numfmt.js';
 import { registerLunar } from './commands/lunar.js';
 import { registerEinvoice } from './commands/einvoice.js';
+import { registerPhone } from './commands/phone.js';
 import { registerInstall } from './commands/install.js';
 
 const program = new Command();
@@ -29,6 +30,7 @@ registerMoney(program);
 registerNumfmt(program);
 registerLunar(program);
 registerEinvoice(program);
+registerPhone(program);
 registerInstall(program);
 
 program.parseAsync(process.argv).catch((err) => {

@@ -12,6 +12,7 @@ import {
   sortNames,
   convertAddress,
   searchWards,
+  parsePhone,
   validateTaxId,
   moneyToWords,
   formatNumber,
@@ -263,6 +264,20 @@ export function createServer(): McpServer {
       return r.ok
         ? json({ ...r, valid: true })
         : json({ ok: false, valid: false, error: r.error }, true);
+    },
+  );
+
+  server.registerTool(
+    'vn_phone',
+    {
+      title: 'Vietnamese phone number',
+      description:
+        'Normalise a Vietnamese phone number (0/84/+84, old 11-digit 01xx mobile prefixes) to national and E.164 forms and classify it: mobile (original carrier) or landline (area code, province). Offline.',
+      inputSchema: { phone: z.string() },
+    },
+    async ({ phone }) => {
+      const r = parsePhone(phone);
+      return r.ok ? json(r) : json(r, true);
     },
   );
 
