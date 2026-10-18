@@ -5,7 +5,7 @@ import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { PNG } from 'pngjs';
 import jsqrModule from 'jsqr';
-import { parseVietQR } from '@vn-skills/core';
+import { parseVietQR, VERSION } from '@vn-skills/core';
 
 const CLI = resolve(__dirname, '..', 'packages', 'cli', 'dist', 'index.js');
 
@@ -27,7 +27,16 @@ function run(args: string[], input?: string) {
 
 describe('vn-skills CLI', () => {
   it('is built', () => expect(existsSync(CLI)).toBe(true));
-  it('--version', () => expect(run(['--version']).out.trim()).toMatch(/^\d+\.\d+\.\d+$/));
+  it('--version is the released package version', () => {
+    const pkg = (name: string) =>
+      (
+        JSON.parse(
+          readFileSync(resolve(__dirname, '..', 'packages', name, 'package.json'), 'utf8'),
+        ) as { version: string }
+      ).version;
+    expect(run(['--version']).out.trim()).toBe(pkg('cli'));
+    expect(VERSION).toBe(pkg('core'));
+  });
   it('--help lists commands', () => {
     const r = run(['--help']);
     for (const c of ['vietqr', 'address', 'taxid', 'id', 'money', 'lunar', 'einvoice'])
