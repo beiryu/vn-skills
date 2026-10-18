@@ -3,6 +3,7 @@ import { VERSION } from '@vn-skills/core';
 import { registerVietqr } from './commands/vietqr.js';
 import { registerAddress } from './commands/address.js';
 import { registerTaxid } from './commands/taxid.js';
+import { registerName } from './commands/name.js';
 import { registerMoney } from './commands/money.js';
 import { registerNumfmt } from './commands/numfmt.js';
 import { registerLunar } from './commands/lunar.js';
@@ -23,6 +24,7 @@ program
 registerVietqr(program);
 registerAddress(program);
 registerTaxid(program);
+registerName(program);
 registerMoney(program);
 registerNumfmt(program);
 registerLunar(program);
