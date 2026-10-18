@@ -1,0 +1,30 @@
+{
+  "vietqr": {
+    "vi": ["chuyển khoản", "QR thanh toán", "mã QR chuyển khoản", "quét mã chuyển tiền"],
+    "en": ["VietQR", "payment QR", "bank BIN"]
+  },
+  "vn-address": {
+    "vi": ["địa chỉ mới sau sáp nhập", "chuyển đổi địa chỉ", "phường", "tỉnh"],
+    "en": ["address", "administrative", "shipping"]
+  },
+  "vn-einvoice": {
+    "vi": ["hóa đơn điện tử", "xuất hóa đơn", "tính thuế GTGT", "ký hiệu"],
+    "en": ["e-invoice", "VAT", "invoice"]
+  },
+  "vn-lunar": {
+    "vi": ["âm lịch", "tháng nhuận", "Tết", "ngày lễ", "rằm"],
+    "en": ["lunar", "holidays", "solar"]
+  },
+  "vn-money-words": {
+    "vi": ["số tiền bằng chữ", "đọc số tiền thành chữ", "viết bằng chữ", "đồng"],
+    "en": ["words", "VND", "amount"]
+  },
+  "vn-number-format": {
+    "vi": ["định dạng số", "định dạng tiền", "định dạng ngày", "phân tích số tiền"],
+    "en": ["currency", "dates", "parse"]
+  },
+  "vn-tax-id": {
+    "vi": ["mã số thuế", "MST", "MST này có hợp lệ không", "CCCD"],
+    "en": ["tax", "validate", "check-digit"]
+  }
+}
