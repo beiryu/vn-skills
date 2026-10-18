@@ -5,6 +5,7 @@ export * from './numfmt/index.js';
 export * from './lunar/index.js';
 export * from './address/index.js';
 export * from './einvoice/index.js';
+export * from './id/index.js';
 export * from './name/index.js';
 export * from './phone/index.js';
 export { removeDiacritics, normalizeText, compactKey } from './shared/diacritics.js';

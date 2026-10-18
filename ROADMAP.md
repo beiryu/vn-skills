@@ -104,7 +104,7 @@ Acceptance:
 
 ### RM-010 · vn-id: validate and decode CCCD (12-digit citizen ID)
 
-- status: filed (#6)
+- status: done (#31)
 - milestone: v0.3
 - labels: type: feature, area: skill, area: core
 - size: m
