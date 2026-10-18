@@ -1,0 +1,206 @@
+{
+  "skill": "vn-phone",
+  "cases": {
+    "parsePhone": [
+      {
+        "input": "0912345678",
+        "expected": {
+          "ok": true,
+          "e164": "+84912345678",
+          "formatted": "0912 345 678",
+          "type": "mobile"
+        }
+      },
+      {
+        "input": "+84912345678",
+        "expected": {
+          "ok": true,
+          "e164": "+84912345678",
+          "formatted": "0912 345 678",
+          "type": "mobile"
+        }
+      },
+      {
+        "input": "84912345678",
+        "expected": {
+          "ok": true,
+          "e164": "+84912345678",
+          "formatted": "0912 345 678",
+          "type": "mobile"
+        }
+      },
+      {
+        "input": "0912 345 678",
+        "expected": {
+          "ok": true,
+          "e164": "+84912345678",
+          "formatted": "0912 345 678",
+          "type": "mobile"
+        }
+      },
+      {
+        "input": "091-234-5678",
+        "expected": {
+          "ok": true,
+          "e164": "+84912345678",
+          "formatted": "0912 345 678",
+          "type": "mobile"
+        }
+      },
+      {
+        "input": "(+84) 912 345 678",
+        "expected": {
+          "ok": true,
+          "e164": "+84912345678",
+          "formatted": "0912 345 678",
+          "type": "mobile"
+        }
+      },
+      {
+        "input": "01621234567",
+        "expected": {
+          "ok": true,
+          "national": "0321234567",
+          "convertedFrom": "01621234567"
+        }
+      },
+      {
+        "input": "01661234567",
+        "expected": {
+          "ok": true,
+          "national": "0361234567",
+          "convertedFrom": "01661234567"
+        }
+      },
+      {
+        "input": "01201234567",
+        "expected": {
+          "ok": true,
+          "national": "0701234567",
+          "convertedFrom": "01201234567"
+        }
+      },
+      {
+        "input": "01261234567",
+        "expected": {
+          "ok": true,
+          "national": "0761234567",
+          "convertedFrom": "01261234567"
+        }
+      },
+      {
+        "input": "01861234567",
+        "expected": {
+          "ok": true,
+          "national": "0561234567",
+          "convertedFrom": "01861234567"
+        }
+      },
+      {
+        "input": "01991234567",
+        "expected": {
+          "ok": true,
+          "national": "0591234567",
+          "convertedFrom": "01991234567"
+        }
+      },
+      {
+        "input": "+841271234567",
+        "expected": {
+          "ok": true,
+          "national": "0811234567",
+          "convertedFrom": "01271234567"
+        }
+      },
+      {
+        "input": "02363123456",
+        "expected": {
+          "ok": true,
+          "type": "landline",
+          "areaCode": "0236",
+          "province": "Đà Nẵng",
+          "province2025": "Đà Nẵng",
+          "formatted": "0236 312 3456"
+        }
+      },
+      {
+        "input": "02412345678",
+        "expected": {
+          "ok": true,
+          "type": "landline",
+          "areaCode": "024",
+          "province": "Hà Nội",
+          "formatted": "024 1234 5678"
+        }
+      },
+      {
+        "input": "0901234567",
+        "expected": {
+          "ok": true,
+          "carrier": "MobiFone"
+        }
+      },
+      {
+        "input": "0551234567",
+        "expected": {
+          "ok": true,
+          "carrier": "Wintel"
+        }
+      },
+      {
+        "input": "",
+        "expected": {
+          "ok": false,
+          "error": {
+            "code": "INVALID_FORMAT"
+          }
+        }
+      },
+      {
+        "input": "abc",
+        "expected": {
+          "ok": false,
+          "error": {
+            "code": "INVALID_FORMAT"
+          }
+        }
+      },
+      {
+        "input": "091234567",
+        "expected": {
+          "ok": false,
+          "error": {
+            "code": "INVALID_LENGTH"
+          }
+        }
+      },
+      {
+        "input": "09123456789",
+        "expected": {
+          "ok": false,
+          "error": {
+            "code": "UNKNOWN_PREFIX"
+          }
+        }
+      },
+      {
+        "input": "0412345678",
+        "expected": {
+          "ok": false,
+          "error": {
+            "code": "UNKNOWN_PREFIX"
+          }
+        }
+      },
+      {
+        "input": "0241234567",
+        "expected": {
+          "ok": false,
+          "error": {
+            "code": "INVALID_LENGTH"
+          }
+        }
+      }
+    ]
+  }
+}
