@@ -245,8 +245,8 @@ importers:
         specifier: workspace:*
         version: link:../core
       commander:
-        specifier: ^13.1.0
-        version: 13.1.0
+        specifier: ^15.0.0
+        version: 15.0.0
       jsqr:
         specifier: ^1.4.0
         version: 1.4.0
@@ -1077,9 +1077,9 @@ packages:
     resolution: {integrity: sha512-y4Mg2tXshplEbSGzx7amzPwKKOCGuoSRP/CjEdwwk0FOGlUbq6lKuoyDZTNZkmxHdJtp54hdfY/JUrdL7Xfdug==}
     engines: {node: '>=14'}
 
-  commander@13.1.0:
-    resolution: {integrity: sha512-/rFeCpNJQbhSZjGVwO9RFV3xPqbnERS8MmIQzCtD/zl6gpJuV/bMLuN92oG3F7d8oDEHHRrujSXNUr8fpjntKw==}
-    engines: {node: '>=18'}
+  commander@15.0.0:
+    resolution: {integrity: sha512-z67u4ZhzCL/Tydu1lJARtEZYWbWaN7oYLHbsuzocr6y4N6WZAagG3RQ4FW61V1/0+jImpj293XfrcYnd1qxtPg==}
+    engines: {node: '>=22.12.0'}
 
   commander@4.1.1:
     resolution: {integrity: sha512-NOKm8xhkzAjzFx8B2v5OAHT+u5pRQc2UCa2Vq9jYL/31o2wi9mxBA7LIFs3sV5VSC49z6pEhfbMULvShKj26WA==}
@@ -2997,7 +2997,7 @@ snapshots:
 
   commander@10.0.1: {}
 
-  commander@13.1.0: {}
+  commander@15.0.0: {}
 
   commander@4.1.1: {}
 
