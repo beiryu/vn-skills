@@ -163,7 +163,7 @@ Acceptance:
 
 ### RM-014 · vn-name: split and sort Vietnamese full names
 
-- status: filed (#10)
+- status: done (#25)
 - milestone: v0.3
 - labels: type: feature, area: skill, area: core
 - size: s
