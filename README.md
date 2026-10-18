@@ -27,6 +27,7 @@ pre-2025 provinces and districts, misread amounts in words, or confuse the Chine
 | [`vn-money-words`](skills/vn-money-words/SKILL.md)     | Amount → Vietnamese words (nghìn/ngàn, lẻ/linh, mốt/lăm/tư, tỷ tỷ)                                                     | `vn-skills money words 1200000` → `một triệu hai trăm nghìn đồng`                                         |
 | [`vn-lunar`](skills/vn-lunar/SKILL.md)                 | Solar ↔ lunar, leap months, can chi, Tết, holidays (Hồ Ngọc Đức algorithm, UTC+7)                                      | `vn-skills lunar tet 2027` → `2027-02-06 Đinh Mùi`                                                        |
 | [`vn-einvoice`](skills/vn-einvoice/SKILL.md)           | E-invoice schema validation, VAT/totals, amount in words, mock provider; MISA/Viettel/VNPT adapter skeletons           | `vn-skills einvoice totals invoice.json`                                                                  |
+| [`vn-name`](skills/vn-name/SKILL.md)                   | Split họ / tên đệm / tên, compound surnames, Vietnamese collation sort, unaccented slugs and initials                  | `vn-skills name split "Tôn Thất Tùng"`                                                                    |
 | [`vn-number-format`](skills/vn-number-format/SKILL.md) | Format/parse Vietnamese numbers, ₫ amounts and dd/MM/yyyy dates; parse "1tr2", "500k", "1,5 tỷ"                        | `vn-skills numfmt parse "1tr2"` → `1200000`                                                               |
 
 ## Install the skills
@@ -39,6 +40,16 @@ cp -r vn-skills/skills/vietqr ~/.claude/skills/          # or .claude/skills/ in
 ```
 
 Then ask: _"tạo QR chuyển 500k vào VCB số tài khoản 0011001234567"_ → Claude runs the skill and returns `qr.png`.
+
+Or use the CLI (skills are bundled in the package):
+
+```bash
+npx -y @vn-skills/cli install vietqr --agent claude            # .claude/skills/vietqr (project)
+npx -y @vn-skills/cli install all --agent cursor --global      # ~/.cursor/skills/*
+```
+
+`--agent` is `claude`, `cursor` or `codex`. Existing folders are not overwritten without `--force`; `--dry-run` prints
+the actions only.
 
 **Cursor / Codex / other agents:** copy the same folders into the agent's skills directory
 (`.cursor/skills/`, `.codex/skills/`, or wherever your agent discovers `SKILL.md`). The skills only need Node.js 18+ because
@@ -61,7 +72,7 @@ or in any MCP client config:
 Tools: `vietqr_build`, `vietqr_parse`, `vietqr_banks`, `vn_address_parse`, `vn_address_convert`, `vn_address_search_wards`,
 `vn_tax_id_validate`, `vn_money_to_words`, `vn_lunar_from_solar`, `vn_lunar_to_solar`, `vn_lunar_holidays`,
 `vn_lunar_tet`, `vn_lunar_canchi`, `vn_tax_id_check_digit`, `vn_address_provinces`, `vn_address_province`,
-`vn_einvoice_validate`, `vn_einvoice_totals`, `vn_einvoice_mock_issue`, `vn_einvoice_example`.
+`vn_einvoice_validate`, `vn_einvoice_totals`, `vn_einvoice_mock_issue`, `vn_einvoice_example`, `vn_name`.
 
 ## Library
 

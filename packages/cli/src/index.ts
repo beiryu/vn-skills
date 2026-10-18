@@ -3,10 +3,12 @@ import { VERSION } from '@vn-skills/core';
 import { registerVietqr } from './commands/vietqr.js';
 import { registerAddress } from './commands/address.js';
 import { registerTaxid } from './commands/taxid.js';
+import { registerName } from './commands/name.js';
 import { registerMoney } from './commands/money.js';
 import { registerNumfmt } from './commands/numfmt.js';
 import { registerLunar } from './commands/lunar.js';
 import { registerEinvoice } from './commands/einvoice.js';
+import { registerInstall } from './commands/install.js';
 
 const program = new Command();
 program
@@ -22,10 +24,12 @@ program
 registerVietqr(program);
 registerAddress(program);
 registerTaxid(program);
+registerName(program);
 registerMoney(program);
 registerNumfmt(program);
 registerLunar(program);
 registerEinvoice(program);
+registerInstall(program);
 
 program.parseAsync(process.argv).catch((err) => {
   process.stderr.write(`${err instanceof Error ? err.message : String(err)}\n`);

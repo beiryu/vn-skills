@@ -27,6 +27,7 @@ trên cùng một lõi chạy offline:
 | [`vn-money-words`](skills/vn-money-words/SKILL.md)     | Đọc số tiền bằng chữ (nghìn/ngàn, lẻ/linh, mốt/lăm/tư, tỷ tỷ)                                            | `vn-skills money words 1200000` → `một triệu hai trăm nghìn đồng`                                         |
 | [`vn-lunar`](skills/vn-lunar/SKILL.md)                 | Dương ↔ âm lịch, tháng nhuận, can chi, Tết, ngày lễ (thuật toán Hồ Ngọc Đức, UTC+7)                      | `vn-skills lunar tet 2027` → `2027-02-06 Đinh Mùi`                                                        |
 | [`vn-einvoice`](skills/vn-einvoice/SKILL.md)           | Schema hóa đơn điện tử, tính thuế/tổng, số tiền bằng chữ, provider mock; khung adapter MISA/Viettel/VNPT | `vn-skills einvoice totals invoice.json`                                                                  |
+| [`vn-name`](skills/vn-name/SKILL.md)                   | Tách họ / tên đệm / tên, họ kép, sắp xếp theo tên (collation tiếng Việt), slug không dấu và chữ cái đầu  | `vn-skills name split "Tôn Thất Tùng"`                                                                    |
 | [`vn-number-format`](skills/vn-number-format/SKILL.md) | Định dạng/đọc số, tiền ₫, ngày dd/MM/yyyy kiểu Việt Nam; đọc "1tr2", "500k", "1,5 tỷ"                    | `vn-skills numfmt parse "1tr2"` → `1200000`                                                               |
 
 ## Cài skill
@@ -39,6 +40,15 @@ cp -r vn-skills/skills/vietqr ~/.claude/skills/        # hoặc .claude/skills/ 
 ```
 
 Rồi hỏi: _"tạo QR chuyển 500k vào VCB số tài khoản 0011001234567"_ → Claude chạy skill và trả về `qr.png`.
+
+Hoặc dùng CLI (skill đã được đóng gói sẵn):
+
+```bash
+npx -y @vn-skills/cli install vietqr --agent claude        # .claude/skills/vietqr (project)
+npx -y @vn-skills/cli install all --agent cursor --global  # ~/.cursor/skills/*
+```
+
+`--agent` là `claude`, `cursor` hoặc `codex`. Không ghi đè thư mục có sẵn nếu thiếu `--force`; `--dry-run` chỉ in các bước.
 
 **Cursor / Codex / agent khác:** copy đúng thư mục đó vào nơi agent tìm `SKILL.md` (`.cursor/skills/`, `.codex/skills/`…).
 Skill chỉ cần Node.js 18+ vì gọi `npx -y @vn-skills/cli`.
@@ -60,7 +70,7 @@ Hoặc trong cấu hình MCP bất kỳ:
 Tool: `vietqr_build`, `vietqr_parse`, `vietqr_banks`, `vn_address_parse`, `vn_address_convert`, `vn_address_search_wards`,
 `vn_address_provinces`, `vn_address_province`, `vn_tax_id_validate`, `vn_tax_id_check_digit`, `vn_money_to_words`,
 `vn_lunar_from_solar`, `vn_lunar_to_solar`, `vn_lunar_holidays`, `vn_lunar_tet`, `vn_lunar_canchi`,
-`vn_einvoice_validate`, `vn_einvoice_totals`, `vn_einvoice_mock_issue`, `vn_einvoice_example`.
+`vn_einvoice_validate`, `vn_einvoice_totals`, `vn_einvoice_mock_issue`, `vn_einvoice_example`, `vn_name`.
 
 ## Thư viện
 

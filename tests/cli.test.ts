@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { spawnSync } from 'node:child_process';
-import { existsSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdtempSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { PNG } from 'pngjs';
@@ -164,5 +164,72 @@ describe('vn-skills CLI', () => {
     const r = run(['einvoice', 'create', file, '--provider', 'misa']);
     expect(r.code).toBe(1);
     expect((r.json().error as { code: string }).code).toBe('CONFIG_ERROR');
+  });
+});
+
+describe('vn-skills install', () => {
+  function install(args: string[], cwd: string, home: string) {
+    const r = spawnSync(process.execPath, [CLI, 'install', ...args], {
+      encoding: 'utf8',
+      cwd,
+      env: { ...process.env, HOME: home, USERPROFILE: home },
+    });
+    return { code: r.status, out: r.stdout, err: r.stderr };
+  }
+  const tmp = () => mkdtempSync(join(tmpdir(), 'vn-skills-'));
+
+  it('--agent claude installs one skill into .claude/skills/<name> (project)', () => {
+    const cwd = tmp();
+    const r = install(['vietqr', '--agent', 'claude'], cwd, tmp());
+    expect(r.code).toBe(0);
+    expect(existsSync(join(cwd, '.claude', 'skills', 'vietqr', 'SKILL.md'))).toBe(true);
+  });
+  it('--global installs into ~/.claude/skills/<name>', () => {
+    const cwd = tmp();
+    const home = tmp();
+    const r = install(['vn-lunar', '--agent', 'claude', '--global'], cwd, home);
+    expect(r.code).toBe(0);
+    expect(existsSync(join(home, '.claude', 'skills', 'vn-lunar', 'SKILL.md'))).toBe(true);
+    expect(existsSync(join(cwd, '.claude'))).toBe(false);
+  });
+  it('--agent cursor and codex use .cursor/skills and .codex/skills', () => {
+    const cwd = tmp();
+    expect(install(['vn-tax-id', '--agent', 'cursor'], cwd, tmp()).code).toBe(0);
+    expect(install(['vn-tax-id', '--agent', 'codex'], cwd, tmp()).code).toBe(0);
+    expect(existsSync(join(cwd, '.cursor', 'skills', 'vn-tax-id', 'SKILL.md'))).toBe(true);
+    expect(existsSync(join(cwd, '.codex', 'skills', 'vn-tax-id', 'SKILL.md'))).toBe(true);
+  });
+  it('"all" installs every bundled skill', () => {
+    const cwd = tmp();
+    const r = install(['all', '--agent', 'claude'], cwd, tmp());
+    expect(r.code).toBe(0);
+    const expected = readdirSync(join(__dirname, '..', 'skills')).sort();
+    expect(readdirSync(join(cwd, '.claude', 'skills')).sort()).toEqual(expected);
+  });
+  it('refuses to overwrite without --force, overwrites with it', () => {
+    const cwd = tmp();
+    const home = tmp();
+    install(['vietqr', '--agent', 'claude'], cwd, home);
+    const file = join(cwd, '.claude', 'skills', 'vietqr', 'SKILL.md');
+    writeFileSync(file, 'local edit');
+    const r = install(['vietqr', '--agent', 'claude'], cwd, home);
+    expect(r.code).not.toBe(0);
+    expect(readFileSync(file, 'utf8')).toBe('local edit');
+    const f = install(['vietqr', '--agent', 'claude', '--force'], cwd, home);
+    expect(f.code).toBe(0);
+    expect(readFileSync(file, 'utf8')).not.toBe('local edit');
+  });
+  it('--dry-run prints actions and writes nothing', () => {
+    const cwd = tmp();
+    const r = install(['vietqr', '--agent', 'claude', '--dry-run'], cwd, tmp());
+    expect(r.code).toBe(0);
+    expect(r.out).toContain('vietqr');
+    expect(existsSync(join(cwd, '.claude'))).toBe(false);
+  });
+  it('rejects unknown skills', () => {
+    const cwd = tmp();
+    const r = install(['nope', '--agent', 'claude'], cwd, tmp());
+    expect(r.code).not.toBe(0);
+    expect(existsSync(join(cwd, '.claude'))).toBe(false);
   });
 });

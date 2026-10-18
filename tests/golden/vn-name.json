@@ -1,0 +1,131 @@
+{
+  "skill": "vn-name",
+  "cases": {
+    "split": [
+      {
+        "input": "Nguyễn Văn An",
+        "expected": {
+          "family": "Nguyễn",
+          "middle": "Văn",
+          "given": "An"
+        }
+      },
+      {
+        "input": "Trần Thị Bích Ngọc",
+        "expected": {
+          "family": "Trần",
+          "middle": "Thị Bích",
+          "given": "Ngọc"
+        }
+      },
+      {
+        "input": "Lê Hoàng",
+        "expected": {
+          "family": "Lê",
+          "middle": "",
+          "given": "Hoàng"
+        }
+      },
+      {
+        "input": "Tôn Thất Tùng",
+        "expected": {
+          "family": "Tôn Thất",
+          "middle": "",
+          "given": "Tùng"
+        }
+      },
+      {
+        "input": "Tôn Thất Minh Khoa",
+        "expected": {
+          "family": "Tôn Thất",
+          "middle": "Minh",
+          "given": "Khoa"
+        }
+      },
+      {
+        "input": "Nguyễn Phúc Bảo Long",
+        "expected": {
+          "family": "Nguyễn Phúc",
+          "middle": "Bảo",
+          "given": "Long"
+        }
+      },
+      {
+        "input": "Madonna",
+        "expected": {
+          "family": "",
+          "middle": "",
+          "given": "Madonna"
+        }
+      },
+      {
+        "input": "Phạm Minh Tuấn",
+        "expected": {
+          "family": "Phạm",
+          "middle": "Minh",
+          "given": "Tuấn"
+        }
+      },
+      {
+        "input": "Hồ Chí Minh",
+        "expected": {
+          "family": "Hồ",
+          "middle": "Chí",
+          "given": "Minh"
+        }
+      },
+      {
+        "input": "Võ Thị Sáu",
+        "expected": {
+          "family": "Võ",
+          "middle": "Thị",
+          "given": "Sáu"
+        }
+      }
+    ],
+    "slug": [
+      {
+        "input": "Nguyễn Văn An",
+        "expected": "nguyen-van-an"
+      },
+      {
+        "input": "Đặng Thị Ánh",
+        "expected": "dang-thi-anh"
+      },
+      {
+        "input": "Lê   Hoàng",
+        "expected": "le-hoang"
+      },
+      {
+        "input": "Tôn Thất Tùng",
+        "expected": "ton-that-tung"
+      },
+      {
+        "input": "Madonna",
+        "expected": "madonna"
+      }
+    ],
+    "initials": [
+      {
+        "input": "Nguyễn Văn An",
+        "expected": "NVA"
+      },
+      {
+        "input": "Đặng Thị Ánh",
+        "expected": "ĐTA"
+      },
+      {
+        "input": "Lê Hoàng",
+        "expected": "LH"
+      },
+      {
+        "input": "Madonna",
+        "expected": "M"
+      },
+      {
+        "input": "Hồ Chí Minh",
+        "expected": "HCM"
+      }
+    ]
+  }
+}
