@@ -50,7 +50,7 @@
     "tsx": "^4.19.2",
     "typescript": "^5.7.2",
     "typescript-eslint": "^8.71.2",
-    "vitest": "^3.0.0"
+    "vitest": "^5.0.4"
   },
   "simple-git-hooks": {
     "commit-msg": "pnpm exec commitlint --edit \"$1\""
