@@ -2,7 +2,7 @@
 name: vn-name
 description: Split, sort and slugify Vietnamese full names offline - họ / tên đệm / tên, compound surnames (Tôn Thất, Nguyễn Phúc), sorting by tên with Vietnamese collation, unaccented slugs and initials. Use when a user asks to "tách họ tên", "sắp xếp danh sách tên", "tạo slug từ tên", "viết tắt tên", or needs to order a Vietnamese name list.
 license: MIT
-compatibility: Requires Node.js 18+ (runs npx -y @vn-skills/cli). No network access.
+compatibility: Requires Node.js 22+ (runs npx -y @vn-skills/cli). No network access.
 metadata:
   author: vn-skills
   version: '0.1.0'

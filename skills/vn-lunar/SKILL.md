@@ -2,7 +2,7 @@
 name: vn-lunar
 description: Vietnamese lunar calendar (âm lịch) - convert solar to lunar dates and back, leap months (tháng nhuận), can chi (Giáp Thìn, Ất Tỵ), zodiac, 24 solar terms, Tết date for any year, and Vietnamese public holidays (Tết, Giỗ Tổ Hùng Vương, 30/4, 1/5, 2/9). Uses the Hồ Ngọc Đức algorithm at UTC+7, which differs from the Chinese calendar on some dates. Use for "hôm nay là ngày mấy âm lịch", "Tết năm 2027 ngày nào", "ngày lễ", "mùng 1", "rằm", scheduling around holidays, or any lunar/solar conversion.
 license: MIT
-compatibility: Requires Node.js 18+ (runs npx -y @vn-skills/cli).
+compatibility: Requires Node.js 22+ (runs npx -y @vn-skills/cli).
 metadata:
   author: vn-skills
   version: '0.1.0'

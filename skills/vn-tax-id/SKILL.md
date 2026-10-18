@@ -2,7 +2,7 @@
 name: vn-tax-id
 description: Validate Vietnamese tax identification numbers (mã số thuế, MST) offline - 10-digit enterprise IDs, 13-digit branch IDs (0100233488-001) with check-digit verification, and 12-digit personal IDs (CCCD used as tax ID since 01/07/2025). Use when a user pastes a tax code, asks "MST này có hợp lệ không", needs to validate seller/buyer tax IDs on invoices or contracts, or builds a form that accepts mã số thuế. Does not query the tax authority.
 license: MIT
-compatibility: Requires Node.js 18+ (runs npx -y @vn-skills/cli). No network access.
+compatibility: Requires Node.js 22+ (runs npx -y @vn-skills/cli). No network access.
 metadata:
   author: vn-skills
   version: '0.1.0'

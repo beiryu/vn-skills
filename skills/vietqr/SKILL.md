@@ -2,7 +2,7 @@
 name: vietqr
 description: Generate or decode VietQR bank-transfer QR codes (NAPAS 247 / EMVCo) for Vietnamese banks, with CRC16 validation and PNG/SVG output. Use when the user asks for a payment QR, "QR thanh toán", "mã QR chuyển khoản", "tạo QR VietQR", "quét mã chuyển tiền", needs to parse a VietQR string, look up a bank BIN (Vietcombank 970436, MB 970422, ...), or integrate Vietnamese bank-transfer payments.
 license: MIT
-compatibility: Requires Node.js 18+ (runs npx -y @vn-skills/cli). No network access needed.
+compatibility: Requires Node.js 22+ (runs npx -y @vn-skills/cli). No network access needed.
 metadata:
   author: vn-skills
   version: '0.1.0'

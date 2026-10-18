@@ -52,7 +52,7 @@ npx -y @vn-skills/cli install all --agent cursor --global  # ~/.cursor/skills/*
 `--agent` là `claude`, `cursor` hoặc `codex`. Không ghi đè thư mục có sẵn nếu thiếu `--force`; `--dry-run` chỉ in các bước.
 
 **Cursor / Codex / agent khác:** copy đúng thư mục đó vào nơi agent tìm `SKILL.md` (`.cursor/skills/`, `.codex/skills/`…).
-Skill chỉ cần Node.js 18+ vì gọi `npx -y @vn-skills/cli`.
+Skill chỉ cần Node.js 22+ vì gọi `npx -y @vn-skills/cli`.
 
 **Khi làm việc trong repo này** (chưa publish npm) dùng `pnpm vn-skills …` thay cho `npx -y @vn-skills/cli …`.
 

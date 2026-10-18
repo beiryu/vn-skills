@@ -15,7 +15,7 @@ export default defineConfig({
   format: ['esm'],
   sourcemap: true,
   clean: true,
-  target: 'node18',
+  target: 'node22',
   async onSuccess() {
     rmSync('skills', { recursive: true, force: true });
     copyDir('../../skills', 'skills');

@@ -2,7 +2,7 @@
 name: vn-phone
 description: Normalise and classify Vietnamese phone numbers (số điện thoại) offline - converts +84/84/0 forms to 0912 345 678 and E.164, converts pre-2018 11-digit mobile prefixes (0162 → 032) to 10 digits, identifies the original carrier (Viettel, VinaPhone, MobiFone) and landline area codes (mã vùng). Use when a user pastes a phone number, asks "số này của nhà mạng nào", "đổi đầu số 11 số sang 10 số", or builds a phone input form.
 license: MIT
-compatibility: Requires Node.js 18+ (runs npx -y @vn-skills/cli). No network access.
+compatibility: Requires Node.js 22+ (runs npx -y @vn-skills/cli). No network access.
 metadata:
   author: vn-skills
   version: '0.1.0'

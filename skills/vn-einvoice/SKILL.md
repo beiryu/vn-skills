@@ -2,7 +2,7 @@
 name: vn-einvoice
 description: Vietnamese e-invoice (hóa đơn điện tử) helper - validate invoice data against Decree 123/2020 and Circular 78/2021 (series/ký hiệu, seller/buyer tax IDs, VAT rates 0/5/8/10/KCT/KKKNT), compute line amounts, VAT per rate, totals and "số tiền bằng chữ", and issue through a MOCK provider. Provider adapters for MISA meInvoice, Viettel S-Invoice and VNPT Invoice are interface-only skeletons (sandbox credentials from env, no real API calls yet). Use when building or testing invoice integrations, "xuất hóa đơn", "tính thuế GTGT", or validating invoice JSON.
 license: MIT
-compatibility: Requires Node.js 18+ (runs npx -y @vn-skills/cli). Mock provider only; no network.
+compatibility: Requires Node.js 22+ (runs npx -y @vn-skills/cli). Mock provider only; no network.
 metadata:
   author: vn-skills
   version: '0.1.0'
