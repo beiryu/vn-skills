@@ -11,6 +11,10 @@
     "vi": ["hóa đơn điện tử", "xuất hóa đơn", "tính thuế GTGT", "ký hiệu"],
     "en": ["e-invoice", "VAT", "invoice"]
   },
+  "vn-id": {
+    "vi": ["số CCCD", "căn cước công dân", "CMND"],
+    "en": ["citizen ID", "decode"]
+  },
   "vn-lunar": {
     "vi": ["âm lịch", "tháng nhuận", "Tết", "ngày lễ", "rằm"],
     "en": ["lunar", "holidays", "solar"]

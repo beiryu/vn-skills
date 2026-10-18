@@ -33,6 +33,7 @@ describe('vn-skills MCP server', () => {
         'vn_address_convert',
         'vn_address_search_wards',
         'vn_tax_id_validate',
+        'vn_id_parse',
         'vn_money_to_words',
         'vn_number_format',
         'vn_lunar_from_solar',
@@ -88,6 +89,12 @@ describe('vn-skills MCP server', () => {
       await client.callTool({ name: 'vn_tax_id_validate', arguments: { taxId: '0100233488' } }),
     );
     expect(j.valid).toBe(true);
+  });
+  it('vn_id_parse', async () => {
+    const j = text(
+      await client.callTool({ name: 'vn_id_parse', arguments: { id: '001090123456' } }),
+    );
+    expect(j.provinceCode).toBe('001');
   });
   it('vn_lunar_from_solar', async () => {
     const j = text(

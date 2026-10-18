@@ -1,0 +1,172 @@
+{
+  "skill": "vn-id",
+  "cases": {
+    "parse": [
+      {
+        "input": "001090123456",
+        "expected": {
+          "ok": true,
+          "kind": "cccd",
+          "provinceCode": "001"
+        }
+      },
+      {
+        "input": "048090123456",
+        "expected": {
+          "ok": true,
+          "kind": "cccd",
+          "provinceCode": "048"
+        }
+      },
+      {
+        "input": "079090123456",
+        "expected": {
+          "ok": true,
+          "kind": "cccd",
+          "provinceCode": "079"
+        }
+      },
+      {
+        "input": "096090123456",
+        "expected": {
+          "ok": true,
+          "kind": "cccd",
+          "provinceCode": "096"
+        }
+      },
+      {
+        "input": "001099123456",
+        "expected": {
+          "ok": true,
+          "sex": "male",
+          "birthYear": 1999
+        }
+      },
+      {
+        "input": "001199123456",
+        "expected": {
+          "ok": true,
+          "sex": "female",
+          "birthYear": 1999
+        }
+      },
+      {
+        "input": "001200123456",
+        "expected": {
+          "ok": true,
+          "sex": "male",
+          "birthYear": 2000
+        }
+      },
+      {
+        "input": "001300123456",
+        "expected": {
+          "ok": true,
+          "sex": "female",
+          "birthYear": 2000
+        }
+      },
+      {
+        "input": "001299123456",
+        "expected": {
+          "ok": true,
+          "sex": "male",
+          "birthYear": 2099
+        }
+      },
+      {
+        "input": "001399123456",
+        "expected": {
+          "ok": true,
+          "sex": "female",
+          "birthYear": 2099
+        }
+      },
+      {
+        "input": "001400123456",
+        "expected": {
+          "ok": true,
+          "sex": "male",
+          "birthYear": 2100
+        }
+      },
+      {
+        "input": "001500123456",
+        "expected": {
+          "ok": true,
+          "sex": "female",
+          "birthYear": 2100
+        }
+      },
+      {
+        "input": "001610123456",
+        "expected": {
+          "ok": true,
+          "sex": "male",
+          "birthYear": 2210
+        }
+      },
+      {
+        "input": "001710123456",
+        "expected": {
+          "ok": true,
+          "sex": "female",
+          "birthYear": 2210
+        }
+      },
+      {
+        "input": "001810123456",
+        "expected": {
+          "ok": true,
+          "sex": "male",
+          "birthYear": 2310
+        }
+      },
+      {
+        "input": "001910123456",
+        "expected": {
+          "ok": true,
+          "sex": "female",
+          "birthYear": 2310
+        }
+      },
+      {
+        "input": "000090123456",
+        "expected": {
+          "ok": true,
+          "provinceCode": "000",
+          "province": null
+        }
+      },
+      {
+        "input": "097090123456",
+        "expected": {
+          "ok": true,
+          "provinceCode": "097",
+          "province": null
+        }
+      },
+      {
+        "input": "999090123456",
+        "expected": {
+          "ok": true,
+          "provinceCode": "999",
+          "province": null
+        }
+      },
+      {
+        "input": "123456789",
+        "expected": {
+          "ok": true,
+          "kind": "cmnd"
+        }
+      },
+      {
+        "input": "12345678",
+        "expected": {
+          "ok": false
+        }
+      }
+    ]
+  }
+}
