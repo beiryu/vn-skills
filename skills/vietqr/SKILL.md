@@ -57,6 +57,10 @@ All commands print JSON when piped (or with `--json`). Inside this repo use `pnp
 
    Check `crcValid` and `isVietQR` before trusting `bank`, `account`, `amount`, `note`.
 
+   **From an image** (PNG only): `npx -y @vn-skills/cli vietqr decode qr.png` reads the QR and prints the same fields
+   plus `payload`. It fails with `no QR code found` when the image has no readable QR; ask the user for a sharper,
+   uncropped PNG (convert screenshots or JPEGs to PNG first).
+
 3. **Find a bank**: `npx -y @vn-skills/cli vietqr banks techcom` (empty query lists all 58 banks with BIN/code/name).
 
 Library use (TypeScript): `import { buildVietQR, parseVietQR, findBank } from '@vn-skills/core'`.

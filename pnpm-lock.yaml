@@ -223,10 +223,19 @@ importers:
       commander:
         specifier: ^13.1.0
         version: 13.1.0
+      jsqr:
+        specifier: ^1.4.0
+        version: 1.4.0
+      pngjs:
+        specifier: ^7.0.0
+        version: 7.0.0
       qrcode:
         specifier: ^1.5.4
         version: 1.5.4
     devDependencies:
+      '@types/pngjs':
+        specifier: ^6.0.5
+        version: 6.0.5
       '@types/qrcode':
         specifier: ^1.5.5
         version: 1.5.6

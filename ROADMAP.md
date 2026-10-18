@@ -216,7 +216,7 @@ Needs sandbox credentials (maintainer-owned). Same for Viettel S-Invoice (RM-022
 
 ### RM-024 · vietqr: decode VietQR from an image
 
-- status: filed (#11)
+- status: done (#29)
 - milestone: v0.4
 - labels: type: feature, area: vietqr, area: cli
 - size: s
