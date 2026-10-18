@@ -30,7 +30,7 @@ describe('vn-skills CLI', () => {
   it('--version', () => expect(run(['--version']).out.trim()).toMatch(/^\d+\.\d+\.\d+$/));
   it('--help lists commands', () => {
     const r = run(['--help']);
-    for (const c of ['vietqr', 'address', 'taxid', 'money', 'lunar', 'einvoice'])
+    for (const c of ['vietqr', 'address', 'taxid', 'id', 'money', 'lunar', 'einvoice'])
       expect(r.out).toContain(c);
   });
 

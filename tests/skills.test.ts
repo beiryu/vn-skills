@@ -29,6 +29,7 @@ describe('skills/ follow the Agent Skills spec', () => {
       'vietqr',
       'vn-address',
       'vn-einvoice',
+      'vn-id',
       'vn-lunar',
       'vn-money-words',
       'vn-name',

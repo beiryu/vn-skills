@@ -14,6 +14,7 @@ import {
   searchWards,
   parsePhone,
   validateTaxId,
+  parseCitizenId,
   moneyToWords,
   formatNumber,
   formatVnd,
@@ -264,6 +265,20 @@ export function createServer(): McpServer {
       return r.ok
         ? json({ ...r, valid: true })
         : json({ ok: false, valid: false, error: r.error }, true);
+    },
+  );
+
+  server.registerTool(
+    'vn_id_parse',
+    {
+      title: 'Parse citizen ID',
+      description:
+        'Offline validation and decoding of a 12-digit CCCD (province, sex, birth year; legacy province mapped to 2025 province) or format check of a 9-digit CMND. Format validity does not prove the identity exists.',
+      inputSchema: { id: z.string() },
+    },
+    async ({ id }) => {
+      const r = parseCitizenId(id);
+      return r.ok ? json(r) : json(r, true);
     },
   );
 
