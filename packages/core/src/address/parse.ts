@@ -137,7 +137,7 @@ export function parseAddress2025(text: string): Result<ParsedAddress2025> {
   let province: Province | undefined;
   let ward: Ward | undefined;
   const matches: ParsedAddress2025['matches'] = {};
-  let consumed = new Set<number>();
+  const consumed = new Set<number>();
 
   const pf = findProvince(tokens, PROVINCES, provinceByKey);
   if (pf) {
@@ -186,7 +186,7 @@ export function parseAddress2025(text: string): Result<ParsedAddress2025> {
         rest = wh.rest;
       }
       const street = rest.trim() || undefined;
-      return finish2025(province, ward, street, matches, warnings, input);
+      return finish2025(province, ward, street, matches, warnings);
     }
   }
 
@@ -198,7 +198,7 @@ export function parseAddress2025(text: string): Result<ParsedAddress2025> {
     );
   }
   const street = parts.filter((_, i) => !consumed.has(i)).join(', ') || undefined;
-  return finish2025(province, ward, street, matches, warnings, input);
+  return finish2025(province, ward, street, matches, warnings);
 }
 
 function finish2025(
@@ -207,7 +207,6 @@ function finish2025(
   street: string | undefined,
   matches: ParsedAddress2025['matches'],
   warnings: string[],
-  input: string,
 ): Result<ParsedAddress2025> {
   if (!ward) warnings.push('Ward not recognised; only the province was matched.');
   const confidence = Math.min(

@@ -35,7 +35,7 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/beiryu/vn-skills",
+    "url": "git+https://github.com/beiryu/vn-skills.git",
     "directory": "packages/core"
   },
   "engines": {

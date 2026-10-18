@@ -49,7 +49,7 @@ export function sanitizeNote(note: string): string {
  * A single "." or "," followed by 1-2 digits is a decimal (rejected), not a thousands separator.
  */
 export function parseAmountString(input: string): string | null {
-  let s = input
+  const s = input
     .trim()
     .replace(/\s*(đồng|dong|vnđ|vnd|đ|d)\s*$/i, '')
     .replace(/[\s_]/g, '');

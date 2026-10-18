@@ -9,6 +9,7 @@ corepack enable          # or: npm i -g pnpm
 pnpm install
 pnpm build               # builds packages/core, cli, mcp
 pnpm test                # vitest (builds first)
+pnpm lint                # eslint (typed rules; packages/core may not use the network)
 pnpm vn-skills --help    # run the CLI from the repo
 ```
 

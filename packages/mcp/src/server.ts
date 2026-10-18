@@ -48,7 +48,7 @@ const json = (data: unknown, isError = false): ToolResult => ({
   content: [
     {
       type: 'text',
-      text: JSON.stringify(data, (_k, v) => (typeof v === 'bigint' ? v.toString() : v), 2),
+      text: JSON.stringify(data, (_k, v: unknown) => (typeof v === 'bigint' ? v.toString() : v), 2),
     },
   ],
   isError,

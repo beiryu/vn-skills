@@ -63,9 +63,7 @@ export const DATASET = provincesJson as unknown as {
   provinces: Province[];
 };
 export const PROVINCES: readonly Province[] = DATASET.provinces;
-export const LEGACY_PROVINCES: readonly LegacyProvince[] = (
-  legacyJson as unknown as { provinces: LegacyProvince[] }
-).provinces;
+export const LEGACY_PROVINCES: readonly LegacyProvince[] = legacyJson.provinces;
 export const MAPPING: Mapping = mappingJson as unknown as Mapping;
 
 export const provinceByCode = new Map(PROVINCES.map((p) => [p.code, p]));

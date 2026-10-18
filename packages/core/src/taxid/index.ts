@@ -74,7 +74,7 @@ export function validateTaxId(input: string): Result<TaxIdInfo> {
   }
   const warnings: string[] = [];
   // A dash means "root-branch": enforce the 10-3 split so "0100233488-01" is not mistaken for a 12-digit personal ID.
-  const dashed = /^\s*(\d[\d\s.]*)[\-–]\s*(\d+)\s*$/.exec(String(input ?? ''));
+  const dashed = /^\s*(\d[\d\s.]*)[-–]\s*(\d+)\s*$/.exec(String(input ?? ''));
   if (dashed) {
     const root = dashed[1]!.replace(/[\s.]/g, '');
     const suffix = dashed[2]!;

@@ -13,7 +13,7 @@ Humans: see [CONTRIBUTING.md](CONTRIBUTING.md) and [GOVERNANCE.md](GOVERNANCE.md
 5. No scraping of government systems, no real third-party APIs, no credentials in code.
 6. Every new skill: core function(s) + CLI command + MCP tool + `skills/<name>/SKILL.md` + ≥ 20 tests, and add it to
    `tests/skills.test.ts`. Every bug fix: a golden test.
-7. Before finishing: `pnpm build && pnpm typecheck && pnpm exec vitest run && pnpm format:check`.
+7. Before finishing: `pnpm build && pnpm typecheck && pnpm lint && pnpm exec vitest run && pnpm format:check`.
 8. Conventional Commits (`feat(vn-lunar): …`). Small, focused commits.
 9. Do not touch `.github/workflows/`, `CODEOWNERS`, `TRADEMARK.md`, `GOVERNANCE.md` or release config unless the issue is
    explicitly about them.

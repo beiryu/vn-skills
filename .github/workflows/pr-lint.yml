@@ -38,6 +38,10 @@ jobs:
             vn-money-words
             vn-lunar
             vn-einvoice
+            vn-id
+            vn-name
+            vn-number-format
+            vn-phone
             core
             cli
             mcp

@@ -28,3 +28,9 @@ jobs:
       - name: Format check
         if: matrix.node == 22
         run: pnpm format:check
+      - name: Lint
+        if: matrix.node == 22
+        run: pnpm lint
+      - name: Check published package metadata and types
+        if: matrix.node == 22
+        run: pnpm check:packages
