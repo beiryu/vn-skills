@@ -2,7 +2,7 @@
 name: vn-number-format
 description: Format and parse Vietnamese numbers, currency and dates ("1.234.567,89", "1.200.000 ₫", "1,2 triệu", dd/MM/yyyy) and parse typed amounts like "1tr2", "500k", "1,5 tỷ". Use for "định dạng số", "định dạng tiền", "định dạng ngày", "phân tích số tiền", "1tr2", "500k" or any Vietnamese number/date display or input.
 license: MIT
-compatibility: Requires Node.js 18+ (runs npx -y @vn-skills/cli).
+compatibility: Requires Node.js 22+ (runs npx -y @vn-skills/cli).
 metadata:
   author: vn-skills
   version: '0.1.0'

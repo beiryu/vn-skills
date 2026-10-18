@@ -53,7 +53,7 @@ npx -y @vn-skills/cli install all --agent cursor --global      # ~/.cursor/skill
 the actions only.
 
 **Cursor / Codex / other agents:** copy the same folders into the agent's skills directory
-(`.cursor/skills/`, `.codex/skills/`, or wherever your agent discovers `SKILL.md`). The skills only need Node.js 18+ because
+(`.cursor/skills/`, `.codex/skills/`, or wherever your agent discovers `SKILL.md`). The skills only need Node.js 22+ because
 they call `npx -y @vn-skills/cli`.
 
 **Inside this repository** (before the packages are published) use `pnpm vn-skills …` instead of `npx -y @vn-skills/cli …`.

@@ -2,7 +2,7 @@
 name: vn-money-words
 description: Convert VND amounts to Vietnamese words ("1.200.000 đồng" -> "một triệu hai trăm nghìn đồng") with correct rules for mốt/lăm/tư, lẻ/linh, nghìn/ngàn, zero groups and very large numbers (tỷ tỷ). Use for invoices, contracts, receipts, bank transfer forms, "số tiền bằng chữ", "đọc số tiền thành chữ", "viết bằng chữ", or any time an amount must be spelled out in Vietnamese.
 license: MIT
-compatibility: Requires Node.js 18+ (runs npx -y @vn-skills/cli).
+compatibility: Requires Node.js 22+ (runs npx -y @vn-skills/cli).
 metadata:
   author: vn-skills
   version: '0.1.0'

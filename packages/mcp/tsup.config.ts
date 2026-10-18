@@ -5,6 +5,6 @@ export default defineConfig({
   format: ['esm'],
   sourcemap: true,
   clean: true,
-  target: 'node18',
+  target: 'node22',
   banner: { js: '#!/usr/bin/env node' },
 });

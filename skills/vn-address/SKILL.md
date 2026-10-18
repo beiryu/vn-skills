@@ -2,7 +2,7 @@
 name: vn-address
 description: Parse, normalise and convert Vietnamese addresses using the post-01/07/2025 administrative structure (34 provinces, 3,321 wards, no districts) with fuzzy matching for missing diacritics and abbreviations (TP.HCM, Q.1, P. Bến Nghé). Converts old addresses (63 tỉnh, quận/huyện) to the new 2-level structure via the official old→new ward mapping. Use for "địa chỉ mới sau sáp nhập", "chuyển đổi địa chỉ", "đổi địa chỉ cũ sang mới", "tỉnh nào sau sáp nhập", address validation, shipping/e-commerce forms, or when the user mentions phường/xã/tỉnh.
 license: MIT
-compatibility: Requires Node.js 18+ (runs npx -y @vn-skills/cli). Data is bundled; no network.
+compatibility: Requires Node.js 22+ (runs npx -y @vn-skills/cli). Data is bundled; no network.
 metadata:
   author: vn-skills
   version: '0.1.0'

@@ -2,7 +2,7 @@
 name: vn-id
 description: Validate and decode Vietnamese citizen ID numbers offline - 12-digit CCCD (province, sex, birth year, legacy province mapped to the 2025 province) and format check of 9-digit CMND. Use when a user asks "kiểm tra số CCCD", "giải mã căn cước công dân", "CCCD này của tỉnh nào", "CMND 9 số hợp lệ không", or builds a form that accepts số CCCD/CMND. Never queries any registry.
 license: MIT
-compatibility: Requires Node.js 18+ (runs npx -y @vn-skills/cli). No network access.
+compatibility: Requires Node.js 22+ (runs npx -y @vn-skills/cli). No network access.
 metadata:
   author: vn-skills
   version: '0.1.0'
