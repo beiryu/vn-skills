@@ -24,6 +24,7 @@ trên cùng một lõi chạy offline:
 | [`vietqr`](skills/vietqr/SKILL.md)                     | Tạo/đọc chuỗi VietQR (NAPAS 247, EMVCo), CRC16, xuất PNG/SVG, tra BIN ngân hàng                          | `vn-skills vietqr build --bank VCB --account 0011001234567 --amount 500000 --note "don 123" --out qr.png` |
 | [`vn-address`](skills/vn-address/SKILL.md)             | Chuẩn hóa địa chỉ; đổi địa chỉ cũ (63 tỉnh, có huyện) sang mới (34 tỉnh, 2 cấp, từ 01/07/2025)           | `vn-skills address convert "P. Bến Nghé, Q.1, TP.HCM"` → `Phường Sài Gòn, Thành phố Hồ Chí Minh`          |
 | [`vn-tax-id`](skills/vn-tax-id/SKILL.md)               | Kiểm tra MST offline (10/13 số, chữ số kiểm tra, hậu tố chi nhánh; CCCD 12 số)                           | `vn-skills taxid validate 0100233488-001`                                                                 |
+| [`vn-id`](skills/vn-id/SKILL.md)                       | Kiểm tra/giải mã CCCD 12 số (tỉnh, giới tính, năm sinh) và định dạng CMND 9 số offline                   | `vn-skills id parse 048090123456`                                                                         |
 | [`vn-phone`](skills/vn-phone/SKILL.md)                 | Chuẩn hóa số điện thoại (+84, đầu số 11 số cũ), nhà mạng theo đầu số, mã vùng cố định                    | `vn-skills phone 0912345678`                                                                              |
 | [`vn-money-words`](skills/vn-money-words/SKILL.md)     | Đọc số tiền bằng chữ (nghìn/ngàn, lẻ/linh, mốt/lăm/tư, tỷ tỷ)                                            | `vn-skills money words 1200000` → `một triệu hai trăm nghìn đồng`                                         |
 | [`vn-lunar`](skills/vn-lunar/SKILL.md)                 | Dương ↔ âm lịch, tháng nhuận, can chi, Tết, ngày lễ (thuật toán Hồ Ngọc Đức, UTC+7)                      | `vn-skills lunar tet 2027` → `2027-02-06 Đinh Mùi`                                                        |
@@ -71,7 +72,7 @@ Hoặc trong cấu hình MCP bất kỳ:
 Tool: `vietqr_build`, `vietqr_parse`, `vietqr_banks`, `vn_address_parse`, `vn_address_convert`, `vn_address_search_wards`,
 `vn_address_provinces`, `vn_address_province`, `vn_tax_id_validate`, `vn_tax_id_check_digit`, `vn_money_to_words`,
 `vn_lunar_from_solar`, `vn_lunar_to_solar`, `vn_lunar_holidays`, `vn_lunar_tet`, `vn_lunar_canchi`,
-`vn_einvoice_validate`, `vn_einvoice_totals`, `vn_einvoice_mock_issue`, `vn_einvoice_example`, `vn_name`.
+`vn_einvoice_validate`, `vn_einvoice_totals`, `vn_einvoice_mock_issue`, `vn_einvoice_example`, `vn_name`, `vn_id_parse`, `vn_phone`, `vn_number_format`.
 
 ## Thư viện
 
@@ -98,7 +99,7 @@ Nguồn dữ liệu, license và ngày cập nhật: [packages/core/data/SOURCES
 
 ## Lộ trình
 
-Sắp tới: `vn-id` (giải mã CCCD), `vn-holidays`, `vn-phone`, lệnh `vn-skills install`, bản Python và
+Sắp tới: `vn-holidays`, bản Python và
 adapter hóa đơn gọi sandbox thật. Danh sách đầy đủ kèm tiêu chí hoàn thành: [ROADMAP.md](ROADMAP.md).
 
 ## Cộng đồng

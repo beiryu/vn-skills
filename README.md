@@ -24,6 +24,7 @@ pre-2025 provinces and districts, misread amounts in words, or confuse the Chine
 | [`vietqr`](skills/vietqr/SKILL.md)                     | Build/parse VietQR (NAPAS 247, EMVCo) payloads, CRC16, PNG/SVG, bank BIN lookup                                        | `vn-skills vietqr build --bank VCB --account 0011001234567 --amount 500000 --note "don 123" --out qr.png` |
 | [`vn-address`](skills/vn-address/SKILL.md)             | Parse/normalise addresses; convert 63-province + district addresses to the 34-province, 2-level structure (01/07/2025) | `vn-skills address convert "P. Bến Nghé, Q.1, TP.HCM"` → `Phường Sài Gòn, Thành phố Hồ Chí Minh`          |
 | [`vn-tax-id`](skills/vn-tax-id/SKILL.md)               | Validate tax IDs (10 / 13 digits, check digit, branch suffix; 12-digit personal ID) offline                            | `vn-skills taxid validate 0100233488-001`                                                                 |
+| [`vn-id`](skills/vn-id/SKILL.md)                       | Validate/decode 12-digit CCCD (province, sex, birth year) and check 9-digit CMND format offline                        | `vn-skills id parse 048090123456`                                                                         |
 | [`vn-phone`](skills/vn-phone/SKILL.md)                 | Normalise phone numbers (+84, old 11-digit prefixes), carrier by prefix, landline area codes                           | `vn-skills phone 0912345678`                                                                              |
 | [`vn-money-words`](skills/vn-money-words/SKILL.md)     | Amount → Vietnamese words (nghìn/ngàn, lẻ/linh, mốt/lăm/tư, tỷ tỷ)                                                     | `vn-skills money words 1200000` → `một triệu hai trăm nghìn đồng`                                         |
 | [`vn-lunar`](skills/vn-lunar/SKILL.md)                 | Solar ↔ lunar, leap months, can chi, Tết, holidays (Hồ Ngọc Đức algorithm, UTC+7)                                      | `vn-skills lunar tet 2027` → `2027-02-06 Đinh Mùi`                                                        |
@@ -73,7 +74,7 @@ or in any MCP client config:
 Tools: `vietqr_build`, `vietqr_parse`, `vietqr_banks`, `vn_address_parse`, `vn_address_convert`, `vn_address_search_wards`,
 `vn_tax_id_validate`, `vn_money_to_words`, `vn_lunar_from_solar`, `vn_lunar_to_solar`, `vn_lunar_holidays`,
 `vn_lunar_tet`, `vn_lunar_canchi`, `vn_tax_id_check_digit`, `vn_address_provinces`, `vn_address_province`,
-`vn_einvoice_validate`, `vn_einvoice_totals`, `vn_einvoice_mock_issue`, `vn_einvoice_example`, `vn_name`.
+`vn_einvoice_validate`, `vn_einvoice_totals`, `vn_einvoice_mock_issue`, `vn_einvoice_example`, `vn_name`, `vn_id_parse`, `vn_phone`, `vn_number_format`.
 
 ## Library
 
@@ -108,7 +109,7 @@ See [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## Roadmap
 
-Next up: `vn-id` (CCCD decoding), `vn-holidays`, `vn-phone`, a `vn-skills install` command, a Python
+Next up: `vn-holidays`, a Python
 port and real e-invoice sandbox adapters. Full list with acceptance criteria: [ROADMAP.md](ROADMAP.md).
 
 ## Community
