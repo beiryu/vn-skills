@@ -4,6 +4,7 @@
  *   pnpm build-data            # refresh data from pinned upstream commits
  *   pnpm build-data --check    # rebuild into memory and fail if committed files differ
  *   pnpm build-data --offline  # reuse raw files cached in .scratch/raw (no network)
+ *   pnpm build-data --check --latest  # compare against upstream HEAD instead of the pinned commits
  *
  * Only this script touches the network. The core library never does.
  */
@@ -18,6 +19,7 @@ const RAW_DIR = join(ROOT, '.scratch', 'raw');
 const args = new Set(process.argv.slice(2));
 const CHECK = args.has('--check');
 const OFFLINE = args.has('--offline');
+const LATEST = args.has('--latest');
 
 /** Pinned upstream sources. Bump the SHA deliberately and note the change in SOURCES.md. */
 const SOURCES = {
@@ -49,7 +51,21 @@ const SOURCES = {
     files: { banks: 'src/constants/banks.ts', codes: 'src/constants/bank-code.ts' },
     note: 'NAPAS BIN list with VietQR support flags and SWIFT codes.',
   },
-} as const;
+};
+
+/** `--latest`: point every source at its upstream default branch head (only for `--check`). */
+async function useLatestCommits(): Promise<void> {
+  for (const s of Object.values(SOURCES)) {
+    const res = await fetch(`https://api.github.com/repos/${s.repo}/commits/HEAD`, {
+      headers: { accept: 'application/vnd.github.sha' },
+    });
+    if (!res.ok) throw new Error(`${res.status} ${res.statusText} resolving HEAD of ${s.repo}`);
+    const sha = (await res.text()).trim();
+    if (sha !== s.sha)
+      process.stderr.write(`${s.repo}: pinned ${s.sha.slice(0, 7)}, HEAD ${sha.slice(0, 7)}\n`);
+    s.sha = sha;
+  }
+}
 
 function rawUrl(repo: string, sha: string, path: string): string {
   return `https://raw.githubusercontent.com/${repo}/${sha}/${path}`;
@@ -510,6 +526,11 @@ function stable(obj: unknown, pretty = false): string {
 }
 
 async function main() {
+  if (LATEST) {
+    if (!CHECK)
+      throw new Error('--latest only works with --check; bump the pinned SHAs to refresh data');
+    await useLatestCommits();
+  }
   mkdirSync(DATA_DIR, { recursive: true });
   const provinces = await buildProvinces();
   const legacy = await buildLegacy();
