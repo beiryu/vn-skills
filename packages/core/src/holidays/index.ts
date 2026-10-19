@@ -169,17 +169,18 @@ export interface WorkingDayInfo {
 }
 
 /**
- * Days that an unannounced year's notice may still turn into days off: weekdays from 26 of the 12th lunar month to
- * the 7th day of Tết (the 5 Tết days have always fallen in that window), and 1 and 3 September.
+ * Days that an unannounced year's notice may still turn into days off. The 5 Tết days have always fallen between
+ * 26 of the 12th lunar month and the 5th day of Tết, and nghỉ bù for weekend Tết days can push the break up to the
+ * 10th; the second National Day day is 1 or 3 September, and nghỉ bù for a weekend 2/9 or 3/9 can reach 5 September.
  */
 function possiblyOff(jd: number, year: number, pending: HolidayKey[]): string | null {
   const d = jdToDate(jd);
-  if (pending.includes('nationalDay') && d.month === 9 && (d.day === 1 || d.day === 3))
+  if (pending.includes('nationalDay') && d.month === 9 && d.day >= 1 && d.day <= 5)
     return NAMES.nationalDay.name;
   if (!pending.includes('tet')) return null;
   const l = solarToLunar(d.day, d.month, d.year);
   if (!l.ok || l.leap) return null;
-  if ((l.month === 12 && l.day >= 26 && l.year === year - 1) || (l.month === 1 && l.day <= 7))
+  if ((l.month === 12 && l.day >= 26 && l.year === year - 1) || (l.month === 1 && l.day <= 10))
     return NAMES.tet.name;
   return null;
 }

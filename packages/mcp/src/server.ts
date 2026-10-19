@@ -439,7 +439,7 @@ export function createServer(): McpServer {
     {
       title: 'Vietnam official days off for a year',
       description:
-        'Official days off for public-sector staff in a year (2021+): Tết Dương lịch, Tết Âm lịch, Giỗ Tổ Hùng Vương, 30/4, 1/5, Quốc khánh, with nghỉ bù and swapped working Saturdays from the Government notice. Unannounced years return the statutory days, announced: false and the pending Tết / National Day days.',
+        'Official days off for public-sector staff in a year (2023-2199): Tết Dương lịch, Tết Âm lịch, Giỗ Tổ Hùng Vương, 30/4, 1/5, Quốc khánh, Ngày Văn hóa Việt Nam 24/11 (from 2026), with nghỉ bù and swapped working Saturdays from the Government notice. Unannounced years return the statutory days, announced: false and the pending Tết / National Day days.',
       inputSchema: { year: z.number().int() },
     },
     async ({ year }) => {

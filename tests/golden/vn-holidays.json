@@ -314,6 +314,55 @@
         }
       },
       {
+        "name": "5/9/2028 not announced: nghỉ bù for a weekend 2/9-3/9 could land here",
+        "input": [
+          5,
+          9,
+          2028
+        ],
+        "expected": {
+          "ok": true,
+          "certain": false
+        }
+      },
+      {
+        "name": "4/9/2029 not announced: 2/9 on Sunday, the second day may push nghỉ bù here",
+        "input": [
+          4,
+          9,
+          2029
+        ],
+        "expected": {
+          "ok": true,
+          "certain": false
+        }
+      },
+      {
+        "name": "mùng 9 Tết 2028 (Thursday 3/2) not announced: still uncertain",
+        "input": [
+          3,
+          2,
+          2028
+        ],
+        "expected": {
+          "ok": true,
+          "certain": false
+        }
+      },
+      {
+        "name": "6/9/2028 is past every possible National Day day off",
+        "input": [
+          6,
+          9,
+          2028
+        ],
+        "expected": {
+          "ok": true,
+          "working": true,
+          "certain": true
+        }
+      },
+      {
         "name": "1/1/2028 on Saturday -> Monday 3/1 off, certain by law",
         "input": [
           3,
