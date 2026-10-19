@@ -27,7 +27,7 @@ pre-2025 provinces and districts, misread amounts in words, or confuse the Chine
 | [`vn-id`](skills/vn-id/SKILL.md)                       | Validate/decode 12-digit CCCD (province, sex, birth year) and check 9-digit CMND format offline                        | `vn-skills id parse 048090123456`                                                                         |
 | [`vn-phone`](skills/vn-phone/SKILL.md)                 | Normalise phone numbers (+84, old 11-digit prefixes), carrier by prefix, landline area codes                           | `vn-skills phone 0912345678`                                                                              |
 | [`vn-money-words`](skills/vn-money-words/SKILL.md)     | Amount → Vietnamese words (nghìn/ngàn, lẻ/linh, mốt/lăm/tư, tỷ tỷ)                                                     | `vn-skills money words 1200000` → `một triệu hai trăm nghìn đồng`                                         |
-| [`vn-lunar`](skills/vn-lunar/SKILL.md)                 | Solar ↔ lunar, leap months, can chi, Tết, holidays (Hồ Ngọc Đức algorithm, UTC+7)                                      | `vn-skills lunar tet 2027` → `2027-02-06 Đinh Mùi`                                                        |
+| [`vn-lunar`](skills/vn-lunar/SKILL.md)                 | Solar ↔ lunar, leap months, can chi, Tết, holidays (Meeus astronomical algorithms, UTC+7)                              | `vn-skills lunar tet 2027` → `2027-02-06 Đinh Mùi`                                                        |
 | [`vn-einvoice`](skills/vn-einvoice/SKILL.md)           | E-invoice schema validation, VAT/totals, amount in words, mock provider; MISA/Viettel/VNPT adapter skeletons           | `vn-skills einvoice totals invoice.json`                                                                  |
 | [`vn-name`](skills/vn-name/SKILL.md)                   | Split họ / tên đệm / tên, compound surnames, Vietnamese collation sort, unaccented slugs and initials                  | `vn-skills name split "Tôn Thất Tùng"`                                                                    |
 | [`vn-number-format`](skills/vn-number-format/SKILL.md) | Format/parse Vietnamese numbers, ₫ amounts and dd/MM/yyyy dates; parse "1tr2", "500k", "1,5 tỷ"                        | `vn-skills numfmt parse "1tr2"` → `1200000`                                                               |
@@ -130,4 +130,4 @@ owners. vn-skills is not affiliated with, endorsed by or certified by NAPAS, any
 
 MIT. Bundled data is derived from MIT-licensed community datasets (see
 [SOURCES.md](packages/core/data/SOURCES.md) and their licences in
-[THIRD_PARTY_NOTICES.md](packages/core/THIRD_PARTY_NOTICES.md)); lunar algorithm after Hồ Ngọc Đức.
+[THIRD_PARTY_NOTICES.md](packages/core/THIRD_PARTY_NOTICES.md)); the lunar calendar is an independent implementation of the formulas in Jean Meeus, _Astronomical Algorithms_.

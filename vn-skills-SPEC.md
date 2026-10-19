@@ -14,7 +14,7 @@ Câu một dòng cho README: *"Dạy AI agent của bạn làm việc với Viet
 | `vn-address` | Chuẩn hóa địa chỉ tự do; chuyển **địa chỉ cũ (63 tỉnh, có cấp huyện) → mới (34 tỉnh, 2 cấp)** từ 01/07/2025 | Dữ liệu đơn vị hành chính + bảng ánh xạ cũ→mới; fuzzy match bỏ dấu |
 | `vn-tax-id` | Kiểm tra định dạng và chữ số kiểm tra của MST (10 số / 13 số có hậu tố chi nhánh) | **Chỉ kiểm tra offline.** Không scrape trang thuế (có captcha/ToS) |
 | `vn-money-words` | Đọc số tiền thành chữ ("một triệu hai trăm nghìn đồng"), có các biến thể nghìn/ngàn, lẻ/linh | Dùng cho hóa đơn, hợp đồng |
-| `vn-lunar` | Đổi dương ↔ âm lịch, can chi, ngày lễ Việt Nam | Thuật toán Hồ Ngọc Đức (đã công khai), test với các mốc Tết |
+| `vn-lunar` | Đổi dương ↔ âm lịch, can chi, ngày lễ Việt Nam | Công thức thiên văn Meeus (cài đặt độc lập), test với các mốc Tết |
 | `vn-einvoice` | Interface chung + adapter (MISA meInvoice, Viettel S-Invoice, VNPT) để tạo/tra cứu hóa đơn | MVP: định nghĩa schema + adapter **sandbox/mock**, chưa gọi API thật |
 
 Thêm sau MVP: `vn-id` (validate định dạng CCCD, giải mã tỉnh/giới tính/năm sinh từ 6 số đầu), `vn-holidays`, `vn-bank-statement`, cầu nối sang VietDoc.
@@ -31,7 +31,7 @@ Thêm sau MVP: `vn-id` (validate định dạng CCCD, giải mã tỉnh/giới t
 | MCP | MCP TypeScript SDK chính thức |
 | Dữ liệu hành chính | `thanglequoc/vietnamese-provinces-database`, `sunshine-tech/VietnamProvinces`, `vietmap-company/vietnam_administrative_address` |
 | VietQR | Các thư viện trong GitHub topic `vietqr`, tham khảo cách tính CRC/TLV, không cần fork |
-| Lịch âm | Bài + code thuật toán của Hồ Ngọc Đức |
+| Lịch âm | Jean Meeus, _Astronomical Algorithms_; JPL Horizons để đối chiếu |
 
 **Đề xuất:** tạo repo mới, copy cấu trúc thư mục kiểu `agent-skills`, viết lõi TS từ đầu (các hàm đều nhỏ). Dữ liệu hành chính thì **import có ghi nguồn**, không fork cả repo.
 
