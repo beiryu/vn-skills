@@ -30,6 +30,9 @@ import {
   provincesList,
   exampleInvoice,
   holidays,
+  publicHolidays,
+  isWorkingDay,
+  addWorkingDays,
   parseDateInput,
   validateInvoice,
   computeTotals,
@@ -429,6 +432,53 @@ export function createServer(): McpServer {
     },
     async ({ year, publicOnly }) =>
       json({ ok: true, year, holidays: holidays(year, { publicOnly }) }),
+  );
+
+  server.registerTool(
+    'vn_holidays_year',
+    {
+      title: 'Vietnam official days off for a year',
+      description:
+        'Official days off for public-sector staff in a year (2021+): Tết Dương lịch, Tết Âm lịch, Giỗ Tổ Hùng Vương, 30/4, 1/5, Quốc khánh, with nghỉ bù and swapped working Saturdays from the Government notice. Unannounced years return the statutory days, announced: false and the pending Tết / National Day days.',
+      inputSchema: { year: z.number().int() },
+    },
+    async ({ year }) => {
+      const r = publicHolidays(year);
+      return r.ok ? json(r) : json(r, true);
+    },
+  );
+
+  server.registerTool(
+    'vn_holidays_is_working_day',
+    {
+      title: 'Is it a working day in Vietnam?',
+      description:
+        'Whether a date is a working day for public-sector staff (Monday-Friday minus holidays and nghỉ bù, plus swapped Saturdays). certain: false when the year is not announced and the date may still become a Tết or National Day day off.',
+      inputSchema: { day: z.number().int(), month: z.number().int(), year: z.number().int() },
+    },
+    async ({ day, month, year }) => {
+      const r = isWorkingDay(day, month, year);
+      return r.ok ? json(r) : json(r, true);
+    },
+  );
+
+  server.registerTool(
+    'vn_holidays_add_working_days',
+    {
+      title: 'Add Vietnamese working days',
+      description:
+        'The date n working days after (or before, n < 0) a date, skipping weekends, holidays and nghỉ bù; the start date is not counted. certain: false if unannounced days were crossed.',
+      inputSchema: {
+        day: z.number().int(),
+        month: z.number().int(),
+        year: z.number().int(),
+        n: z.number().int(),
+      },
+    },
+    async ({ day, month, year, n }) => {
+      const r = addWorkingDays(day, month, year, n);
+      return r.ok ? json(r) : json(r, true);
+    },
   );
 
   const invoiceSchema = z

@@ -8,6 +8,7 @@ export * from './einvoice/index.js';
 export * from './id/index.js';
 export * from './name/index.js';
 export * from './phone/index.js';
+export * from './holidays/index.js';
 export { removeDiacritics, normalizeText, compactKey } from './shared/diacritics.js';
 export { tlvEncode, tlvDecode, type TlvNode } from './shared/tlv.js';
 export type { Result, VnError } from './shared/result.js';

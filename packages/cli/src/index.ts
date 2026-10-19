@@ -10,13 +10,14 @@ import { registerNumfmt } from './commands/numfmt.js';
 import { registerLunar } from './commands/lunar.js';
 import { registerEinvoice } from './commands/einvoice.js';
 import { registerPhone } from './commands/phone.js';
+import { registerHolidays } from './commands/holidays.js';
 import { registerInstall } from './commands/install.js';
 
 const program = new Command();
 program
   .name('vn-skills')
   .description(
-    'Vietnam-specific helpers for coding agents: VietQR, addresses (34 provinces), tax IDs, money in words, lunar calendar, e-invoices, citizen IDs, phone numbers, names, number formatting.\nOutput is JSON when stdout is not a terminal (or with --json).',
+    'Vietnam-specific helpers for coding agents: VietQR, addresses (34 provinces), tax IDs, money in words, lunar calendar, e-invoices, citizen IDs, phone numbers, names, number formatting, public holidays and working days.\nOutput is JSON when stdout is not a terminal (or with --json).',
   )
   .version(VERSION)
   .option('--json', 'always print JSON')
@@ -33,6 +34,7 @@ registerNumfmt(program);
 registerLunar(program);
 registerEinvoice(program);
 registerPhone(program);
+registerHolidays(program);
 registerInstall(program);
 
 program.parseAsync(process.argv).catch((err) => {
