@@ -67,7 +67,14 @@
         "expected": { "ok": true, "day": 15, "month": 8 }
       },
       { "name": "rejects invalid date", "input": [31, 2, 2024], "expected": { "ok": false } },
-      { "name": "rejects out-of-range year", "input": [1, 1, 1500], "expected": { "ok": false } }
+      { "name": "rejects out-of-range year", "input": [1, 1, 1500], "expected": { "ok": false } },
+      { "name": "1967-07-07 is the last day of month 5 (JPL new moon 00:00:04 UTC+7 on 8 July)", "input": [7, 7, 1967], "expected": { "ok": true, "day": 30, "month": 5, "year": 1967, "leap": false } },
+      { "name": "1967-07-08 starts month 6", "input": [8, 7, 1967], "expected": { "ok": true, "day": 1, "month": 6, "year": 1967, "leap": false } },
+      { "name": "1877-04-13 is day 30, not day 0", "input": [13, 4, 1877], "expected": { "ok": true, "day": 30, "month": 2, "year": 1877, "leap": false } },
+      { "name": "1885-03-16 is day 30, not day 0", "input": [16, 3, 1885], "expected": { "ok": true, "day": 30, "month": 1, "year": 1885, "leap": false } },
+      { "name": "2054-05-07 is day 30, not day 0", "input": [7, 5, 2054], "expected": { "ok": true, "day": 30, "month": 3, "year": 2054, "leap": false } },
+      { "name": "2062-04-09 is day 30, not day 0", "input": [9, 4, 2062], "expected": { "ok": true, "day": 30, "month": 2, "year": 2062, "leap": false } },
+      { "name": "2033-12-22 starts leap month 11 of 2033", "input": [22, 12, 2033], "expected": { "ok": true, "day": 1, "month": 11, "year": 2033, "leap": true } }
     ],
     "lunarToSolar": [
       {
@@ -95,7 +102,8 @@
         "input": [30, 12, 2024],
         "expected": { "ok": false }
       },
-      { "name": "rejects nonsense", "input": [0, 13, 2024], "expected": { "ok": false } }
+      { "name": "rejects nonsense", "input": [0, 13, 2024], "expected": { "ok": false } },
+      { "name": "leap month 11 of 2033 starts 2033-12-22", "input": [1, 11, 2033, true], "expected": { "ok": true, "day": 22, "month": 12, "year": 2033 } }
     ],
     "lunarMonthLength": [
       {
@@ -115,7 +123,9 @@
       { "input": 2022, "expected": null },
       { "input": 2024, "expected": null },
       { "input": 2026, "expected": null },
-      { "input": 2027, "expected": null }
+      { "input": 2027, "expected": null },
+      { "input": 2033, "expected": 11 },
+      { "input": 2034, "expected": null }
     ],
     "yearCanChi": [
       { "input": 2024, "expected": "Giáp Thìn" },

@@ -1,8 +1,9 @@
 # Lunar calendar algorithm
 
-Implementation follows Hồ Ngọc Đức, _Âm lịch Việt Nam_ (2004), which applies the astronomical formulas from
-Jean Meeus, _Astronomical Algorithms_ (1998). The code in `packages/core/src/lunar` is a clean-room TypeScript rewrite
-of the published formulas.
+The code in `packages/core/src/lunar` is an independent implementation of the published astronomical formulas in Jean
+Meeus, _Astronomical Algorithms_ (2nd ed., 1998): new moons from chapter 49 (full periodic and planetary terms), the Sun
+from chapter 25, ΔT (TT − UT) from the Espenak & Meeus polynomials. Hồ Ngọc Đức's _Âm lịch Việt Nam_ (2004) popularised
+this way of computing the Vietnamese calendar; none of its code is used.
 
 ## Rules of the Vietnamese lunar calendar
 
@@ -14,16 +15,25 @@ of the published formulas.
 
 ## Functions
 
-| Function                             | Purpose                                                                            |
-| ------------------------------------ | ---------------------------------------------------------------------------------- |
-| `jdFromDate(d,m,y)` / `jdToDate(jd)` | Julian Day Number ↔ Gregorian date                                                 |
-| `newMoon(k)`                         | Julian date of the k-th new moon since 1900-01-01 (Meeus ch. 49, truncated series) |
-| `sunLongitude(jd)`                   | apparent longitude of the Sun (radians)                                            |
-| `getNewMoonDay(k, tz)`               | local calendar day of new moon k                                                   |
-| `getSunLongitudeIndex(jd, tz)`       | which 30° sector the Sun is in at local midnight                                   |
-| `getLunarMonth11(y, tz)`             | day of the new moon starting month 11 of year y                                    |
-| `getLeapMonthOffset(a11, tz)`        | position of the leap month after month 11                                          |
-| `solarToLunar`, `lunarToSolar`       | the conversions, tz defaults to 7                                                  |
+| Function                             | Purpose                                                               |
+| ------------------------------------ | --------------------------------------------------------------------- |
+| `jdFromDate(d,m,y)` / `jdToDate(jd)` | Julian Day Number ↔ calendar date (Julian before 1582-10-15)          |
+| `newMoon(k)`                         | Julian date (UT) of the k-th new moon since 1900-01-01 (Meeus ch. 49) |
+| `sunLongitude(jd)`                   | apparent longitude of the Sun (radians)                               |
+| `getNewMoonDay(k, tz)`               | local calendar day of new moon k                                      |
+| `getSunLongitudeIndex(jd, tz)`       | which 30° sector the Sun is in at local midnight                      |
+| `solarToLunar`, `lunarToSolar`       | the conversions, tz defaults to 7                                     |
+| `leapMonthOf`, `lunarMonthLength`    | the leap month of a lunar year; 29 or 30 days                         |
+
+## Accuracy and edge cases
+
+- New moons are accurate to about ±10 s against JPL Horizons. Only a new moon within seconds of local midnight can land
+  on the wrong day. For past dates this happens once in 1800–2025 (1967-07-07T17:00:04Z, 00:00:04 at UTC+7), which is
+  pinned to the JPL day in a small override table.
+- For new moons decades ahead, the day depends on future ΔT, which nobody knows to better than a minute; a handful of
+  months after 2050 whose new moon falls within a minute of midnight may differ from other calendars.
+- UTC+7 is used for every year. Before 1968 calendars in Vietnam were computed for UTC+8 (as in China), so a month whose
+  new moon fell between 23:00 and 24:00 UTC+7 can start one day later in calendars printed at the time.
 
 ## Can chi
 
@@ -41,4 +51,5 @@ Hạ chí, Tiểu thử, Đại thử, Lập thu, Xử thử, Bạch lộ, Thu p
 ## Verified anchors (in the test-suite)
 
 Tết 2018–2030, leap months 2014/9, 2017/6, 2020/4, 2023/2, 2025/6, 2028/5, Giỗ Tổ 2024 = 18/04, Trung thu 2024 = 17/09,
-full round-trip for every day 2024–2026 and sampled days 1900–2100.
+a valid lunar day and a solar → lunar → solar round-trip for every solar date 1800-02-01…2199-12-31 (January 1800
+still belongs to lunar year 1799, which `lunarToSolar` rejects as out of range), the 1967-07 boundary, and leap month 11 of 2033.

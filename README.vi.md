@@ -27,7 +27,7 @@ trên cùng một lõi chạy offline:
 | [`vn-id`](skills/vn-id/SKILL.md)                       | Kiểm tra/giải mã CCCD 12 số (tỉnh, giới tính, năm sinh) và định dạng CMND 9 số offline                   | `vn-skills id parse 048090123456`                                                                         |
 | [`vn-phone`](skills/vn-phone/SKILL.md)                 | Chuẩn hóa số điện thoại (+84, đầu số 11 số cũ), nhà mạng theo đầu số, mã vùng cố định                    | `vn-skills phone 0912345678`                                                                              |
 | [`vn-money-words`](skills/vn-money-words/SKILL.md)     | Đọc số tiền bằng chữ (nghìn/ngàn, lẻ/linh, mốt/lăm/tư, tỷ tỷ)                                            | `vn-skills money words 1200000` → `một triệu hai trăm nghìn đồng`                                         |
-| [`vn-lunar`](skills/vn-lunar/SKILL.md)                 | Dương ↔ âm lịch, tháng nhuận, can chi, Tết, ngày lễ (thuật toán Hồ Ngọc Đức, UTC+7)                      | `vn-skills lunar tet 2027` → `2027-02-06 Đinh Mùi`                                                        |
+| [`vn-lunar`](skills/vn-lunar/SKILL.md)                 | Dương ↔ âm lịch, tháng nhuận, can chi, Tết, ngày lễ (thuật toán thiên văn Meeus, UTC+7)                  | `vn-skills lunar tet 2027` → `2027-02-06 Đinh Mùi`                                                        |
 | [`vn-einvoice`](skills/vn-einvoice/SKILL.md)           | Schema hóa đơn điện tử, tính thuế/tổng, số tiền bằng chữ, provider mock; khung adapter MISA/Viettel/VNPT | `vn-skills einvoice totals invoice.json`                                                                  |
 | [`vn-name`](skills/vn-name/SKILL.md)                   | Tách họ / tên đệm / tên, họ kép, sắp xếp theo tên (collation tiếng Việt), slug không dấu và chữ cái đầu  | `vn-skills name split "Tôn Thất Tùng"`                                                                    |
 | [`vn-number-format`](skills/vn-number-format/SKILL.md) | Định dạng/đọc số, tiền ₫, ngày dd/MM/yyyy kiểu Việt Nam; đọc "1tr2", "500k", "1,5 tỷ"                    | `vn-skills numfmt parse "1tr2"` → `1200000`                                                               |
@@ -119,4 +119,4 @@ hữu tương ứng. vn-skills không liên kết, không được bảo trợ h
 
 MIT. Dữ liệu đóng gói lấy từ các bộ dữ liệu cộng đồng license MIT (xem
 [SOURCES.md](packages/core/data/SOURCES.md) và toàn văn license tại
-[THIRD_PARTY_NOTICES.md](packages/core/THIRD_PARTY_NOTICES.md)); thuật toán âm lịch theo Hồ Ngọc Đức.
+[THIRD_PARTY_NOTICES.md](packages/core/THIRD_PARTY_NOTICES.md)); lịch âm được cài đặt độc lập từ các công thức trong sách _Astronomical Algorithms_ của Jean Meeus.
