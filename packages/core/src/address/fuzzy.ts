@@ -82,9 +82,9 @@ export function tokenize(raw: string): Token {
 
 /** Split an address on commas / semicolons / " - " and drop empty parts. */
 export function splitAddress(text: string): string[] {
+  // Split first, trim after: a pattern with \s* on both sides of the separator is quadratic on long runs of spaces.
   return text
-    .replace(/\s*[;,]\s*|\s+-\s+/g, '|')
-    .split('|')
+    .split(/[;,|]|\s-\s/)
     .map((s) => s.trim())
     .filter(Boolean);
 }
