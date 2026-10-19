@@ -24,7 +24,8 @@ describe.each(['README.md', 'README.vi.md'])('%s', (file) => {
 
   it('roadmap blurb only lists work that is not done', () => {
     const section = /^## (?:Roadmap|Lộ trình)\n([\s\S]*?)(?=^## )/m.exec(text)![1]!;
-    expect(section).toContain('vn-holidays');
+    expect(section).toContain('Python');
+    expect(section).not.toContain('`vn-holidays`');
     expect(section).not.toContain('`vn-id`');
     expect(section).not.toContain('`vn-phone`');
     expect(section).not.toContain('vn-skills install');

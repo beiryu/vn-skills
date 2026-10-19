@@ -170,7 +170,8 @@
         "name": "2024 Trung thu is 2024-09-17",
         "input": [2024],
         "expected": { "Tết Trung Thu": "2024-09-17" }
-      }
+      },
+      { "name": "Ngày Văn hóa Việt Nam is a public holiday from 2026", "input": [2026, { "publicOnly": true }], "expected": { "Ngày Văn hóa Việt Nam": "2026-11-24" } }
     ],
     "parseDateInput": [
       {

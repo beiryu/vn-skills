@@ -120,7 +120,7 @@ Acceptance:
 
 ### RM-011 · vn-holidays: official days off per year
 
-- status: filed (#7)
+- status: done (#56)
 - milestone: v0.3
 - labels: type: feature, area: skill, area: lunar
 - size: m

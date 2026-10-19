@@ -11,6 +11,10 @@
     "vi": ["hóa đơn điện tử", "xuất hóa đơn", "tính thuế GTGT", "ký hiệu"],
     "en": ["e-invoice", "VAT", "invoice"]
   },
+  "vn-holidays": {
+    "vi": ["ngày nghỉ lễ", "nghỉ bù", "ngày làm việc", "lịch nghỉ Tết"],
+    "en": ["public holidays", "working days", "business days"]
+  },
   "vn-id": {
     "vi": ["số CCCD", "căn cước công dân", "CMND"],
     "en": ["citizen ID", "decode"]

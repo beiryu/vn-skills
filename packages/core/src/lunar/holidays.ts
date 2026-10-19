@@ -25,6 +25,8 @@ const SOLAR_HOLIDAYS: Array<{
   name: string;
   nameEn: string;
   publicHoliday: boolean;
+  /** First year the day exists (or is a day off). */
+  since?: number;
 }> = [
   { day: 1, month: 1, name: 'Tết Dương lịch', nameEn: "New Year's Day", publicHoliday: true },
   { day: 14, month: 2, name: 'Lễ tình nhân', nameEn: "Valentine's Day", publicHoliday: false },
@@ -128,6 +130,15 @@ const SOLAR_HOLIDAYS: Array<{
     publicHoliday: false,
   },
   {
+    day: 24,
+    month: 11,
+    name: 'Ngày Văn hóa Việt Nam',
+    nameEn: 'Vietnamese Culture Day',
+    // Paid day off from 2026: National Assembly Resolution 28/2026/QH16, Art. 2.
+    publicHoliday: true,
+    since: 2026,
+  },
+  {
     day: 22,
     month: 12,
     name: 'Ngày thành lập QĐND Việt Nam',
@@ -193,7 +204,8 @@ const LUNAR_HOLIDAYS: Array<{
  */
 export function holidays(year: number, options: { publicOnly?: boolean } = {}): Holiday[] {
   const out: Holiday[] = [];
-  for (const h of SOLAR_HOLIDAYS) {
+  for (const { since, ...h } of SOLAR_HOLIDAYS) {
+    if (since !== undefined && year < since) continue;
     out.push({ ...h, calendar: 'solar', year, date: iso(h.day, h.month, year) });
   }
   // Lunar holidays may fall in this solar year from lunar year `year` (months 1-11) or `year-1` (month 12).

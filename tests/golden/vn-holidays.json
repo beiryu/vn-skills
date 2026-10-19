@@ -1,0 +1,479 @@
+{
+  "skill": "vn-holidays",
+  "cases": {
+    "daysOff": [
+      {
+        "name": "2023: 5034/TB-LĐTBXH; 1/1 on Sunday -> 2/1; Giỗ Tổ (Sat 29/4) and 30/4 (Sun) -> 2/5 and 3/5; 2/9 on Saturday -> 4/9",
+        "input": 2023,
+        "expected": [
+          "2023-01-02",
+          "2023-01-20",
+          "2023-01-23",
+          "2023-01-24",
+          "2023-01-25",
+          "2023-01-26",
+          "2023-05-01",
+          "2023-05-02",
+          "2023-05-03",
+          "2023-09-01",
+          "2023-09-04"
+        ]
+      },
+      {
+        "name": "2024: 5015/TB-LĐTBXH and 1570/TB-LĐTBXH (29/4 off, Saturday 4/5 worked)",
+        "input": 2024,
+        "expected": [
+          "2024-01-01",
+          "2024-02-08",
+          "2024-02-09",
+          "2024-02-12",
+          "2024-02-13",
+          "2024-02-14",
+          "2024-04-18",
+          "2024-04-29",
+          "2024-04-30",
+          "2024-05-01",
+          "2024-09-02",
+          "2024-09-03"
+        ]
+      },
+      {
+        "name": "2025: 6150/TB-BLĐTBXH (2/5 off, Saturday 26/4 worked)",
+        "input": 2025,
+        "expected": [
+          "2025-01-01",
+          "2025-01-27",
+          "2025-01-28",
+          "2025-01-29",
+          "2025-01-30",
+          "2025-01-31",
+          "2025-04-07",
+          "2025-04-30",
+          "2025-05-01",
+          "2025-05-02",
+          "2025-09-01",
+          "2025-09-02"
+        ]
+      },
+      {
+        "name": "2026: 9441/TB-BNV, 12729/VPCP-KGVX (2/1 off, 10/1 worked), 31/8 off and 22/8 worked, Giỗ Tổ on Sunday -> 27/4, 24/11 (NQ 28/2026/QH16)",
+        "input": 2026,
+        "expected": [
+          "2026-01-01",
+          "2026-01-02",
+          "2026-02-16",
+          "2026-02-17",
+          "2026-02-18",
+          "2026-02-19",
+          "2026-02-20",
+          "2026-04-27",
+          "2026-04-30",
+          "2026-05-01",
+          "2026-08-31",
+          "2026-09-01",
+          "2026-09-02",
+          "2026-11-24"
+        ]
+      },
+      {
+        "name": "2027: 11483/TB-BNV: Tết 4/2-10/2 with 2 compensatory days, Quốc khánh 2/9 and 3/9; 1/5 on Saturday -> 3/5",
+        "input": 2027,
+        "expected": [
+          "2027-01-01",
+          "2027-02-04",
+          "2027-02-05",
+          "2027-02-08",
+          "2027-02-09",
+          "2027-02-10",
+          "2027-04-16",
+          "2027-04-30",
+          "2027-05-03",
+          "2027-09-02",
+          "2027-09-03",
+          "2027-11-24"
+        ]
+      }
+    ],
+    "publicHolidays": [
+      {
+        "name": "2026 lists working Saturdays from swaps",
+        "input": 2026,
+        "expected": {
+          "ok": true,
+          "announced": true,
+          "workingSaturdays": [
+            "2026-01-10",
+            "2026-08-22"
+          ],
+          "pending": []
+        }
+      },
+      {
+        "name": "2028 not announced: statutory days, Tết and second National Day pending",
+        "input": 2028,
+        "expected": {
+          "ok": true,
+          "announced": false,
+          "pending": [
+            {
+              "holiday": "tet"
+            },
+            {
+              "holiday": "nationalDay"
+            }
+          ]
+        }
+      },
+      {
+        "name": "years before the data set are rejected",
+        "input": 2022,
+        "expected": {
+          "ok": false,
+          "error": {
+            "code": "OUT_OF_RANGE"
+          }
+        }
+      }
+    ],
+    "isWorkingDay": [
+      {
+        "name": "swapped weekday is off (Tết Dương lịch 2026)",
+        "input": [
+          2,
+          1,
+          2026
+        ],
+        "expected": {
+          "ok": true,
+          "working": false,
+          "certain": true
+        }
+      },
+      {
+        "name": "Saturday worked in exchange is a working day",
+        "input": [
+          10,
+          1,
+          2026
+        ],
+        "expected": {
+          "ok": true,
+          "working": true,
+          "certain": true
+        }
+      },
+      {
+        "name": "first Tết day 2026 (29 Chạp)",
+        "input": [
+          16,
+          2,
+          2026
+        ],
+        "expected": {
+          "ok": true,
+          "working": false,
+          "reason": "Tết Âm lịch"
+        }
+      },
+      {
+        "name": "first working day after Tết 2026",
+        "input": [
+          23,
+          2,
+          2026
+        ],
+        "expected": {
+          "ok": true,
+          "working": true,
+          "certain": true
+        }
+      },
+      {
+        "name": "nghỉ bù for Giỗ Tổ on Sunday 26/4/2026",
+        "input": [
+          27,
+          4,
+          2026
+        ],
+        "expected": {
+          "ok": true,
+          "working": false,
+          "certain": true
+        }
+      },
+      {
+        "name": "Ngày Văn hóa Việt Nam 2026",
+        "input": [
+          24,
+          11,
+          2026
+        ],
+        "expected": {
+          "ok": true,
+          "working": false,
+          "reason": "Ngày Văn hóa Việt Nam"
+        }
+      },
+      {
+        "name": "swap 2025: Friday 2/5 off",
+        "input": [
+          2,
+          5,
+          2025
+        ],
+        "expected": {
+          "ok": true,
+          "working": false
+        }
+      },
+      {
+        "name": "swap 2025: Saturday 26/4 worked",
+        "input": [
+          26,
+          4,
+          2025
+        ],
+        "expected": {
+          "ok": true,
+          "working": true
+        }
+      },
+      {
+        "name": "Tết 2024 nghỉ bù for the weekend inside Tết",
+        "input": [
+          13,
+          2,
+          2024
+        ],
+        "expected": {
+          "ok": true,
+          "working": false,
+          "certain": true
+        }
+      },
+      {
+        "name": "2/9/2023 on Saturday -> Monday 4/9 off",
+        "input": [
+          4,
+          9,
+          2023
+        ],
+        "expected": {
+          "ok": true,
+          "working": false
+        }
+      },
+      {
+        "name": "ordinary Sunday",
+        "input": [
+          18,
+          10,
+          2026
+        ],
+        "expected": {
+          "ok": true,
+          "working": false,
+          "reason": "Sunday"
+        }
+      },
+      {
+        "name": "ordinary Monday",
+        "input": [
+          19,
+          10,
+          2026
+        ],
+        "expected": {
+          "ok": true,
+          "working": true,
+          "certain": true
+        }
+      },
+      {
+        "name": "Tết 2028 not announced: Wednesday 26/1/2028 (mùng 1) is uncertain",
+        "input": [
+          26,
+          1,
+          2028
+        ],
+        "expected": {
+          "ok": true,
+          "certain": false
+        }
+      },
+      {
+        "name": "1/9/2028 not announced: uncertain",
+        "input": [
+          1,
+          9,
+          2028
+        ],
+        "expected": {
+          "ok": true,
+          "certain": false
+        }
+      },
+      {
+        "name": "5/9/2028 not announced: nghỉ bù for a weekend 2/9-3/9 could land here",
+        "input": [
+          5,
+          9,
+          2028
+        ],
+        "expected": {
+          "ok": true,
+          "certain": false
+        }
+      },
+      {
+        "name": "4/9/2029 not announced: 2/9 on Sunday, the second day may push nghỉ bù here",
+        "input": [
+          4,
+          9,
+          2029
+        ],
+        "expected": {
+          "ok": true,
+          "certain": false
+        }
+      },
+      {
+        "name": "mùng 9 Tết 2028 (Thursday 3/2) not announced: still uncertain",
+        "input": [
+          3,
+          2,
+          2028
+        ],
+        "expected": {
+          "ok": true,
+          "certain": false
+        }
+      },
+      {
+        "name": "6/9/2028 is past every possible National Day day off",
+        "input": [
+          6,
+          9,
+          2028
+        ],
+        "expected": {
+          "ok": true,
+          "working": true,
+          "certain": true
+        }
+      },
+      {
+        "name": "1/1/2028 on Saturday -> Monday 3/1 off, certain by law",
+        "input": [
+          3,
+          1,
+          2028
+        ],
+        "expected": {
+          "ok": true,
+          "working": false,
+          "certain": true
+        }
+      },
+      {
+        "name": "invalid date",
+        "input": [
+          31,
+          2,
+          2026
+        ],
+        "expected": {
+          "ok": false,
+          "error": {
+            "code": "INVALID_DATE"
+          }
+        }
+      }
+    ],
+    "addWorkingDays": [
+      {
+        "name": "3 working days from Thursday before Tết 2026 skip the 9-day break",
+        "input": [
+          12,
+          2,
+          2026,
+          3
+        ],
+        "expected": {
+          "ok": true,
+          "date": "2026-02-24",
+          "certain": true
+        }
+      },
+      {
+        "name": "across New Year 2027 (Friday 1/1 off)",
+        "input": [
+          31,
+          12,
+          2026,
+          1
+        ],
+        "expected": {
+          "ok": true,
+          "date": "2027-01-04",
+          "certain": true
+        }
+      },
+      {
+        "name": "a swapped Saturday counts as a working day",
+        "input": [
+          21,
+          8,
+          2026,
+          1
+        ],
+        "expected": {
+          "ok": true,
+          "date": "2026-08-22",
+          "certain": true
+        }
+      },
+      {
+        "name": "backwards over 30/4, 1/5 and nghỉ bù for Giỗ Tổ",
+        "input": [
+          4,
+          5,
+          2026,
+          -3
+        ],
+        "expected": {
+          "ok": true,
+          "date": "2026-04-24",
+          "certain": true
+        }
+      },
+      {
+        "name": "n = 0 returns the date",
+        "input": [
+          19,
+          10,
+          2026,
+          0
+        ],
+        "expected": {
+          "ok": true,
+          "date": "2026-10-19",
+          "certain": true
+        }
+      },
+      {
+        "name": "crossing an unannounced Tết is uncertain",
+        "input": [
+          20,
+          1,
+          2028,
+          10
+        ],
+        "expected": {
+          "ok": true,
+          "certain": false
+        }
+      }
+    ]
+  }
+}

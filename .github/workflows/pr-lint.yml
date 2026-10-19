@@ -38,6 +38,7 @@ jobs:
             vn-money-words
             vn-lunar
             vn-einvoice
+            vn-holidays
             vn-id
             vn-name
             vn-number-format

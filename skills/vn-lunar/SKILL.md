@@ -61,7 +61,10 @@ Library: `solarToLunar`, `lunarToSolar`, `lunarInfo`, `tetDate`, `holidays`, `ye
 - Lunar months have 29 or 30 days; `to-solar` fails with `INVALID_DATE` if day 30 does not exist that month.
 - A leap month repeats a month number; `--leap` without a leap month that year returns `NOT_LEAP_MONTH` and tells you which month is leap.
 - The lunar **year** of a January/February date is usually the previous solar year (2025-01-28 is 29/12 Giáp Thìn **2024**).
-- Public holidays (`publicHoliday: true`) follow the Labour Code: 1/1, Tết (5 days around mùng 1), 10/3 âm, 30/4, 1/5, 2/9 (+1 adjacent day). Exact days off are announced yearly by the government; the tool gives the calendar dates, not the substitute days.
+- Public holidays (`publicHoliday: true`) follow the Labour Code: 1/1, Tết (5 days around mùng 1), 10/3 âm, 30/4, 1/5,
+  2/9 (+1 adjacent day), and 24/11 from 2026 (Resolution 28/2026/QH16). This tool gives the calendar dates; for the
+  actual days off of a year (announced Tết days, nghỉ bù, swaps) and working-day arithmetic, use the **vn-holidays**
+  skill (`vn-skills holidays year 2026`).
 - Algorithm details: [references/algorithm.md](references/algorithm.md).
 
 ## Common mistakes to avoid

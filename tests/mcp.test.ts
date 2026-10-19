@@ -49,6 +49,9 @@ describe('vn-skills MCP server', () => {
         'vn_address_province',
         'vn_einvoice_example',
         'vn_name',
+        'vn_holidays_add_working_days',
+        'vn_holidays_is_working_day',
+        'vn_holidays_year',
         'vn_phone',
       ].sort(),
     );

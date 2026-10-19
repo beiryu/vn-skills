@@ -120,6 +120,21 @@ describe('vn-skills CLI', () => {
     expect(r.code).not.toBe(0);
     expect(r.out + r.err).toMatch(/cannot read .* as PNG/);
   });
+  it('holidays year/check/add', () => {
+    const y = run(['holidays', 'year', '2026', '--json']).json();
+    expect(y.announced).toBe(true);
+    expect((y.daysOff as Array<{ date: string }>).map((d) => d.date)).toContain('2026-11-24');
+    expect(run(['holidays', 'check', '2026-02-16', '--json']).json()).toMatchObject({
+      working: false,
+      certain: true,
+    });
+    expect(run(['holidays', 'add', '12/02/2026', '3', '--json']).json()).toMatchObject({
+      date: '2026-02-24',
+    });
+    const bad = run(['holidays', 'year', '1999', '--json']);
+    expect(bad.code).not.toBe(0);
+    expect(bad.json()).toMatchObject({ ok: false, error: { code: 'OUT_OF_RANGE' } });
+  });
   it('vietqr build writes SVG', () => {
     const dir = mkdtempSync(join(tmpdir(), 'vn-skills-'));
     const file = join(dir, 'qr.svg');
