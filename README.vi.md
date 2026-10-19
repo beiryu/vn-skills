@@ -112,6 +112,11 @@ adapter hóa đơn gọi sandbox thật. Danh sách đầy đủ kèm tiêu chí
 Dự án chỉ cung cấp công cụ kỹ thuật, **không thay thế tư vấn thuế / pháp lý / kế toán**, không truy vấn hay scrape hệ thống
 của cơ quan nhà nước, và không bảo đảm một MST đã được đăng ký hay một địa chỉ được đơn vị vận chuyển chấp nhận.
 
+VietQR và NAPAS là nhãn hiệu của Công ty Cổ phần Thanh toán Quốc gia Việt Nam (NAPAS); tên ngân hàng thuộc về chủ sở
+hữu tương ứng. vn-skills không liên kết, không được bảo trợ hay chứng nhận bởi NAPAS, ngân hàng hay cơ quan nhà nước nào.
+
 ## License
 
-MIT. Dữ liệu đóng gói lấy từ các bộ dữ liệu cộng đồng license MIT (xem SOURCES.md); thuật toán âm lịch theo Hồ Ngọc Đức.
+MIT. Dữ liệu đóng gói lấy từ các bộ dữ liệu cộng đồng license MIT (xem
+[SOURCES.md](packages/core/data/SOURCES.md) và toàn văn license tại
+[THIRD_PARTY_NOTICES.md](packages/core/THIRD_PARTY_NOTICES.md)); thuật toán âm lịch theo Hồ Ngọc Đức.

@@ -15,7 +15,8 @@
   "files": [
     "dist",
     "data/SOURCES.md",
-    "README.md"
+    "README.md",
+    "THIRD_PARTY_NOTICES.md"
   ],
   "sideEffects": false,
   "scripts": {
