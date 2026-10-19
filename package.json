@@ -1,7 +1,7 @@
 {
   "name": "vn-skills-monorepo",
   "private": true,
-  "version": "0.3.2",
+  "version": "0.3.3",
   "description": "Agent Skills + core library + MCP server for Vietnam-specific business logic (VietQR, addresses, tax IDs, money words, lunar calendar, e-invoices).",
   "license": "MIT",
   "type": "module",
