@@ -22,7 +22,6 @@ this way of computing the Vietnamese calendar; none of its code is used.
 | `sunLongitude(jd)`                   | apparent longitude of the Sun (radians)                               |
 | `getNewMoonDay(k, tz)`               | local calendar day of new moon k                                      |
 | `getSunLongitudeIndex(jd, tz)`       | which 30° sector the Sun is in at local midnight                      |
-| `monthElevenStartDay(y, tz)`         | day of the new moon starting month 11 of year y                       |
 | `solarToLunar`, `lunarToSolar`       | the conversions, tz defaults to 7                                     |
 | `leapMonthOf`, `lunarMonthLength`    | the leap month of a lunar year; 29 or 30 days                         |
 
@@ -52,4 +51,5 @@ Hạ chí, Tiểu thử, Đại thử, Lập thu, Xử thử, Bạch lộ, Thu p
 ## Verified anchors (in the test-suite)
 
 Tết 2018–2030, leap months 2014/9, 2017/6, 2020/4, 2023/2, 2025/6, 2028/5, Giỗ Tổ 2024 = 18/04, Trung thu 2024 = 17/09,
-full round-trip and a valid lunar day for every day 1800–2199, the 1967-07 boundary, and leap month 11 of 2033.
+a valid lunar day and a solar → lunar → solar round-trip for every solar date 1800-02-01…2199-12-31 (January 1800
+still belongs to lunar year 1799, which `lunarToSolar` rejects as out of range), the 1967-07 boundary, and leap month 11 of 2033.

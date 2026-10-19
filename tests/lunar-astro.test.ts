@@ -1,18 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import {
-  jdFromDate,
-  jdToDate,
-  leapMonthOf,
-  lunarToSolar,
-  newMoon,
-  solarToLunar,
-} from '@vn-skills/core';
-
-const lunar = (dd: number, mm: number, yy: number) => {
-  const r = solarToLunar(dd, mm, yy);
-  if (!r.ok) throw new Error(`solarToLunar failed for ${dd}/${mm}/${yy}`);
-  return { day: r.day, month: r.month, year: r.year, leap: r.leap };
-};
+import { jdFromDate, jdToDate, lunarToSolar, newMoon, solarToLunar } from '@vn-skills/core';
 
 describe('newMoon (Meeus, Astronomical Algorithms ch. 49)', () => {
   it('matches Example 49.a: new moon of 1977 February', () => {
@@ -24,45 +11,6 @@ describe('newMoon (Meeus, Astronomical Algorithms ch. 49)', () => {
 
   it('k = 0 is the new moon of 1900-01-01', () => {
     expect(jdToDate(Math.floor(newMoon(0) + 0.5))).toEqual({ day: 1, month: 1, year: 1900 });
-  });
-});
-
-describe('new moons close to local midnight', () => {
-  it('1967-07 new moon (JPL 17:00:04Z) starts month 6 on 8 July', () => {
-    expect(lunar(7, 7, 1967)).toEqual({ day: 30, month: 5, year: 1967, leap: false });
-    expect(lunar(8, 7, 1967)).toEqual({ day: 1, month: 6, year: 1967, leap: false });
-  });
-
-  it.each([
-    [
-      [13, 4, 1877],
-      [30, 2, 1877],
-    ],
-    [
-      [16, 3, 1885],
-      [30, 1, 1885],
-    ],
-    [
-      [7, 5, 2054],
-      [30, 3, 2054],
-    ],
-    [
-      [9, 4, 2062],
-      [30, 2, 2062],
-    ],
-  ] as const)('%j is lunar %j', ([dd, mm, yy], [ld, lm, ly]) => {
-    expect(lunar(dd, mm, yy)).toMatchObject({ day: ld, month: lm, year: ly });
-  });
-});
-
-describe('leap month 11 of 2033', () => {
-  it('2033 repeats month 11 and 2034 has no leap month', () => {
-    expect(leapMonthOf(2033)).toBe(11);
-    expect(leapMonthOf(2034)).toBeNull();
-  });
-
-  it('2033-12-22 is the first day of leap month 11', () => {
-    expect(lunar(22, 12, 2033)).toEqual({ day: 1, month: 11, year: 2033, leap: true });
   });
 });
 

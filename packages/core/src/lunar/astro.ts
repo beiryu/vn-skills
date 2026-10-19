@@ -77,10 +77,15 @@ export function jdToDate(jd: number): { day: number; month: number; year: number
  * polynomials (valid well beyond the calendar's supported 1800-2199 range).
  */
 function deltaTSeconds(year: number): number {
-  if (year < 1800) {
+  if (year < 1700) {
     // Long-term parabola (Morrison & Stephenson) for anything earlier.
     const u = (year - 1820) / 100;
     return -20 + 32 * u * u;
+  }
+  if (year < 1800) {
+    // Needed for late-1799 lunations when converting January 1800; joins the 1800 segment smoothly.
+    const t = year - 1700;
+    return 8.83 + 0.1603 * t - 0.0059285 * t ** 2 + 0.00013336 * t ** 3 - t ** 4 / 1174000;
   }
   if (year < 1860) {
     const t = year - 1800;

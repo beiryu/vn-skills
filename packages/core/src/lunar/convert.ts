@@ -78,11 +78,6 @@ function monthElevenLunation(yy: number, timeZone: number): number {
   return k;
 }
 
-/** Local JDN of the first day of lunar month 11 that falls in Gregorian year `yy`. */
-export function monthElevenStartDay(yy: number, timeZone = VN_TIMEZONE): number {
-  return getNewMoonDay(monthElevenLunation(yy, timeZone), timeZone);
-}
-
 /**
  * The months from month 11 of Gregorian year `yy` up to (not including) month 11 of `yy + 1`.
  * `leapOffset` is the position (counted from that first month 11 = 0) of the leap month, if any.
