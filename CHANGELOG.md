@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.2](https://github.com/beiryu/vn-skills/compare/v0.3.1...v0.3.2) (2026-10-19)
+
+
+### Bug Fixes
+
+* **core:** make address splitting, VietQR amounts and email checks linear-time ([#50](https://github.com/beiryu/vn-skills/issues/50)) ([43ab858](https://github.com/beiryu/vn-skills/commit/43ab8587c9a557fdbdfe598b3265ca6c5409c4fb))
+
 ## [0.3.1](https://github.com/beiryu/vn-skills/compare/v0.3.0...v0.3.1) (2026-10-18)
 
 
