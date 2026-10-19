@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.3](https://github.com/beiryu/vn-skills/compare/v0.3.2...v0.3.3) (2026-10-19)
+
+
+### Documentation
+
+* **core:** ship third-party notices for bundled data and a trademark disclaimer ([#52](https://github.com/beiryu/vn-skills/issues/52)) ([8e0c318](https://github.com/beiryu/vn-skills/commit/8e0c3187beb4513e18194d2cbdc3255523bab98e))
+
 ## [0.3.2](https://github.com/beiryu/vn-skills/compare/v0.3.1...v0.3.2) (2026-10-19)
 
 

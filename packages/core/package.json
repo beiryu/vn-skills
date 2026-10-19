@@ -1,6 +1,6 @@
 {
   "name": "@vn-skills/core",
-  "version": "0.3.2",
+  "version": "0.3.3",
   "description": "Offline, dependency-free Vietnam business logic: VietQR, 34-province addresses, tax ID validation, money-in-words, lunar calendar, e-invoice schema.",
   "license": "MIT",
   "type": "module",
