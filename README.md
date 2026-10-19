@@ -123,6 +123,11 @@ This project provides technical tooling only. It is not tax, legal or accounting
 government system, and does not guarantee that a tax ID is registered or that an address is accepted by a carrier.
 Verify with the competent authority where it matters.
 
+VietQR and NAPAS are trademarks of the National Payment Corporation of Vietnam (NAPAS); bank names belong to their
+owners. vn-skills is not affiliated with, endorsed by or certified by NAPAS, any bank or any Vietnamese authority.
+
 ## License
 
-MIT. Bundled data is derived from MIT-licensed community datasets (see SOURCES.md); lunar algorithm after Hồ Ngọc Đức.
+MIT. Bundled data is derived from MIT-licensed community datasets (see
+[SOURCES.md](packages/core/data/SOURCES.md) and their licences in
+[THIRD_PARTY_NOTICES.md](packages/core/THIRD_PARTY_NOTICES.md)); lunar algorithm after Hồ Ngọc Đức.
