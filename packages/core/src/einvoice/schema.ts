@@ -123,7 +123,7 @@ function validateParty(
     p.email !== undefined &&
     isStr(p.email) &&
     p.email &&
-    !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(p.email)
+    !/^[^\s@]+@[^\s@.]+(?:\.[^\s@.]+)+$/.test(p.email)
   ) {
     warnings.push({ path: `${path}.email`, message: 'email looks invalid', severity: 'warning' });
   }

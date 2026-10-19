@@ -51,7 +51,7 @@ export function sanitizeNote(note: string): string {
 export function parseAmountString(input: string): string | null {
   const s = input
     .trim()
-    .replace(/\s*(đồng|dong|vnđ|vnd|đ|d)\s*$/i, '')
+    .replace(/(?:đồng|dong|vnđ|vnd|đ|d)$/i, '')
     .replace(/[\s_]/g, '');
   if (/^\d+$/.test(s)) return s;
   if (/^\d{1,3}([.,]\d{3})+$/.test(s)) return s.replace(/[.,]/g, '');
