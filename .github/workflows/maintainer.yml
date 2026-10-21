@@ -9,18 +9,15 @@ on:
   issues:
     types: [opened, assigned] # assigned to you → implemented. Not `edited`: the bot edits the dashboard
   issue_comment:
-    types: [created] # /approve and other commands on the dashboard; comments on the bot's PRs
+    types: [created] # comments on the bot's PRs
   pull_request_review:
     types: [submitted]
   pull_request_review_comment:
     types: [created]
   pull_request_target:
     types: [opened, synchronize] # other people's PRs: reviewed from the diff and CI, never run
-  check_suite:
-    types: [completed] # CI failed on a bot PR → a fix is drafted
   schedule:
     - cron: '0 2 * * *' # daily 09:00 Vietnam: upstream sources + audit
-    - cron: '*/15 * * * *' # read 👍/👎 reactions on the dashboard (reactions start no run)
   workflow_dispatch:
 
 # One pass at a time; a second event waits instead of running alongside.
