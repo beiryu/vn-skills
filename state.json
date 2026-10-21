@@ -1,6 +1,6 @@
 {
  "version": 1,
- "exported_at": "2026-10-21T08:17:48.399Z",
+ "exported_at": "2026-10-21T08:23:51.861Z",
  "tables": {
   "repos": [
    {
@@ -10,7 +10,7 @@
     "policy_status": null,
     "policy_excerpts": null,
     "block_reason": null,
-    "last_scanned": "2026-10-21T08:17:24.352Z"
+    "last_scanned": "2026-10-21T08:23:27.789Z"
    }
   ],
   "issues": [
@@ -50,11 +50,11 @@
     "title": "vn-pit: personal income tax calculator (needs a legal source first)",
     "body": "## Problem\nROADMAP RM-015 is still `idea`. A PIT calculator needs the current brackets, personal and dependant deduction amounts, insurance rates and effective dates. None of these are in the repository.\n\n## Acceptance\n- [ ] The maintainer cites the legal source and effective dates in this issue\n- [ ] Then: core function + CLI command + MCP tool + `skills/vn-pit/SKILL.md` with Vietnamese trigger words + >= 20 tests in `tests/vn-pit.test.ts` + an entry in `tests/skills.test.ts`\n- [ ] Rates live in a data file with a source URL, not in code",
     "url": "https://github.com/beiryu/vn-skills/issues/69",
-    "state": "skipped",
+    "state": "discovered",
     "score": 1,
     "triage_reason": "[needs a person] RM-015 has no open issue. It cannot be implemented without a legal source that only the maintainer can supply.",
     "attempts": 0,
-    "skip_reason": "coder gave up: Blocked: vn-pit (RM-015) needs a legal source (PIT brackets, personal/dependant deductions, insurance rates, effective dates) that is neither cited in the issue nor present in the repo. Implementing would invent Vietnamese tax facts, so no changes were made.",
+    "skip_reason": null,
     "feedback": null,
     "summary": null,
     "base_sha": "e8b7b5dd141daedfa4c9f40f45a393476e66277f",
@@ -66,7 +66,7 @@
     "pr_body": null,
     "dry": 0,
     "claimed_at": null,
-    "updated_at": "2026-10-21T08:15:01.228Z",
+    "updated_at": "2026-10-21T08:23:49.129Z",
     "blocked": null,
     "patch": null,
     "repro_patch": null,
@@ -310,15 +310,11 @@
    },
    {
     "key": "dashboard-last-comment:beiryu/vn-skills",
-    "value": "6311313868"
+    "value": "6311469594"
    },
    {
     "key": "behind-drafted:1",
     "value": "baa6109b24cafe82503c96f3ed8e1632ff6f4ae8"
-   },
-   {
-    "key": "handed-back:2",
-    "value": "2026-10-21T08:15:01.228Z"
    }
   ]
  }
