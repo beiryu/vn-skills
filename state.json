@@ -1,6 +1,6 @@
 {
  "version": 1,
- "exported_at": "2026-10-21T10:23:23.688Z",
+ "exported_at": "2026-10-21T10:27:37.402Z",
  "tables": {
   "repos": [
    {
@@ -10,7 +10,7 @@
     "policy_status": null,
     "policy_excerpts": null,
     "block_reason": null,
-    "last_scanned": "2026-10-21T10:13:36.256Z"
+    "last_scanned": "2026-10-21T10:27:11.113Z"
    }
   ],
   "issues": [
@@ -108,12 +108,12 @@
     "title": "docs: add a 5-minute quickstart with copy-paste examples for each skill",
     "body": "## Problem\nThe README has a `<!-- TODO: GIF -->` placeholder and no short path from install to a first working result. Install steps are spread across the Skills, Install, MCP and Library sections. A newcomer cannot try the project in five minutes.\n\n## Acceptance\n- [ ] New `docs/quickstart.md` with three paths: CLI via `npx -y @vn-skills/cli`, MCP via `claude mcp add`, and the library via `npm i @vn-skills/core`.\n- [ ] Each path has one copy-paste command and the exact expected output, taken by running the command (no invented values).\n- [ ] A short section on `vn-skills install all --agent claude|cursor|codex`.\n- [ ] The README links to the quickstart near the top.\n- [ ] `README.vi.md` gets the same link and a matching Vietnamese quickstart, `docs/quickstart.vi.md`.\n- [ ] The existing readme tests still pass.",
     "url": "https://github.com/beiryu/vn-skills/issues/78",
-    "state": "skipped",
+    "state": "discovered",
     "score": 1,
     "triage_reason": "The project has 0 stars and only bot-level downloads. The first five minutes of use are the biggest adoption lever, and the README has no demo.",
-    "attempts": 1,
-    "skip_reason": "PR could not be opened: Command failed with exit code 1: gh api repos/beiryu/vn-skills/git/refs -f 'ref=refs/heads/docs/78-docs-add-a-5-minute-quickstart-with-copy' -f 'sha=73ce8c20ff273144cce2a20170e4ad747bbedde5'",
-    "feedback": "Attempt 1:\nReviewer rejected:\n- The CLI example in docs/quickstart.md and docs/quickstart.vi.md shows JSON output (`{\"ok\": true, \"amount\": ..., \"words\": ...}`). `wantsJson` in packages/cli/src/output.ts returns `!process.stdout.isTTY`, so a user pasting the command into a terminal gets only the plain text `một triệu hai trăm nghìn đồng`. The docs state output that is not true for interactive use. Either add `--json` to the command, or show the plain output and say that JSON is used when piped.\n- The MCP path gives no exact expected output. It only paraphrases the result (`words`: ...) and does not show what `claude mcp add` or the tool call prints. The issue requires the exact expected output for each path, taken by running it.",
+    "attempts": 0,
+    "skip_reason": null,
+    "feedback": null,
     "summary": "Added docs/quickstart.md and docs/quickstart.vi.md (CLI, MCP, library, install all --agent) and linked them from README.md and README.vi.md. Fixed review feedback: CLI example now uses --json with a note about terminal output, and the MCP path shows the real tool result captured from the built server.",
     "base_sha": "73ce8c20ff273144cce2a20170e4ad747bbedde5",
     "test_files": "[\"tests/readme.test.ts\"]",
@@ -124,7 +124,7 @@
     "pr_body": "Closes #78\n\n## What & why\n\nThe README had no short path from install to a first result. This adds `docs/quickstart.md` and `docs/quickstart.vi.md`, and links both from `README.md` and `README.vi.md` near the top.\n\nAcceptance:\n\n- [x] New `docs/quickstart.md` with three paths: CLI via `npx -y @vn-skills/cli`, MCP via `claude mcp add`, library via `npm i @vn-skills/core`.\n- [x] Each path has one copy-paste command and the expected output. The CLI example uses `--json`, with a note about terminal output. The MCP example shows the tool result captured from the built server.\n- [x] A short section on `vn-skills install all --agent claude|cursor|codex`.\n- [x] The README links to the quickstart near the top.\n- [x] `README.vi.md` has the same link and a matching `docs/quickstart.vi.md`.\n- [x] The existing readme tests still pass.\n\nTests: `tests/readme.test.ts` now checks that each README links to its quickstart within the first 30 lines. It also checks that each quickstart contains the `npx -y @vn-skills/cli`, `claude mcp add`, `npm i @vn-skills/core` and `vn-skills install all --agent` commands, and the agent names `claude`, `cursor` and `codex`.\n\n## Checklist\n\n- [ ] Title follows Conventional Commits (`feat|fix|docs|data|test|refactor|perf|build|ci|chore(scope): …`)\n- [ ] Tests added or updated (golden test for every bug fix)\n- [ ] `pnpm build && pnpm typecheck && pnpm lint && pnpm test && pnpm format:check` pass locally\n- [ ] Core stays offline (no `fetch`/HTTP in `packages/core`)\n- [ ] Data changes go through `scripts/build-data.ts` and `SOURCES.md` (source + license)\n- [ ] SKILL.md / README updated if behaviour changed\n",
     "dry": 0,
     "claimed_at": null,
-    "updated_at": "2026-10-21T10:10:11.480Z",
+    "updated_at": "2026-10-21T10:27:34.189Z",
     "blocked": null,
     "patch": "diff --git a/README.md b/README.md\nindex adf9add..a595bf4 100644\n--- a/README.md\n+++ b/README.md\n@@ -2,7 +2,7 @@\n \n > Teach your AI agent to work with VietQR, e-invoices, the new 34-province addresses and more — with one command.\n \n-[Tiếng Việt](README.vi.md)\n+[Tiếng Việt](README.vi.md) · [Quickstart (5 min)](docs/quickstart.md)\n \n Coding agents (Claude Code, Codex, Cursor, …) get Vietnam-specific tasks wrong: they invent bank BINs, use the\n pre-2025 provinces and districts, misread amounts in words, or confuse the Chinese and Vietnamese lunar calendars.\ndiff --git a/README.vi.md b/README.vi.md\nindex a2c7100..fd84769 100644\n--- a/README.vi.md\n+++ b/README.vi.md\n@@ -2,7 +2,7 @@\n \n > Dạy AI agent của bạn làm việc với VietQR, hóa đơn điện tử, địa chỉ mới 34 tỉnh… chỉ bằng một lệnh.\n \n-[English](README.md)\n+[English](README.md) · [Bắt đầu nhanh (5 phút)](docs/quickstart.vi.md)\n \n Các coding agent (Claude Code, Codex, Cursor…) hay làm sai nghiệp vụ Việt Nam: bịa mã BIN ngân hàng, dùng 63 tỉnh và\n quận/huyện đã bỏ, đọc số tiền bằng chữ sai, nhầm âm lịch Việt Nam với Trung Quốc. **vn-skills** sửa việc đó bằng ba lớp\ndiff --git a/docs/quickstart.md b/docs/quickstart.md\nnew file mode 100644\nindex 0000000..9dec916\n--- /dev/null\n+++ b/docs/quickstart.md\n@@ -0,0 +1,72 @@\n+# Quickstart (5 minutes)\n+\n+[Tiếng Việt](quickstart.vi.md) · Requires Node.js 22+. All three paths run the same offline core.\n+\n+## 1. CLI\n+\n+```bash\n+npx -y @vn-skills/cli money words 1200000 --json\n+```\n+\n+Output (`--json` forces JSON; without it a terminal prints only `một triệu hai trăm nghìn đồng`):\n+\n+```json\n+{\n+  \"ok\": true,\n+  \"amount\": \"1200000\",\n+  \"words\": \"một triệu hai trăm nghìn đồng\"\n+}\n+```\n+\n+## 2. MCP server\n+\n+```bash\n+claude mcp add vn-skills -- npx -y @vn-skills/mcp\n+```\n+\n+Then ask your agent: _\"đọc số 1200000 thành chữ\"_. It calls the `vn_money_to_words` tool with\n+`{\"amount\": \"1200000\"}`, and the tool returns this text:\n+\n+```json\n+{\n+  \"ok\": true,\n+  \"amount\": \"1200000\",\n+  \"words\": \"một triệu hai trăm nghìn đồng\"\n+}\n+```\n+\n+## 3. Library\n+\n+```bash\n+npm i @vn-skills/core\n+```\n+\n+```js\n+import { moneyToWords } from '@vn-skills/core';\n+\n+console.log(moneyToWords(1200000));\n+```\n+\n+Output:\n+\n+```\n+{\n+  ok: true,\n+  words: 'một triệu hai trăm nghìn đồng',\n+  amount: '1200000',\n+  negative: false\n+}\n+```\n+\n+## Install the skills into your agent\n+\n+The CLI command is `vn-skills install all --agent claude|cursor|codex`; with npx:\n+\n+```bash\n+npx -y @vn-skills/cli install all --agent claude    # .claude/skills/* (project)\n+npx -y @vn-skills/cli install all --agent cursor    # .cursor/skills/*\n+npx -y @vn-skills/cli install all --agent codex     # .codex/skills/*\n+```\n+\n+Add `--global` for the user scope, `--dry-run` to print the actions only, `--force` to overwrite existing folders.\n+See the [README](../README.md) for the full skill list.\ndiff --git a/docs/quickstart.vi.md b/docs/quickstart.vi.md\nnew file mode 100644\nindex 0000000..1e2c19e\n--- /dev/null\n+++ b/docs/quickstart.vi.md\n@@ -0,0 +1,72 @@\n+# Bắt đầu nhanh (5 phút)\n+\n+[English](quickstart.md) · Cần Node.js 22+. Cả ba cách đều dùng chung một lõi offline.\n+\n+## 1. CLI\n+\n+```bash\n+npx -y @vn-skills/cli money words 1200000 --json\n+```\n+\n+Kết quả (`--json` ép xuất JSON; không có cờ này, terminal chỉ in `một triệu hai trăm nghìn đồng`):\n+\n+```json\n+{\n+  \"ok\": true,\n+  \"amount\": \"1200000\",\n+  \"words\": \"một triệu hai trăm nghìn đồng\"\n+}\n+```\n+\n+## 2. MCP server\n+\n+```bash\n+claude mcp add vn-skills -- npx -y @vn-skills/mcp\n+```\n+\n+Sau đó hỏi agent: _\"đọc số 1200000 thành chữ\"_. Agent gọi tool `vn_money_to_words` với\n+`{\"amount\": \"1200000\"}` và nhận đoạn văn bản này:\n+\n+```json\n+{\n+  \"ok\": true,\n+  \"amount\": \"1200000\",\n+  \"words\": \"một triệu hai trăm nghìn đồng\"\n+}\n+```\n+\n+## 3. Thư viện\n+\n+```bash\n+npm i @vn-skills/core\n+```\n+\n+```js\n+import { moneyToWords } from '@vn-skills/core';\n+\n+console.log(moneyToWords(1200000));\n+```\n+\n+Kết quả:\n+\n+```\n+{\n+  ok: true,\n+  words: 'một triệu hai trăm nghìn đồng',\n+  amount: '1200000',\n+  negative: false\n+}\n+```\n+\n+## Cài skill vào agent\n+\n+Lệnh CLI là `vn-skills install all --agent claude|cursor|codex`; khi dùng npx:\n+\n+```bash\n+npx -y @vn-skills/cli install all --agent claude    # .claude/skills/* (dự án)\n+npx -y @vn-skills/cli install all --agent cursor    # .cursor/skills/*\n+npx -y @vn-skills/cli install all --agent codex     # .codex/skills/*\n+```\n+\n+Thêm `--global` để cài cho người dùng, `--dry-run` để chỉ in các thao tác, `--force` để ghi đè thư mục đã có.\n+Xem danh sách skill đầy đủ trong [README.vi.md](../README.vi.md).\ndiff --git a/tests/readme.test.ts b/tests/readme.test.ts\nindex ae41b63..e2c011f 100644\n--- a/tests/readme.test.ts\n+++ b/tests/readme.test.ts\n@@ -31,3 +31,22 @@ describe.each(['README.md', 'README.vi.md'])('%s', (file) => {\n     expect(section).not.toContain('vn-skills install');\n   });\n });\n+\n+describe.each([\n+  ['README.md', 'docs/quickstart.md', 'docs/quickstart.vi.md'],\n+  ['README.vi.md', 'docs/quickstart.vi.md', 'docs/quickstart.md'],\n+])('%s quickstart', (readme, own, other) => {\n+  it('links to its quickstart near the top', () => {\n+    const top = read(readme).split('\\n').slice(0, 30).join('\\n');\n+    expect(top).toContain(own);\n+  });\n+\n+  it.each([own, other])('%s covers the three paths and install', (file) => {\n+    const text = read(file);\n+    expect(text).toContain('npx -y @vn-skills/cli');\n+    expect(text).toContain('claude mcp add');\n+    expect(text).toContain('npm i @vn-skills/core');\n+    expect(text).toContain('vn-skills install all --agent');\n+    for (const agent of ['claude', 'cursor', 'codex']) expect(text).toContain(agent);\n+  });\n+});\n",
     "repro_patch": "diff --git a/tests/readme.test.ts b/tests/readme.test.ts\nindex ae41b63..e2c011f 100644\n--- a/tests/readme.test.ts\n+++ b/tests/readme.test.ts\n@@ -31,3 +31,22 @@ describe.each(['README.md', 'README.vi.md'])('%s', (file) => {\n     expect(section).not.toContain('vn-skills install');\n   });\n });\n+\n+describe.each([\n+  ['README.md', 'docs/quickstart.md', 'docs/quickstart.vi.md'],\n+  ['README.vi.md', 'docs/quickstart.vi.md', 'docs/quickstart.md'],\n+])('%s quickstart', (readme, own, other) => {\n+  it('links to its quickstart near the top', () => {\n+    const top = read(readme).split('\\n').slice(0, 30).join('\\n');\n+    expect(top).toContain(own);\n+  });\n+\n+  it.each([own, other])('%s covers the three paths and install', (file) => {\n+    const text = read(file);\n+    expect(text).toContain('npx -y @vn-skills/cli');\n+    expect(text).toContain('claude mcp add');\n+    expect(text).toContain('npm i @vn-skills/core');\n+    expect(text).toContain('vn-skills install all --agent');\n+    for (const agent of ['claude', 'cursor', 'codex']) expect(text).toContain(agent);\n+  });\n+});\n",
@@ -185,9 +185,9 @@
     "opened_at": "2026-10-21T10:12:57.968Z",
     "head_sha": "2051c79dedf180d9a7aa24c67078aa8924f3172e",
     "mergeable": "MERGEABLE",
-    "ci_state": "pending",
+    "ci_state": "success",
     "review_decision": "REVIEW_REQUIRED",
-    "snapshot_at": "2026-10-21T10:13:33.041Z",
+    "snapshot_at": "2026-10-21T10:27:07.249Z",
     "ci_seen_sha": null,
     "merge_state": "BLOCKED"
    }
@@ -840,7 +840,7 @@
    },
    {
     "key": "dashboard-last-comment:beiryu/maintainer-desk:beiryu/vn-skills",
-    "value": "6313433026"
+    "value": "6313724588"
    },
    {
     "key": "audited:beiryu/vn-skills",
@@ -849,10 +849,6 @@
    {
     "key": "stop-noted:3",
     "value": "2026-10-21T09:52:48.846Z"
-   },
-   {
-    "key": "handed-back:4",
-    "value": "2026-10-21T10:10:11.480Z"
    },
    {
     "key": "stop-noted:4",
