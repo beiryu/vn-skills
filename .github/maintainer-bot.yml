@@ -6,7 +6,14 @@ bot:
   dashboard_repo: beiryu/maintainer-desk # private: only the maintainer sees the dashboard
   runtime: copilot # MODEL_TOKEN = Copilot fine-grained PAT, "Copilot Requests" only
   setup: [node@22, pnpm@12.11.2]
+  models: # stronger model where judgement matters
+    researcher: claude-opus-5.5
+    auditor: claude-opus-5.5
+  reasoning:
+    researcher: high
+    auditor: high
   budget:
+    per_agent_usd: { researcher: 5, tryout: 4, inspector: 4, auditor: 5 }
     max_cost_per_call_usd: 3 # Copilot AI credits at $0.01 each
     max_cost_per_month_usd: 100
   limits:
@@ -65,6 +72,7 @@ pr_scopes:
   ]
 audit_files:
   [README.md, CONTRIBUTING.md, AGENTS.md, vn-skills-SPEC.md, packages/core/data/SOURCES.md]
+deep_audit: true # daily: research the web, try it as a newcomer, inspect the code, then propose
 packages: ['@vn-skills/core', '@vn-skills/cli', '@vn-skills/mcp']
 dependencies: existing # may add a dependency another package here already uses; anything new is refused
 sources:
