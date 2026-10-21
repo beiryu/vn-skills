@@ -1,6 +1,6 @@
 {
  "version": 1,
- "exported_at": "2026-10-21T09:41:53.813Z",
+ "exported_at": "2026-10-21T09:45:44.977Z",
  "tables": {
   "repos": [
    {
@@ -10,7 +10,7 @@
     "policy_status": null,
     "policy_excerpts": null,
     "block_reason": null,
-    "last_scanned": "2026-10-21T09:41:27.326Z"
+    "last_scanned": "2026-10-21T09:45:12.863Z"
    }
   ],
   "issues": [
@@ -71,6 +71,35 @@
     "patch": null,
     "repro_patch": null,
     "repro_notes": "RM-015 vn-pit needs a legal source (brackets, deductions, insurance rates, effective dates) that is not in the repo and not cited in the issue. Any expected values would be invented, so no test was written."
+   },
+   {
+    "id": 3,
+    "repo": "beiryu/vn-skills",
+    "number": 75,
+    "title": "mcp: add a vietqr_decode tool matching the CLI `vietqr decode`",
+    "body": "## Problem\nRM-024 added `vn-skills vietqr decode <image>` to the CLI (`packages/cli/src/commands/vietqr.ts`). `packages/mcp/src/server.ts` registers `vietqr_build`, `vietqr_parse` and `vietqr_banks` but has no tool that decodes a QR image. MCP clients therefore cannot do what the CLI and skill can, and the README tool list has no such entry.\n\n## Acceptance\n- [ ] Write the test first in `tests/mcp.test.ts`: it calls `vietqr_decode` and fails on the base because the tool does not exist.\n- [ ] Add a `vietqr_decode` tool in `packages/mcp/src/server.ts` that takes an image file path, reuses the CLI decode logic (share it rather than duplicate it), and returns the parsed fields.\n- [ ] An image with no QR returns the same structured error as the CLI.\n- [ ] Add a round-trip test: a PNG built by `vietqr_build` with `out`, then `vietqr_decode`, gives the same fields.\n- [ ] Add the tool to the README tool list and to `README.vi.md` if it lists tools.\n- [ ] Mention the tool in `skills/vietqr/SKILL.md` if the MCP tools are listed there.\n- [ ] `pnpm format`, `pnpm lint`, `pnpm build`, `pnpm typecheck` and `pnpm exec vitest run` all pass.",
+    "url": "https://github.com/beiryu/vn-skills/issues/75",
+    "state": "claimed",
+    "score": 1,
+    "triage_reason": "The CLI has `vietqr decode` but the MCP server registers no matching tool. I did not read the CLI decode code, so check that the decode logic can be shared before approving.",
+    "attempts": 0,
+    "skip_reason": null,
+    "feedback": null,
+    "summary": null,
+    "base_sha": null,
+    "test_files": null,
+    "test_hashes": null,
+    "test_vars": null,
+    "branch": null,
+    "pr_title": null,
+    "pr_body": null,
+    "dry": 0,
+    "claimed_at": null,
+    "updated_at": "2026-10-21T09:45:42.027Z",
+    "blocked": null,
+    "patch": null,
+    "repro_patch": null,
+    "repro_notes": null
    }
   ],
   "prs": [
@@ -316,10 +345,10 @@
     "evidence": "[\"packages/mcp/src/server.ts\",\"packages/cli/src/commands/vietqr.ts\",\"ROADMAP.md#RM-024\"]",
     "covers_issue": null,
     "covers_rm": null,
-    "status": "pending",
+    "status": "filed",
     "reject_reason": null,
-    "issue_number": null,
-    "issue_id": null,
+    "issue_number": 75,
+    "issue_id": 3,
     "run_id": "243b2d85-9213-46f8-a448-a4f74dd5186d",
     "created_at": "2026-10-21T09:30:18.802Z"
    },
@@ -430,7 +459,7 @@
    },
    {
     "key": "dashboard-last-comment:beiryu/maintainer-desk:beiryu/vn-skills",
-    "value": "1"
+    "value": "6312944602"
    },
    {
     "key": "audited:beiryu/vn-skills",
