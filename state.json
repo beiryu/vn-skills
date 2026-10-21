@@ -1,0 +1,115 @@
+{
+ "version": 1,
+ "exported_at": "2026-10-21T06:50:12.188Z",
+ "tables": {
+  "repos": [
+   {
+    "full_name": "beiryu/vn-skills",
+    "fork": "beiryu/vn-skills",
+    "status": "active",
+    "policy_status": null,
+    "policy_excerpts": null,
+    "block_reason": null,
+    "last_scanned": "2026-10-21T06:49:44.436Z"
+   }
+  ],
+  "issues": [],
+  "prs": [],
+  "pending_actions": [],
+  "agent_calls": [
+   {
+    "id": 1,
+    "run_id": "64cc9638-c460-49a9-bfaa-02d8aa884435",
+    "issue_id": null,
+    "agent": "auditor",
+    "started_at": "2026-10-21T06:49:05.156Z",
+    "duration_ms": 38790,
+    "input_tokens": 163854,
+    "output_tokens": 4026,
+    "cost_usd": 0.1182854,
+    "ok": 1,
+    "result_json": "{\"parsed\":{\"proposals\":[{\"title\":\"test(vn-holidays): add tests/holidays.test.ts with edge cases beyond the golden fixtures\",\"body\":\"## Problem\\n`vn-holidays` has only `tests/holidays-golden.test.ts` (4 `it` blocks that iterate `tests/golden/vn-holidays.json`). Every other skill has a dedicated `tests/<name>.test.ts`, and CONTRIBUTING requires one. Behaviour that is not a pure input->output case is untested: error results for malformed dates, `announced: false` for years without data, `addWorkingDays` with n=0 or a negative n, and ranges that cross a year boundary.\\n\\n## Acceptance\\n- [ ] New `tests/holidays.test.ts` with >= 20 cases covering: invalid date input (`ok: false` with code and hint), a year with no announcement (`announced: false`, statutory days only), weekend-collision compensation, `addWorkingDays` with n = 0 and with a negative n, and a year-boundary crossing\\n- [ ] Only assert behaviour the current implementation already has. If a case exposes a bug, report it in the PR instead of silently changing behaviour\\n- [ ] Do not edit `packages/core/data/*.json`\\n- [ ] `pnpm build && pnpm typecheck && pnpm lint && pnpm exec vitest run && pnpm format:check` pass\",\"labels\":[\"type: chore\",\"area: core\"],\"kind\":\"test\",\"rationale\":\"The holidays skill has no dedicated test file, unlike the other skills, and CONTRIBUTING requires >= 20 tests per skill.\",\"evidence\":[\"tests/holidays-golden.test.ts\",\"tests/golden/vn-holidays.json\",\"CONTRIBUTING.md#adding-a-skill\"],\"covers_issue\"",
+    "models": "claude-sonnet-5.5"
+   }
+  ],
+  "proposals": [
+   {
+    "id": 1,
+    "repo": "beiryu/vn-skills",
+    "kind": "test",
+    "title": "test(vn-holidays): add tests/holidays.test.ts with edge cases beyond the golden fixtures",
+    "body": "## Problem\n`vn-holidays` has only `tests/holidays-golden.test.ts` (4 `it` blocks that iterate `tests/golden/vn-holidays.json`). Every other skill has a dedicated `tests/<name>.test.ts`, and CONTRIBUTING requires one. Behaviour that is not a pure input->output case is untested: error results for malformed dates, `announced: false` for years without data, `addWorkingDays` with n=0 or a negative n, and ranges that cross a year boundary.\n\n## Acceptance\n- [ ] New `tests/holidays.test.ts` with >= 20 cases covering: invalid date input (`ok: false` with code and hint), a year with no announcement (`announced: false`, statutory days only), weekend-collision compensation, `addWorkingDays` with n = 0 and with a negative n, and a year-boundary crossing\n- [ ] Only assert behaviour the current implementation already has. If a case exposes a bug, report it in the PR instead of silently changing behaviour\n- [ ] Do not edit `packages/core/data/*.json`\n- [ ] `pnpm build && pnpm typecheck && pnpm lint && pnpm exec vitest run && pnpm format:check` pass",
+    "labels": "[\"type: chore\",\"area: core\"]",
+    "rationale": "The holidays skill has no dedicated test file, unlike the other skills, and CONTRIBUTING requires >= 20 tests per skill.",
+    "evidence": "[\"tests/holidays-golden.test.ts\",\"tests/golden/vn-holidays.json\",\"CONTRIBUTING.md#adding-a-skill\"]",
+    "covers_issue": null,
+    "covers_rm": null,
+    "status": "pending",
+    "reject_reason": null,
+    "issue_number": null,
+    "issue_id": null,
+    "run_id": "64cc9638-c460-49a9-bfaa-02d8aa884435",
+    "created_at": "2026-10-21T06:49:43.946Z"
+   },
+   {
+    "id": 2,
+    "repo": "beiryu/vn-skills",
+    "kind": "roadmap",
+    "title": "vn-pit: personal income tax calculator (needs a legal source first)",
+    "body": "## Problem\nROADMAP RM-015 is still `idea`. A PIT calculator needs the current brackets, personal and dependant deduction amounts, insurance rates and effective dates. None of these are in the repository.\n\n## Acceptance\n- [ ] The maintainer cites the legal source and effective dates in this issue\n- [ ] Then: core function + CLI command + MCP tool + `skills/vn-pit/SKILL.md` with Vietnamese trigger words + >= 20 tests in `tests/vn-pit.test.ts` + an entry in `tests/skills.test.ts`\n- [ ] Rates live in a data file with a source URL, not in code",
+    "labels": "[\"type: feature\",\"area: skill\",\"area: core\"]",
+    "rationale": "[needs a person] RM-015 has no open issue. It cannot be implemented without a legal source that only the maintainer can supply.",
+    "evidence": "[\"ROADMAP.md#rm-015\"]",
+    "covers_issue": null,
+    "covers_rm": "RM-015",
+    "status": "pending",
+    "reject_reason": null,
+    "issue_number": null,
+    "issue_id": null,
+    "run_id": "64cc9638-c460-49a9-bfaa-02d8aa884435",
+    "created_at": "2026-10-21T06:49:43.947Z"
+   }
+  ],
+  "sources": [
+   {
+    "repo": "beiryu/vn-skills",
+    "name": "provinces",
+    "pinned": "8b78ba5118715e1fa81769286724db79346abf52",
+    "upstream": "8b78ba5118715e1fa81769286724db79346abf52",
+    "digest": null,
+    "checked_at": "2026-10-21T06:49:01.861Z"
+   },
+   {
+    "repo": "beiryu/vn-skills",
+    "name": "adminunits",
+    "pinned": "7fac8c45805aad9916b17237c54baf4502303b93",
+    "upstream": "7fac8c45805aad9916b17237c54baf4502303b93",
+    "digest": null,
+    "checked_at": "2026-10-21T06:49:02.732Z"
+   },
+   {
+    "repo": "beiryu/vn-skills",
+    "name": "banks",
+    "pinned": "17a05d3f36245c51a4486eba8e21745deea9f232",
+    "upstream": "17a05d3f36245c51a4486eba8e21745deea9f232",
+    "digest": null,
+    "checked_at": "2026-10-21T06:49:03.807Z"
+   }
+  ],
+  "drafts": [],
+  "kv": [
+   {
+    "key": "audited:beiryu/vn-skills",
+    "value": "2026-10-21T06:49:43.947Z"
+   },
+   {
+    "key": "audit-summary:beiryu/vn-skills",
+    "value": "The repo is consistent on MCP tool names and the README tool lists, and the open issue list is empty. The weak spot I saw is thin dedicated test coverage for vn-holidays. The remaining roadmap items need a human (legal sources, credentials, samples, or recordings)."
+   },
+   {
+    "key": "dashboard:beiryu/vn-skills",
+    "value": "59"
+   }
+  ]
+ }
+}
