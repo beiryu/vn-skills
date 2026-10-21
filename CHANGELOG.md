@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.4.0](https://github.com/beiryu/vn-skills/compare/v0.3.3...v0.4.0) (2026-10-21)
+
+
+### Features
+
+* **vn-holidays:** official days off per year and working-day arithmetic ([#56](https://github.com/beiryu/vn-skills/issues/56)) ([a7ff076](https://github.com/beiryu/vn-skills/commit/a7ff076b7b1bb28c53a357b01eff8ccd8a947728))
+
+
+### Bug Fixes
+
+* **vn-lunar:** replace the lunar engine with an independent Meeus implementation ([#54](https://github.com/beiryu/vn-skills/issues/54)) ([bcafa6c](https://github.com/beiryu/vn-skills/commit/bcafa6c052b16d851f304b87573dbe1fa9ba03b6))
+
 ## [0.3.3](https://github.com/beiryu/vn-skills/compare/v0.3.2...v0.3.3) (2026-10-19)
 
 
