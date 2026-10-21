@@ -1,6 +1,6 @@
 {
  "version": 1,
- "exported_at": "2026-10-21T08:14:07.218Z",
+ "exported_at": "2026-10-21T08:15:29.858Z",
  "tables": {
   "repos": [
    {
@@ -50,27 +50,27 @@
     "title": "vn-pit: personal income tax calculator (needs a legal source first)",
     "body": "## Problem\nROADMAP RM-015 is still `idea`. A PIT calculator needs the current brackets, personal and dependant deduction amounts, insurance rates and effective dates. None of these are in the repository.\n\n## Acceptance\n- [ ] The maintainer cites the legal source and effective dates in this issue\n- [ ] Then: core function + CLI command + MCP tool + `skills/vn-pit/SKILL.md` with Vietnamese trigger words + >= 20 tests in `tests/vn-pit.test.ts` + an entry in `tests/skills.test.ts`\n- [ ] Rates live in a data file with a source URL, not in code",
     "url": "https://github.com/beiryu/vn-skills/issues/69",
-    "state": "claimed",
+    "state": "skipped",
     "score": 1,
     "triage_reason": "[needs a person] RM-015 has no open issue. It cannot be implemented without a legal source that only the maintainer can supply.",
     "attempts": 0,
-    "skip_reason": null,
+    "skip_reason": "coder gave up: Blocked: vn-pit (RM-015) needs a legal source (PIT brackets, personal/dependant deductions, insurance rates, effective dates) that is neither cited in the issue nor present in the repo. Implementing would invent Vietnamese tax facts, so no changes were made.",
     "feedback": null,
     "summary": null,
-    "base_sha": null,
-    "test_files": null,
-    "test_hashes": null,
-    "test_vars": null,
+    "base_sha": "e8b7b5dd141daedfa4c9f40f45a393476e66277f",
+    "test_files": "[]",
+    "test_hashes": "{}",
+    "test_vars": "{}",
     "branch": null,
     "pr_title": null,
     "pr_body": null,
     "dry": 0,
     "claimed_at": null,
-    "updated_at": "2026-10-21T08:14:04.011Z",
+    "updated_at": "2026-10-21T08:15:01.228Z",
     "blocked": null,
     "patch": null,
     "repro_patch": null,
-    "repro_notes": null
+    "repro_notes": "RM-015 vn-pit needs a legal source (brackets, deductions, insurance rates, effective dates) that is not in the repo and not cited in the issue. Any expected values would be invented, so no test was written."
    }
   ],
   "prs": [
@@ -196,6 +196,34 @@
     "ok": 1,
     "result_json": "{\"parsed\":{\"action\":\"fix\",\"message\":\"Thanks for the review! I moved the JSON-representable invalid-input cases (non-integer year, out-of-range years with hint, first/last supported year, invalid dates, out-of-range date, invalid n) into tests/golden/vn-holidays.json. tests/holidays.test.ts keeps only the two Number.NaN cases, since JSON can't represent NaN. On the INVALID_DATE hint: the current API returns only a code and message for INVALID_DATE (no hint), so I didn't assert one rather than change source behaviour in this test PR. If a hint is wanted, that would be a separate source change. The OUT_OF_RANGE hint is asserted in the golden cases.\"},\"result\":\"Core needs building first.\\n\\nI made the first change and skipped the second.\\n\\n- **Golden fixture (done):** I moved the JSON-representable invalid-input cases into `tests/golden/vn-holidays.json`. These cover the non-integer year, the out-of-range years 2200 and 0, the first and last supported years, the four invalid dates, the 2022 out-of-range date and the invalid `addWorkingDays` inputs. `tests/holidays.test.ts` now keeps only the two `Number.NaN` cases, since JSON can't represent NaN. The holiday tests pass (67) and Prettier is clean. I did not run lint, typecheck or the full suite.\\n- **Hint on `INVALID_DATE` (skipped):** the source's `INVALID_DATE` errors return only a code and message, with no hint. I didn't change source behaviour in a test PR, so there is no hint to assert. The out-of-range hint is asserted in t",
     "models": "claude-sonnet-5.5"
+   },
+   {
+    "id": 7,
+    "run_id": "4d546546-8a88-4c25-852e-7f18350d603e",
+    "issue_id": 2,
+    "agent": "reproducer",
+    "started_at": "2026-10-21T08:14:45.469Z",
+    "duration_ms": 7304,
+    "input_tokens": 12277,
+    "output_tokens": 360,
+    "cost_usd": 0.0342515,
+    "ok": 1,
+    "result_json": "{\"parsed\":{\"reproduced\":false,\"testFiles\":[],\"testVars\":{},\"notes\":\"RM-015 vn-pit needs a legal source (brackets, deductions, insurance rates, effective dates) that is not in the repo and not cited in the issue. Any expected values would be invented, so no test was written.\"},\"result\":\"I made no changes. This issue can't be expressed as a test yet.\\n\\nThe issue says outright that the legal source, brackets, deductions, insurance rates and effective dates are missing, and the maintainer hasn't supplied them. A test asserting any PIT numbers would mean inventing Vietnamese tax facts, which AGENTS.md rule 4 forbids. An acceptance test that only checks the export exists would pass or fail without testing any behaviour, so I didn't write one. The work should wait for the maintainer to cite the source.\\n\\n```json\\n{\\\"reproduced\\\": false, \\\"testFiles\\\": [], \\\"testVars\\\": {}, \\\"notes\\\": \\\"RM-015 vn-pit needs a legal source (brackets, deductions, insurance rates, effective dates) that is not in the repo and not cited in the issue. Any expected values would be invented, so no test was written.\\\"}\\n```\\n\"}",
+    "models": "claude-sonnet-5.5"
+   },
+   {
+    "id": 8,
+    "run_id": "4d546546-8a88-4c25-852e-7f18350d603e",
+    "issue_id": 2,
+    "agent": "coder",
+    "started_at": "2026-10-21T08:14:52.860Z",
+    "duration_ms": 8367,
+    "input_tokens": 25062,
+    "output_tokens": 599,
+    "cost_usd": 0.0272546,
+    "ok": 1,
+    "result_json": "{\"parsed\":{\"done\":false,\"summary\":\"Blocked: vn-pit (RM-015) needs a legal source (PIT brackets, personal/dependant deductions, insurance rates, effective dates) that is neither cited in the issue nor present in the repo. Implementing would invent Vietnamese tax facts, so no changes were made.\",\"filesChanged\":[],\"testWrong\":false},\"result\":\"Let me quickly check whether the repo contains PIT data.\\n\\nI made no changes: the PIT rules the calculator needs aren't in the repo or the issue, so I stopped.\\n\\nThe issue's first acceptance item is for the maintainer to cite the legal source and effective dates. That hasn't happened. A search for PIT terms found only unrelated mentions (`ROADMAP.md`, money-words and e-invoice code), with no PIT data. Writing it would mean making up the following:\\n\\n- the tax brackets\\n- the personal and dependant deduction amounts\\n- the insurance rates\\n- the effective dates\\n\\nOnce the source is cited, the work is:\\n\\n- a data file via `scripts/build-data.ts` and `SOURCES.md`, with a source URL\\n- the core function\\n- a CLI command\\n- an MCP tool\\n- `skills/vn-pit/SKILL.md`\\n- at least 20 tests in `tests/vn-pit.test.ts`\\n- an entry in `tests/skills.test.ts`\\n\\n```json\\n{\\\"done\\\": false, \\\"testWrong\\\": false, \\\"summary\\\": \\\"Blocked: vn-pit (RM-015) needs a legal source (PIT brackets, personal/dependant deductions, insurance rates, effective dates) that is neither cited in the issue nor present in the repo. Implementing would invent Vietnamese tax facts",
+    "models": "claude-sonnet-5.5"
    }
   ],
   "proposals": [
@@ -282,11 +310,15 @@
    },
    {
     "key": "dashboard-last-comment:beiryu/vn-skills",
-    "value": "6311296754"
+    "value": "6311313868"
    },
    {
     "key": "behind-drafted:1",
     "value": "baa6109b24cafe82503c96f3ed8e1632ff6f4ae8"
+   },
+   {
+    "key": "handed-back:2",
+    "value": "2026-10-21T08:15:01.228Z"
    }
   ]
  }
