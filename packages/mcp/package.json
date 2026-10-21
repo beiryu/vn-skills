@@ -2,6 +2,12 @@
   "name": "@vn-skills/mcp",
   "version": "0.4.0",
   "description": "MCP server exposing vn-skills tools (VietQR, Vietnamese addresses, tax IDs, money in words, lunar calendar, e-invoice) over stdio.",
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "vietnam",
+    "vietqr"
+  ],
   "license": "MIT",
   "type": "module",
   "bin": {
