@@ -10,7 +10,7 @@ bot:
     max_cost_per_month_usd: 100
   limits:
     max_attempts: 3
-    audit_interval_hours: 168 # the Monday schedule in the workflow triggers the audit
+    audit_interval_hours: 24 # daily; the schedule in the workflow guarantees a run
 
 default_branch: main
 branch_prefix: ''
