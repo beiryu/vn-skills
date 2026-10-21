@@ -5,11 +5,24 @@ export type AmountResult = Result<{ value: number }>;
 
 const NOT_FINITE = 'Value must be a finite number';
 
-/** Vietnamese number: "." groups thousands, "," is the decimal mark (1.234.567,89). */
+/**
+ * Vietnamese number: "." groups thousands, "," is the decimal mark (1.234.567,89).
+ * `maxFractionDigits` must be an integer in 0-20 (default 2), otherwise INVALID_OPTION.
+ * For |n| >= 1e21 the integer part is grouped exactly from the double's value via BigInt
+ * (never exponent notation), so 1e25 gives 10.000.000.000.000.000.905.969.664.
+ */
 export function formatNumber(n: number, opts: { maxFractionDigits?: number } = {}): TextResult {
   if (!Number.isFinite(n)) return fail('INVALID_NUMBER', NOT_FINITE);
   const digits = opts.maxFractionDigits ?? 2;
-  const fixed = Math.abs(n).toFixed(digits);
+  if (!Number.isInteger(digits) || digits < 0 || digits > 20) {
+    return fail(
+      'INVALID_OPTION',
+      `maxFractionDigits must be an integer between 0 and 20, got ${digits}`,
+      'Use an integer from 0 to 20',
+    );
+  }
+  const abs = Math.abs(n);
+  const fixed = abs >= 1e21 ? BigInt(abs).toString() : abs.toFixed(digits);
   const [int = '0', frac = ''] = fixed.split('.');
   const grouped = int.replace(/\B(?=(\d{3})+$)/g, '.');
   const fracTrim = frac.replace(/0+$/, '');

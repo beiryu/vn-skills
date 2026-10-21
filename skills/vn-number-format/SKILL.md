@@ -24,6 +24,7 @@ MCP tool: `vn_number_format` (`mode`: number, vnd, compact, date, parse).
 
 ## Parsing rules
 
+- `maxFractionDigits` must be an integer from 0 to 20, otherwise `INVALID_OPTION`. Numbers with |n| ≥ 1e21 are grouped exactly via BigInt (no exponent notation, no fraction).
 - Units: `k`/`nghìn`/`ngàn` = 1.000, `tr`/`triệu`/`m` = 1.000.000, `tỷ`/`b` = 1.000.000.000. Digits after a unit are the fraction: `1tr2` = 1.200.000.
 - Suffixes `đ`, `₫`, `đồng`, `vnd` are ignored.
 - `,` is always the decimal mark: `1,5` = 1.5, `1,50` = 1.5.

@@ -6,6 +6,11 @@ import {
   formatVnd,
   parseAmount,
 } from '@vn-skills/core';
+import { loadGolden, title } from './golden.js';
+
+const golden = loadGolden<{
+  formatNumberLarge: { input: number; expected: string }[];
+}>('vn-number-format');
 
 const parsed = (s: string) => {
   const r = parseAmount(s);
@@ -139,5 +144,33 @@ describe('formatCompactVnd boundaries and extras', () => {
   });
   it.each(['1.5.00', '1,2,3', '12x', '1k2k'])('rejects %s', (s) => {
     expect(parseAmount(s).ok).toBe(false);
+  });
+});
+
+describe('formatNumber robustness (no throw, no exponent)', () => {
+  it.each([101, -1, 1.5, NaN, Infinity])('maxFractionDigits %s returns ok:false', (d) => {
+    let r: ReturnType<typeof formatNumber> | undefined;
+    expect(() => {
+      r = formatNumber(1, { maxFractionDigits: d });
+    }).not.toThrow();
+    expect(r?.ok).toBe(false);
+    if (r && !r.ok) expect(r.error.code).toBe('INVALID_OPTION');
+  });
+  it('still accepts the allowed fraction digit range', () => {
+    expect(formatNumber(1.5, { maxFractionDigits: 0 }).ok).toBe(true);
+    expect(formatNumber(1.5, { maxFractionDigits: 20 }).ok).toBe(true);
+  });
+  it.each(golden.formatNumberLarge.map((c) => [title(c), c] as const))('golden %s', (_, c) => {
+    expect(formatNumber(c.input)).toEqual({ ok: true, text: c.expected });
+  });
+  it('groups 1e21 and -1e21 exactly', () => {
+    expect(formatNumber(1e21)).toEqual({ ok: true, text: '1.000.000.000.000.000.000.000' });
+    expect(formatNumber(-1e21)).toEqual({ ok: true, text: '-1.000.000.000.000.000.000.000' });
+  });
+  it('groups 1e25 by its exact double value (BigInt)', () => {
+    expect(formatNumber(1e25)).toEqual({ ok: true, text: '10.000.000.000.000.000.905.969.664' });
+  });
+  it('formatVnd inherits large-number handling', () => {
+    expect(formatVnd(1e21)).toEqual({ ok: true, text: '1.000.000.000.000.000.000.000 ₫' });
   });
 });
