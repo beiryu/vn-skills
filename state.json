@@ -1,6 +1,6 @@
 {
  "version": 1,
- "exported_at": "2026-10-21T07:29:04.037Z",
+ "exported_at": "2026-10-21T07:30:04.286Z",
  "tables": {
   "repos": [
    {
@@ -10,7 +10,7 @@
     "policy_status": null,
     "policy_excerpts": null,
     "block_reason": null,
-    "last_scanned": "2026-10-21T07:28:41.292Z"
+    "last_scanned": "2026-10-21T07:29:38.125Z"
    }
   ],
   "issues": [
@@ -56,7 +56,7 @@
     "mergeable": "MERGEABLE",
     "ci_state": "success",
     "review_decision": "REVIEW_REQUIRED",
-    "snapshot_at": "2026-10-21T07:28:37.609Z",
+    "snapshot_at": "2026-10-21T07:29:34.769Z",
     "ci_seen_sha": null,
     "merge_state": "BEHIND"
    }
@@ -239,7 +239,7 @@
    },
    {
     "key": "dashboard-seen:beiryu/vn-skills",
-    "value": "2026-10-21T07:23:18.659Z"
+    "value": "2026-10-21T07:29:28Z"
    }
   ]
  }
