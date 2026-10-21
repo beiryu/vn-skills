@@ -1,7 +1,23 @@
 {
   "name": "@vn-skills/core",
   "version": "0.4.0",
-  "description": "Offline, dependency-free Vietnam business logic: VietQR, 34-province addresses, tax ID validation, money-in-words, lunar calendar, e-invoice schema.",
+  "description": "Offline, dependency-free Vietnam business logic: VietQR, addresses (34 provinces), tax IDs, CCCD citizen IDs, phone numbers, public holidays and working days, money in words, number formatting, names, lunar calendar, e-invoice.",
+  "keywords": [
+    "vietnam",
+    "vietnamese",
+    "vietqr",
+    "napas",
+    "cccd",
+    "ma-so-thue",
+    "am-lich",
+    "lunar",
+    "hoa-don",
+    "einvoice",
+    "dia-chi",
+    "address",
+    "holidays",
+    "agent-skills"
+  ],
   "license": "MIT",
   "type": "module",
   "main": "./dist/index.js",
@@ -23,17 +39,6 @@
     "build": "tsup",
     "typecheck": "tsc --noEmit -p tsconfig.json"
   },
-  "keywords": [
-    "vietnam",
-    "vietqr",
-    "napas",
-    "ma-so-thue",
-    "am-lich",
-    "lunar",
-    "address",
-    "einvoice",
-    "agent-skills"
-  ],
   "repository": {
     "type": "git",
     "url": "git+https://github.com/beiryu/vn-skills.git",
