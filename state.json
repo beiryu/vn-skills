@@ -1,6 +1,6 @@
 {
  "version": 1,
- "exported_at": "2026-10-21T10:38:37.348Z",
+ "exported_at": "2026-10-21T10:45:04.418Z",
  "tables": {
   "repos": [
    {
@@ -10,7 +10,7 @@
     "policy_status": null,
     "policy_excerpts": null,
     "block_reason": null,
-    "last_scanned": "2026-10-21T10:38:16.478Z"
+    "last_scanned": "2026-10-21T10:44:37.071Z"
    }
   ],
   "issues": [
@@ -181,13 +181,13 @@
     "url": "https://github.com/beiryu/vn-skills/pull/82",
     "number": 82,
     "state": "open",
-    "last_seen_at": "2026-10-21T10:37:30.693Z",
+    "last_seen_at": "2026-10-21T10:43:01Z",
     "opened_at": "2026-10-21T10:37:30.693Z",
     "head_sha": "a74e7d88bf772baf7913b1e2ae844c7b725b5bcf",
     "mergeable": "MERGEABLE",
     "ci_state": "pending",
-    "review_decision": "REVIEW_REQUIRED",
-    "snapshot_at": "2026-10-21T10:38:10.265Z",
+    "review_decision": null,
+    "snapshot_at": "2026-10-21T10:43:32.445Z",
     "ci_seen_sha": null,
     "merge_state": "BLOCKED"
    },
@@ -202,7 +202,7 @@
     "mergeable": "MERGEABLE",
     "ci_state": "success",
     "review_decision": "REVIEW_REQUIRED",
-    "snapshot_at": "2026-10-21T10:38:13.027Z",
+    "snapshot_at": "2026-10-21T10:44:32.795Z",
     "ci_seen_sha": null,
     "merge_state": "BLOCKED"
    }
@@ -227,6 +227,16 @@
     "status": "done",
     "created_at": "2026-10-21T07:50:56.833Z",
     "base_sha": "a0f8969f6369d2b46c017e981112f287e9a1eb57"
+   },
+   {
+    "id": 3,
+    "issue_id": 4,
+    "kind": "fix",
+    "message": "\n\n<!-- maintainer-bot: your reply goes above this line -->\nOnly bot comments or CI here, so no reply is needed: leave the space above empty to push the\ncommit without commenting. What the agent changed (for you only, never posted):\n\nGood catch, thanks. I replaced the literal `claude|cursor|codex` pipe in docs/quickstart.md and docs/quickstart.vi.md. Both now show `vn-skills install all --agent claude` and say to replace `claude` with `cursor` or `codex`.\n",
+    "patch": "diff --git a/README.md b/README.md\nindex adf9add..2c68a3c 100644\n--- a/README.md\n+++ b/README.md\n@@ -2,7 +2,7 @@\n \n > Teach your AI agent to work with VietQR, e-invoices, the new 34-province addresses and more — with one command.\n \n-[Tiếng Việt](README.vi.md)\n+[Tiếng Việt](README.vi.md) · **[5-minute quickstart](docs/quickstart.md)**\n \n Coding agents (Claude Code, Codex, Cursor, …) get Vietnam-specific tasks wrong: they invent bank BINs, use the\n pre-2025 provinces and districts, misread amounts in words, or confuse the Chinese and Vietnamese lunar calendars.\ndiff --git a/README.vi.md b/README.vi.md\nindex a2c7100..873dcbd 100644\n--- a/README.vi.md\n+++ b/README.vi.md\n@@ -2,7 +2,7 @@\n \n > Dạy AI agent của bạn làm việc với VietQR, hóa đơn điện tử, địa chỉ mới 34 tỉnh… chỉ bằng một lệnh.\n \n-[English](README.md)\n+[English](README.md) · **[Bắt đầu nhanh trong 5 phút](docs/quickstart.vi.md)**\n \n Các coding agent (Claude Code, Codex, Cursor…) hay làm sai nghiệp vụ Việt Nam: bịa mã BIN ngân hàng, dùng 63 tỉnh và\n quận/huyện đã bỏ, đọc số tiền bằng chữ sai, nhầm âm lịch Việt Nam với Trung Quốc. **vn-skills** sửa việc đó bằng ba lớp\ndiff --git a/docs/quickstart.md b/docs/quickstart.md\nnew file mode 100644\nindex 0000000..dfe792b\n--- /dev/null\n+++ b/docs/quickstart.md\n@@ -0,0 +1,121 @@\n+# Quickstart (5 minutes)\n+\n+[Tiếng Việt](quickstart.vi.md)\n+\n+All three paths below need Node.js 22+ and run the same offline core. Each one turns `1200000` into Vietnamese words.\n+\n+## 1. CLI\n+\n+```bash\n+npx -y @vn-skills/cli money words 1200000 --json\n+```\n+\n+Output:\n+\n+```json\n+{\n+  \"ok\": true,\n+  \"amount\": \"1200000\",\n+  \"words\": \"một triệu hai trăm nghìn đồng\"\n+}\n+```\n+\n+`--json` forces JSON output. Without it, a terminal prints only the plain line `một triệu hai trăm nghìn đồng`; JSON is the default only when the output is piped.\n+\n+More: address conversion (old to new 34-province address):\n+\n+```bash\n+npx -y @vn-skills/cli address convert \"P. Bến Nghé, Q.1, TP.HCM\" --json\n+```\n+\n+Output:\n+\n+```json\n+{\n+  \"ok\": true,\n+  \"input\": \"P. Bến Nghé, Q.1, TP.HCM\",\n+  \"mappingType\": \"merged\",\n+  \"old\": {\n+    \"province\": \"Thành phố Hồ Chí Minh\",\n+    \"district\": \"Quận 1\",\n+    \"ward\": \"Phường Bến Nghé\",\n+    \"formatted\": \"Phường Bến Nghé, Quận 1, Thành phố Hồ Chí Minh\"\n+  },\n+  \"new\": {\n+    \"province\": {\n+      \"code\": \"79\",\n+      \"fullName\": \"Thành phố Hồ Chí Minh\"\n+    },\n+    \"ward\": {\n+      \"code\": \"26740\",\n+      \"fullName\": \"Phường Sài Gòn\",\n+      \"postalCode\": \"71016\"\n+    },\n+    \"formatted\": \"Phường Sài Gòn, Thành phố Hồ Chí Minh\"\n+  },\n+  \"candidates\": [\n+    {\n+      \"code\": \"26740\",\n+      \"fullName\": \"Phường Sài Gòn\",\n+      \"province\": \"Thành phố Hồ Chí Minh\",\n+      \"isDefault\": true\n+    }\n+  ],\n+  \"confidence\": 0.97,\n+  \"warnings\": []\n+}\n+```\n+\n+## 2. MCP server\n+\n+```bash\n+claude mcp add vn-skills -- npx -y @vn-skills/mcp\n+```\n+\n+Restart Claude Code, then ask: _\"đọc số 1200000 thành chữ\"_. The agent calls the `vn_money_to_words` tool with\n+`{ \"amount\": 1200000 }`, which returns:\n+\n+```json\n+{\n+  \"ok\": true,\n+  \"amount\": \"1200000\",\n+  \"words\": \"một triệu hai trăm nghìn đồng\"\n+}\n+```\n+\n+For other MCP clients use `{ \"mcpServers\": { \"vn-skills\": { \"command\": \"npx\", \"args\": [\"-y\", \"@vn-skills/mcp\"] } } }`.\n+\n+## 3. Library\n+\n+```bash\n+npm i @vn-skills/core\n+```\n+\n+```js\n+import { moneyToWords } from '@vn-skills/core';\n+\n+console.log(moneyToWords(1_200_000));\n+```\n+\n+Output:\n+\n+```\n+{\n+  ok: true,\n+  words: 'một triệu hai trăm nghìn đồng',\n+  amount: '1200000',\n+  negative: false\n+}\n+```\n+\n+## Install the skills into your agent\n+\n+```bash\n+npx -y @vn-skills/cli install all --agent claude    # or cursor, codex\n+```\n+\n+The binary is named `vn-skills`, so with a global install the same command is `vn-skills install all --agent claude` (replace `claude` with `cursor` or `codex`).\n+\n+This copies every skill into the agent's skills directory (`.claude/skills/`, `.cursor/skills/` or `.codex/skills/`\n+in the current project). Add `--global` for your home directory, `--dry-run` to only print the actions and `--force`\n+to overwrite existing folders.\ndiff --git a/docs/quickstart.vi.md b/docs/quickstart.vi.md\nnew file mode 100644\nindex 0000000..8e32bea\n--- /dev/null\n+++ b/docs/quickstart.vi.md\n@@ -0,0 +1,121 @@\n+# Bắt đầu nhanh (5 phút)\n+\n+[English](quickstart.md)\n+\n+Cả ba cách dưới đây cần Node.js 22+ và dùng chung một lõi chạy offline. Mỗi cách đều đổi `1200000` thành chữ.\n+\n+## 1. CLI\n+\n+```bash\n+npx -y @vn-skills/cli money words 1200000 --json\n+```\n+\n+Kết quả:\n+\n+```json\n+{\n+  \"ok\": true,\n+  \"amount\": \"1200000\",\n+  \"words\": \"một triệu hai trăm nghìn đồng\"\n+}\n+```\n+\n+`--json` ép xuất JSON. Không có cờ này, terminal chỉ in dòng `một triệu hai trăm nghìn đồng`; JSON là mặc định chỉ khi đầu ra được pipe.\n+\n+Thêm: chuyển đổi địa chỉ (cũ sang mới, 34 tỉnh):\n+\n+```bash\n+npx -y @vn-skills/cli address convert \"P. Bến Nghé, Q.1, TP.HCM\" --json\n+```\n+\n+Kết quả:\n+\n+```json\n+{\n+  \"ok\": true,\n+  \"input\": \"P. Bến Nghé, Q.1, TP.HCM\",\n+  \"mappingType\": \"merged\",\n+  \"old\": {\n+    \"province\": \"Thành phố Hồ Chí Minh\",\n+    \"district\": \"Quận 1\",\n+    \"ward\": \"Phường Bến Nghé\",\n+    \"formatted\": \"Phường Bến Nghé, Quận 1, Thành phố Hồ Chí Minh\"\n+  },\n+  \"new\": {\n+    \"province\": {\n+      \"code\": \"79\",\n+      \"fullName\": \"Thành phố Hồ Chí Minh\"\n+    },\n+    \"ward\": {\n+      \"code\": \"26740\",\n+      \"fullName\": \"Phường Sài Gòn\",\n+      \"postalCode\": \"71016\"\n+    },\n+    \"formatted\": \"Phường Sài Gòn, Thành phố Hồ Chí Minh\"\n+  },\n+  \"candidates\": [\n+    {\n+      \"code\": \"26740\",\n+      \"fullName\": \"Phường Sài Gòn\",\n+      \"province\": \"Thành phố Hồ Chí Minh\",\n+      \"isDefault\": true\n+    }\n+  ],\n+  \"confidence\": 0.97,\n+  \"warnings\": []\n+}\n+```\n+\n+## 2. MCP server\n+\n+```bash\n+claude mcp add vn-skills -- npx -y @vn-skills/mcp\n+```\n+\n+Khởi động lại Claude Code rồi hỏi: _\"đọc số 1200000 thành chữ\"_. Agent gọi tool `vn_money_to_words` với\n+`{ \"amount\": 1200000 }` và nhận về:\n+\n+```json\n+{\n+  \"ok\": true,\n+  \"amount\": \"1200000\",\n+  \"words\": \"một triệu hai trăm nghìn đồng\"\n+}\n+```\n+\n+Với MCP client khác dùng `{ \"mcpServers\": { \"vn-skills\": { \"command\": \"npx\", \"args\": [\"-y\", \"@vn-skills/mcp\"] } } }`.\n+\n+## 3. Thư viện\n+\n+```bash\n+npm i @vn-skills/core\n+```\n+\n+```js\n+import { moneyToWords } from '@vn-skills/core';\n+\n+console.log(moneyToWords(1_200_000));\n+```\n+\n+Kết quả:\n+\n+```\n+{\n+  ok: true,\n+  words: 'một triệu hai trăm nghìn đồng',\n+  amount: '1200000',\n+  negative: false\n+}\n+```\n+\n+## Cài skill vào agent\n+\n+```bash\n+npx -y @vn-skills/cli install all --agent claude    # hoặc cursor, codex\n+```\n+\n+Binary tên là `vn-skills`, nên khi cài global lệnh tương đương là `vn-skills install all --agent claude` (thay `claude` bằng `cursor` hoặc `codex`).\n+\n+Lệnh này chép toàn bộ skill vào thư mục skill của agent (`.claude/skills/`, `.cursor/skills/` hoặc `.codex/skills/`\n+trong dự án hiện tại). Thêm `--global` để cài vào thư mục home, `--dry-run` để chỉ in các thao tác, `--force` để ghi đè\n+thư mục đã có.\ndiff --git a/tests/readme.test.ts b/tests/readme.test.ts\nindex ae41b63..8fed0cb 100644\n--- a/tests/readme.test.ts\n+++ b/tests/readme.test.ts\n@@ -31,3 +31,21 @@ describe.each(['README.md', 'README.vi.md'])('%s', (file) => {\n     expect(section).not.toContain('vn-skills install');\n   });\n });\n+\n+describe.each([\n+  ['README.md', 'docs/quickstart.md'],\n+  ['README.vi.md', 'docs/quickstart.vi.md'],\n+])('%s quickstart', (readme, quickstart) => {\n+  it('links to the quickstart near the top', () => {\n+    const top = read(readme).split('\\n').slice(0, 30).join('\\n');\n+    expect(top).toContain(quickstart);\n+  });\n+\n+  it('covers the CLI, MCP and library paths and the install command', () => {\n+    const text = read(quickstart);\n+    expect(text).toContain('npx -y @vn-skills/cli');\n+    expect(text).toContain('claude mcp add');\n+    expect(text).toContain('npm i @vn-skills/core');\n+    expect(text).toContain('vn-skills install all --agent');\n+  });\n+});\n",
+    "status": "pending",
+    "created_at": "2026-10-21T10:44:31.584Z",
+    "base_sha": null
    }
   ],
   "agent_calls": [
@@ -789,6 +799,20 @@
     "ok": 1,
     "result_json": "{\"parsed\":{\"title\":\"docs(repo): add 5-minute quickstart in English and Vietnamese\",\"body\":\"## What & why\\n\\nCloses #78\\n\\nAdds `docs/quickstart.md` and `docs/quickstart.vi.md`. Each has three paths (CLI, MCP, library) plus a short `vn-skills install all --agent claude|cursor|codex` section. `README.md` and `README.vi.md` now link to the quickstart near the top.\\n\\nCLI examples use `--json`. The output shown was captured by running the commands. The docs also explain how output differs on a TTY and when piped.\\n\\nAcceptance:\\n\\n- [x] New `docs/quickstart.md` with CLI (`npx -y @vn-skills/cli`), MCP (`claude mcp add`) and library (`npm i @vn-skills/core`) paths\\n- [x] Each path has one copy-paste command and its expected output, taken from running the command\\n- [x] Short section on `vn-skills install all --agent claude|cursor|codex`\\n- [x] README links to the quickstart near the top\\n- [x] `README.vi.md` has the same link and `docs/quickstart.vi.md` matches\\n- [x] Existing readme tests still pass\\n\\nTests: `tests/readme.test.ts` gains two tests. One checks that both READMEs link to the quickstart near the top. The other checks that the quickstart covers the CLI, MCP and library paths and the install command.\\n\\n## Checklist\\n\\n- [ ] Title follows Conventional Commits (`feat|fix|docs|data|test|refactor|perf|build|ci|chore(scope): …`)\\n- [x] Tests added or updated (golden test for every bug fix)\\n- [ ] `pnpm build && pnpm typecheck && pnpm lint && pnpm test && pnpm format:check` ",
     "models": "claude-sonnet-5.5"
+   },
+   {
+    "id": 41,
+    "run_id": "c5418dca-ee8e-4b9a-aae9-e2f66bde680e",
+    "issue_id": 4,
+    "agent": "followup",
+    "started_at": "2026-10-21T10:43:34.627Z",
+    "duration_ms": 9730,
+    "input_tokens": 39111,
+    "output_tokens": 742,
+    "cost_usd": 0.044036099999999995,
+    "ok": 1,
+    "result_json": "{\"parsed\":{\"action\":\"fix\",\"message\":\"Good catch, thanks. I replaced the literal `claude|cursor|codex` pipe in docs/quickstart.md and docs/quickstart.vi.md. Both now show `vn-skills install all --agent claude` and say to replace `claude` with `cursor` or `codex`.\"},\"result\":\"I replaced the literal pipe in both quickstart files. Each now shows `vn-skills install all --agent claude` and says to swap `claude` for `cursor` or `codex`. This is a docs-only change, so I didn't run the build or tests.\\n\\n```json\\n{\\\"action\\\": \\\"fix\\\", \\\"message\\\": \\\"Good catch, thanks. I replaced the literal `claude|cursor|codex` pipe in docs/quickstart.md and docs/quickstart.vi.md. Both now show `vn-skills install all --agent claude` and say to replace `claude` with `cursor` or `codex`.\\\"}\\n```\\n\"}",
+    "models": "claude-sonnet-5.5"
    }
   ],
   "proposals": [
@@ -970,6 +994,10 @@
    {
     "key": "handed-back:3",
     "value": "2026-10-21T10:22:58.382Z"
+   },
+   {
+    "key": "item:beiryu/maintainer-desk:beiryu/vn-skills:a3",
+    "value": "6314045551"
    }
   ]
  }
