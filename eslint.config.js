@@ -77,6 +77,15 @@ export default tseslint.config(
     },
   },
   {
+    // Parses untyped JSON manifests.
+    files: ['tests/plugin.test.ts'],
+    rules: {
+      '@typescript-eslint/no-explicit-any': 'off',
+      '@typescript-eslint/no-unsafe-return': 'off',
+      '@typescript-eslint/no-unsafe-call': 'off',
+    },
+  },
+  {
     // Upstream JSON fields are strings or numbers, read as `unknown`.
     files: ['scripts/**/*.ts'],
     rules: { '@typescript-eslint/no-base-to-string': 'off' },
