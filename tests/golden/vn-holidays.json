@@ -133,6 +133,52 @@
             "code": "OUT_OF_RANGE"
           }
         }
+      },
+      {
+        "name": "a non-integer year is rejected",
+        "input": 2025.5,
+        "expected": {
+          "ok": false,
+          "error": {
+            "code": "INVALID_YEAR"
+          }
+        }
+      },
+      {
+        "name": "years after the data set are rejected with a hint",
+        "input": 2200,
+        "expected": {
+          "ok": false,
+          "error": {
+            "code": "OUT_OF_RANGE",
+            "hint": "The data set starts with the 2023 notices."
+          }
+        }
+      },
+      {
+        "name": "year 0 is rejected with a hint",
+        "input": 0,
+        "expected": {
+          "ok": false,
+          "error": {
+            "code": "OUT_OF_RANGE",
+            "hint": "The data set starts with the 2023 notices."
+          }
+        }
+      },
+      {
+        "name": "the first supported year is accepted",
+        "input": 2023,
+        "expected": {
+          "ok": true
+        }
+      },
+      {
+        "name": "the last supported year is accepted",
+        "input": 2199,
+        "expected": {
+          "ok": true
+        }
       }
     ],
     "isWorkingDay": [
@@ -388,6 +434,76 @@
             "code": "INVALID_DATE"
           }
         }
+      },
+      {
+        "name": "invalid date: 31/2 does not exist",
+        "input": [
+          31,
+          2,
+          2025
+        ],
+        "expected": {
+          "ok": false,
+          "error": {
+            "code": "INVALID_DATE"
+          }
+        }
+      },
+      {
+        "name": "invalid date: 29/2 in a non-leap year",
+        "input": [
+          29,
+          2,
+          2023
+        ],
+        "expected": {
+          "ok": false,
+          "error": {
+            "code": "INVALID_DATE"
+          }
+        }
+      },
+      {
+        "name": "invalid date: day 0",
+        "input": [
+          0,
+          1,
+          2025
+        ],
+        "expected": {
+          "ok": false,
+          "error": {
+            "code": "INVALID_DATE"
+          }
+        }
+      },
+      {
+        "name": "invalid date: month 13",
+        "input": [
+          1,
+          13,
+          2025
+        ],
+        "expected": {
+          "ok": false,
+          "error": {
+            "code": "INVALID_DATE"
+          }
+        }
+      },
+      {
+        "name": "a year before the data is out of range",
+        "input": [
+          2,
+          1,
+          2022
+        ],
+        "expected": {
+          "ok": false,
+          "error": {
+            "code": "OUT_OF_RANGE"
+          }
+        }
       }
     ],
     "addWorkingDays": [
@@ -472,6 +588,66 @@
         "expected": {
           "ok": true,
           "certain": false
+        }
+      },
+      {
+        "name": "invalid date is rejected",
+        "input": [
+          31,
+          2,
+          2025,
+          1
+        ],
+        "expected": {
+          "ok": false,
+          "error": {
+            "code": "INVALID_DATE"
+          }
+        }
+      },
+      {
+        "name": "n = 1.5 is rejected",
+        "input": [
+          5,
+          5,
+          2025,
+          1.5
+        ],
+        "expected": {
+          "ok": false,
+          "error": {
+            "code": "INVALID_COUNT"
+          }
+        }
+      },
+      {
+        "name": "n = 3651 is rejected",
+        "input": [
+          5,
+          5,
+          2025,
+          3651
+        ],
+        "expected": {
+          "ok": false,
+          "error": {
+            "code": "INVALID_COUNT"
+          }
+        }
+      },
+      {
+        "name": "n = -3651 is rejected",
+        "input": [
+          5,
+          5,
+          2025,
+          -3651
+        ],
+        "expected": {
+          "ok": false,
+          "error": {
+            "code": "INVALID_COUNT"
+          }
         }
       }
     ]
