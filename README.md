@@ -35,6 +35,13 @@ pre-2025 provinces and districts, misread amounts in words, or confuse the Chine
 
 ## Install the skills
 
+**Claude Code plugin** (all skills + the MCP server, one command):
+
+```text
+/plugin marketplace add beiryu/vn-skills
+/plugin install vn-skills@vn-skills
+```
+
 **Claude Code** (project or user scope):
 
 ```bash

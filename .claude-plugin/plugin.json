@@ -1,0 +1,8 @@
+{
+  "name": "vn-skills",
+  "description": "Vietnam business logic for agents: VietQR, 34-province addresses, tax IDs, CCCD, phones, holidays, lunar calendar, e-invoices.",
+  "author": { "name": "beiryu" },
+  "homepage": "https://github.com/beiryu/vn-skills",
+  "repository": "https://github.com/beiryu/vn-skills",
+  "license": "MIT"
+}

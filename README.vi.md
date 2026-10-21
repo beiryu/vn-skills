@@ -35,6 +35,13 @@ trên cùng một lõi chạy offline:
 
 ## Cài skill
 
+**Plugin Claude Code** (tất cả skill + MCP server, một lệnh):
+
+```text
+/plugin marketplace add beiryu/vn-skills
+/plugin install vn-skills@vn-skills
+```
+
 **Claude Code:**
 
 ```bash
