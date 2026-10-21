@@ -3,6 +3,7 @@
 # issues, commits (signed by GitHub), PRs. Decisions are made on the pinned "Maintainer
 # Dashboard" issue. Docs: https://github.com/beiryu/maintainer-bot
 bot:
+  dashboard_repo: beiryu/maintainer-desk # private: only the maintainer sees the dashboard
   runtime: copilot # MODEL_TOKEN = Copilot fine-grained PAT, "Copilot Requests" only
   setup: [node@22, pnpm@12.11.2]
   budget:
