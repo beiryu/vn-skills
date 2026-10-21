@@ -4,6 +4,12 @@
   "description": "CLI used by the vn-skills Agent Skills: VietQR, Vietnamese addresses (34 provinces), tax IDs, money in words, lunar calendar, e-invoice mock.",
   "license": "MIT",
   "type": "module",
+  "exports": {
+    "./decode": {
+      "types": "./dist/decode.d.ts",
+      "import": "./dist/decode.js"
+    }
+  },
   "bin": {
     "vn-skills": "./dist/index.js"
   },

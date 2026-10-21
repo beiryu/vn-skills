@@ -1,5 +1,8 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { resolve } from 'node:path';
+import { mkdtempSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join, resolve } from 'node:path';
+import { PNG } from 'pngjs';
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js';
 
@@ -29,6 +32,7 @@ describe('vn-skills MCP server', () => {
         'vietqr_build',
         'vietqr_parse',
         'vietqr_banks',
+        'vietqr_decode',
         'vn_address_parse',
         'vn_address_convert',
         'vn_address_search_wards',
@@ -73,6 +77,49 @@ describe('vn-skills MCP server', () => {
     expect(j.ok).toBe(true);
     expect(String(j.payload)).toMatch(/6304[0-9A-F]{4}$/);
     expect((r.content as Array<{ type: string }>).some((c) => c.type === 'image')).toBe(true);
+  });
+  it('vietqr_decode reads back the fields of a PNG from vietqr_build', async () => {
+    const built = await client.callTool({
+      name: 'vietqr_build',
+      arguments: {
+        bank: 'MB',
+        account: '0123456789',
+        amount: 150000,
+        note: 'don hang 42',
+        image: true,
+      },
+    });
+    const b = text(built);
+    const img = (built.content as Array<{ type: string; data?: string }>).find(
+      (c) => c.type === 'image',
+    );
+    const file = join(mkdtempSync(join(tmpdir(), 'vn-skills-')), 'qr.png');
+    writeFileSync(file, Buffer.from(img!.data!, 'base64'));
+    const r = await client.callTool({ name: 'vietqr_decode', arguments: { path: file } });
+    expect(r.isError).toBeFalsy();
+    const j = text(r);
+    expect(j.ok).toBe(true);
+    expect(j.payload).toBe(b.payload);
+    expect(j.crcValid).toBe(true);
+    expect(j.bin).toBe('970422');
+    expect(j.account).toBe('0123456789');
+    expect(j.amount).toBe(150000);
+  });
+  it('vietqr_decode returns NO_QR for a PNG without a QR code', async () => {
+    const file = join(mkdtempSync(join(tmpdir(), 'vn-skills-')), 'blank.png');
+    const png = new PNG({ width: 64, height: 64 });
+    png.data.fill(255);
+    writeFileSync(file, PNG.sync.write(png));
+    const r = await client.callTool({ name: 'vietqr_decode', arguments: { path: file } });
+    expect(r.isError).toBe(true);
+    expect(text(r)).toMatchObject({ ok: false, error: { code: 'NO_QR' } });
+  });
+  it('vietqr_decode returns READ_ERROR for a file that is not a PNG', async () => {
+    const file = join(mkdtempSync(join(tmpdir(), 'vn-skills-')), 'x.png');
+    writeFileSync(file, 'not a png');
+    const r = await client.callTool({ name: 'vietqr_decode', arguments: { path: file } });
+    expect(r.isError).toBe(true);
+    expect(text(r)).toMatchObject({ ok: false, error: { code: 'READ_ERROR' } });
   });
   it('vietqr_build error is flagged', async () => {
     const r = await client.callTool({

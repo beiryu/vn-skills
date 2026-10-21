@@ -11,7 +11,8 @@ function copyDir(from: string, to: string): void {
 }
 
 export default defineConfig({
-  entry: ['src/index.ts'],
+  entry: ['src/index.ts', 'src/decode.ts'],
+  dts: { entry: { decode: 'src/decode.ts' } },
   format: ['esm'],
   sourcemap: true,
   clean: true,

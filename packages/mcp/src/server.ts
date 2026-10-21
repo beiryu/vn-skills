@@ -1,6 +1,7 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
 import QRCode from 'qrcode';
+import { decodeQrPng } from '@vn-skills/cli/decode';
 import {
   buildVietQR,
   parseVietQR,
@@ -117,6 +118,24 @@ export function createServer(): McpServer {
     async ({ payload }) => {
       const r = parseVietQR(payload);
       return r.ok ? json({ ...r, ok: true }) : json({ ok: false, error: r.error }, true);
+    },
+  );
+
+  server.registerTool(
+    'vietqr_decode',
+    {
+      title: 'Decode VietQR image',
+      description:
+        'Read the QR code in a PNG image file and decode it like vietqr_parse: bank, account, amount, note, CRC validity. Returns READ_ERROR for an unreadable/non-PNG file and NO_QR when no QR code is found.',
+      inputSchema: { path: z.string().describe('Path to a PNG image containing a VietQR code') },
+    },
+    async ({ path }) => {
+      const d = decodeQrPng(path);
+      if (!d.ok) return json({ ok: false, error: d.error }, true);
+      const r = parseVietQR(d.payload);
+      return r.ok
+        ? json({ ...r, ok: true, payload: d.payload })
+        : json({ ok: false, error: r.error }, true);
     },
   );
 
