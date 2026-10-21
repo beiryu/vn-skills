@@ -1,6 +1,6 @@
 {
  "version": 1,
- "exported_at": "2026-10-21T14:53:33.195Z",
+ "exported_at": "2026-10-21T14:56:30.715Z",
  "tables": {
   "repos": [
    {
@@ -224,27 +224,27 @@
     "title": "repo: update npm descriptions and keywords to cover all 11 skills",
     "body": "## Problem\nThe npm descriptions still list only the first six skills:\n- `packages/core/package.json`: \"…VietQR, 34-province addresses, tax ID validation, money-in-words, lunar calendar, e-invoice schema.\"\n- `packages/cli/package.json`: \"…VietQR, Vietnamese addresses (34 provinces), tax IDs, money in words, lunar calendar, e-invoice mock.\" This package has no `keywords` field.\n- `packages/mcp/package.json`: same six areas; keywords are only `mcp`, `model-context-protocol`, `vietnam`, `vietqr`.\n\nCitizen IDs (CCCD), phone numbers, public holidays and working days, names and number formatting appear nowhere, so npm search cannot match them. A search for `vietnam mcp` on npm does not put vn-skills near the top.\n\n## Acceptance\n- [ ] All three descriptions mention the current skill areas: VietQR, addresses, tax IDs, CCCD, phone, holidays/working days, money in words, number formatting, names, lunar calendar, e-invoice\n- [ ] `keywords` in all three include at least: `vietnam`, `vietnamese`, `vietqr`, `napas`, `cccd`, `ma-so-thue`, `am-lich`, `lunar`, `hoa-don`, `einvoice`, `dia-chi`, `address`, `holidays`, `agent-skills`; cli and mcp also get `claude`, `cursor`, `codex`, and mcp keeps `mcp`, `model-context-protocol`\n- [ ] No other fields change; `pnpm format:check` passes",
     "url": "https://github.com/beiryu/vn-skills/issues/89",
-    "state": "claimed",
+    "state": "pr_open",
     "score": 1,
     "triage_reason": "Small metadata fix. Five of the eleven skills cannot be found through npm search today.",
     "attempts": 0,
     "skip_reason": null,
     "feedback": null,
-    "summary": null,
-    "base_sha": null,
-    "test_files": null,
-    "test_hashes": null,
-    "test_vars": null,
-    "branch": null,
-    "pr_title": null,
-    "pr_body": null,
+    "summary": "Updated description and keywords in core, cli and mcp package.json to cover all 11 skills; removed the old duplicate core keywords block.",
+    "base_sha": "a733de694693ed0e2b373d1b66eb0129f4914770",
+    "test_files": "[\"tests/package-metadata.test.ts\"]",
+    "test_hashes": "{\"tests/package-metadata.test.ts\":\"e6683b1b67471a1f745e5bbe80cab9eafaee5479b1c144561a59061f2174dc48\"}",
+    "test_vars": "{\"file\":\"tests/package-metadata.test.ts\"}",
+    "branch": "docs/89-repo-update-npm-descriptions-and-keyword",
+    "pr_title": "docs(repo): cover all 11 skills in npm descriptions and keywords",
+    "pr_body": "Closes #89\n\n## What & why\n\nThe npm descriptions for `@vn-skills/core`, `@vn-skills/cli` and `@vn-skills/mcp` listed only the first six skills. CCCD, phone, holidays and working days, number formatting and names were missing, so npm search could not match them.\n\n- Updated `description` in all three `package.json` files to name every skill area.\n- Added `keywords` to cli (it had none), extended them in mcp, and extended them in core.\n- Moved the core `keywords` block up next to `description` and removed the old one. No other fields changed.\n- Added `tests/package-metadata.test.ts`.\n\nAcceptance:\n\n- [x] All three descriptions mention the current skill areas\n- [x] `keywords` in all three include the required list; cli and mcp also have `claude`, `cursor`, `codex`; mcp keeps `mcp` and `model-context-protocol`\n- [x] No other fields change; `pnpm format:check` passes\n\n## Testing\n\nNew `tests/package-metadata.test.ts` checks, for each of core, cli and mcp:\n\n- the description mentions each of the 12 skill areas (one case per area);\n- the keywords contain the required set for that package.\n\n## Checklist\n\n- [x] Title follows Conventional Commits (`feat|fix|docs|data|test|refactor|perf|build|ci|chore(scope): …`)\n- [x] Tests added or updated (golden test for every bug fix)\n- [ ] `pnpm build && pnpm typecheck && pnpm lint && pnpm test && pnpm format:check` pass locally\n- [x] Core stays offline (no `fetch`/HTTP in `packages/core`)\n- [ ] Data changes go through `scripts/build-data.ts` and `SOURCES.md` (source + license)\n- [ ] SKILL.md / README updated if behaviour changed\n",
     "dry": 0,
     "claimed_at": null,
-    "updated_at": "2026-10-21T14:53:26.280Z",
+    "updated_at": "2026-10-21T14:56:29.180Z",
     "blocked": null,
-    "patch": null,
-    "repro_patch": null,
-    "repro_notes": null
+    "patch": "diff --git a/packages/cli/package.json b/packages/cli/package.json\nindex a6dd6d4..61d42ab 100644\n--- a/packages/cli/package.json\n+++ b/packages/cli/package.json\n@@ -1,7 +1,26 @@\n {\n   \"name\": \"@vn-skills/cli\",\n   \"version\": \"0.4.0\",\n-  \"description\": \"CLI used by the vn-skills Agent Skills: VietQR, Vietnamese addresses (34 provinces), tax IDs, money in words, lunar calendar, e-invoice mock.\",\n+  \"description\": \"CLI used by the vn-skills Agent Skills: VietQR, addresses (34 provinces), tax IDs, CCCD citizen IDs, phone numbers, public holidays and working days, money in words, number formatting, names, lunar calendar, e-invoice.\",\n+  \"keywords\": [\n+    \"vietnam\",\n+    \"vietnamese\",\n+    \"vietqr\",\n+    \"napas\",\n+    \"cccd\",\n+    \"ma-so-thue\",\n+    \"am-lich\",\n+    \"lunar\",\n+    \"hoa-don\",\n+    \"einvoice\",\n+    \"dia-chi\",\n+    \"address\",\n+    \"holidays\",\n+    \"agent-skills\",\n+    \"claude\",\n+    \"cursor\",\n+    \"codex\"\n+  ],\n   \"license\": \"MIT\",\n   \"type\": \"module\",\n   \"exports\": {\ndiff --git a/packages/core/package.json b/packages/core/package.json\nindex 4d90b2f..4ae51b0 100644\n--- a/packages/core/package.json\n+++ b/packages/core/package.json\n@@ -1,7 +1,23 @@\n {\n   \"name\": \"@vn-skills/core\",\n   \"version\": \"0.4.0\",\n-  \"description\": \"Offline, dependency-free Vietnam business logic: VietQR, 34-province addresses, tax ID validation, money-in-words, lunar calendar, e-invoice schema.\",\n+  \"description\": \"Offline, dependency-free Vietnam business logic: VietQR, addresses (34 provinces), tax IDs, CCCD citizen IDs, phone numbers, public holidays and working days, money in words, number formatting, names, lunar calendar, e-invoice.\",\n+  \"keywords\": [\n+    \"vietnam\",\n+    \"vietnamese\",\n+    \"vietqr\",\n+    \"napas\",\n+    \"cccd\",\n+    \"ma-so-thue\",\n+    \"am-lich\",\n+    \"lunar\",\n+    \"hoa-don\",\n+    \"einvoice\",\n+    \"dia-chi\",\n+    \"address\",\n+    \"holidays\",\n+    \"agent-skills\"\n+  ],\n   \"license\": \"MIT\",\n   \"type\": \"module\",\n   \"main\": \"./dist/index.js\",\n@@ -23,17 +39,6 @@\n     \"build\": \"tsup\",\n     \"typecheck\": \"tsc --noEmit -p tsconfig.json\"\n   },\n-  \"keywords\": [\n-    \"vietnam\",\n-    \"vietqr\",\n-    \"napas\",\n-    \"ma-so-thue\",\n-    \"am-lich\",\n-    \"lunar\",\n-    \"address\",\n-    \"einvoice\",\n-    \"agent-skills\"\n-  ],\n   \"repository\": {\n     \"type\": \"git\",\n     \"url\": \"git+https://github.com/beiryu/vn-skills.git\",\ndiff --git a/packages/mcp/package.json b/packages/mcp/package.json\nindex a00f1e6..453ff8f 100644\n--- a/packages/mcp/package.json\n+++ b/packages/mcp/package.json\n@@ -1,12 +1,27 @@\n {\n   \"name\": \"@vn-skills/mcp\",\n   \"version\": \"0.4.0\",\n-  \"description\": \"MCP server exposing vn-skills tools (VietQR, Vietnamese addresses, tax IDs, money in words, lunar calendar, e-invoice) over stdio.\",\n+  \"description\": \"MCP server exposing vn-skills tools (VietQR, addresses, tax IDs, CCCD citizen IDs, phone numbers, public holidays and working days, money in words, number formatting, names, lunar calendar, e-invoice) over stdio.\",\n   \"keywords\": [\n     \"mcp\",\n     \"model-context-protocol\",\n     \"vietnam\",\n-    \"vietqr\"\n+    \"vietnamese\",\n+    \"vietqr\",\n+    \"napas\",\n+    \"cccd\",\n+    \"ma-so-thue\",\n+    \"am-lich\",\n+    \"lunar\",\n+    \"hoa-don\",\n+    \"einvoice\",\n+    \"dia-chi\",\n+    \"address\",\n+    \"holidays\",\n+    \"agent-skills\",\n+    \"claude\",\n+    \"cursor\",\n+    \"codex\"\n   ],\n   \"license\": \"MIT\",\n   \"type\": \"module\",\ndiff --git a/tests/package-metadata.test.ts b/tests/package-metadata.test.ts\nnew file mode 100644\nindex 0000000..e7ef5d1\n--- /dev/null\n+++ b/tests/package-metadata.test.ts\n@@ -0,0 +1,65 @@\n+import { describe, expect, it } from 'vitest';\n+import { readFileSync } from 'node:fs';\n+import { resolve } from 'node:path';\n+\n+interface Pkg {\n+  description: string;\n+  keywords?: string[];\n+}\n+\n+function load(name: string): Pkg {\n+  return JSON.parse(\n+    readFileSync(resolve(__dirname, '..', 'packages', name, 'package.json'), 'utf8'),\n+  ) as Pkg;\n+}\n+\n+const COMMON = [\n+  'vietnam',\n+  'vietnamese',\n+  'vietqr',\n+  'napas',\n+  'cccd',\n+  'ma-so-thue',\n+  'am-lich',\n+  'lunar',\n+  'hoa-don',\n+  'einvoice',\n+  'dia-chi',\n+  'address',\n+  'holidays',\n+  'agent-skills',\n+];\n+const AGENTS = ['claude', 'cursor', 'codex'];\n+\n+const AREAS: Array<[string, RegExp]> = [\n+  ['VietQR', /vietqr/i],\n+  ['addresses', /address/i],\n+  ['tax IDs', /tax/i],\n+  ['CCCD', /cccd/i],\n+  ['phone', /phone/i],\n+  ['holidays', /holiday/i],\n+  ['working days', /working day/i],\n+  ['money in words', /money in words|money-in-words/i],\n+  ['number formatting', /number format/i],\n+  ['names', /names?\\b/i],\n+  ['lunar calendar', /lunar/i],\n+  ['e-invoice', /e-invoice/i],\n+];\n+\n+const expected: Record<string, string[]> = {\n+  core: COMMON,\n+  cli: [...COMMON, ...AGENTS],\n+  mcp: [...COMMON, ...AGENTS, 'mcp', 'model-context-protocol'],\n+};\n+\n+describe.each(Object.keys(expected))('packages/%s metadata', (name) => {\n+  const pkg = load(name);\n+\n+  it.each(AREAS)('description mentions %s', (_label, re) => {\n+    expect(pkg.description).toMatch(re);\n+  });\n+\n+  it('has the required keywords', () => {\n+    expect(pkg.keywords ?? []).toEqual(expect.arrayContaining(expected[name]!));\n+  });\n+});\n",
+    "repro_patch": "diff --git a/tests/package-metadata.test.ts b/tests/package-metadata.test.ts\nnew file mode 100644\nindex 0000000..e7ef5d1\n--- /dev/null\n+++ b/tests/package-metadata.test.ts\n@@ -0,0 +1,65 @@\n+import { describe, expect, it } from 'vitest';\n+import { readFileSync } from 'node:fs';\n+import { resolve } from 'node:path';\n+\n+interface Pkg {\n+  description: string;\n+  keywords?: string[];\n+}\n+\n+function load(name: string): Pkg {\n+  return JSON.parse(\n+    readFileSync(resolve(__dirname, '..', 'packages', name, 'package.json'), 'utf8'),\n+  ) as Pkg;\n+}\n+\n+const COMMON = [\n+  'vietnam',\n+  'vietnamese',\n+  'vietqr',\n+  'napas',\n+  'cccd',\n+  'ma-so-thue',\n+  'am-lich',\n+  'lunar',\n+  'hoa-don',\n+  'einvoice',\n+  'dia-chi',\n+  'address',\n+  'holidays',\n+  'agent-skills',\n+];\n+const AGENTS = ['claude', 'cursor', 'codex'];\n+\n+const AREAS: Array<[string, RegExp]> = [\n+  ['VietQR', /vietqr/i],\n+  ['addresses', /address/i],\n+  ['tax IDs', /tax/i],\n+  ['CCCD', /cccd/i],\n+  ['phone', /phone/i],\n+  ['holidays', /holiday/i],\n+  ['working days', /working day/i],\n+  ['money in words', /money in words|money-in-words/i],\n+  ['number formatting', /number format/i],\n+  ['names', /names?\\b/i],\n+  ['lunar calendar', /lunar/i],\n+  ['e-invoice', /e-invoice/i],\n+];\n+\n+const expected: Record<string, string[]> = {\n+  core: COMMON,\n+  cli: [...COMMON, ...AGENTS],\n+  mcp: [...COMMON, ...AGENTS, 'mcp', 'model-context-protocol'],\n+};\n+\n+describe.each(Object.keys(expected))('packages/%s metadata', (name) => {\n+  const pkg = load(name);\n+\n+  it.each(AREAS)('description mentions %s', (_label, re) => {\n+    expect(pkg.description).toMatch(re);\n+  });\n+\n+  it('has the required keywords', () => {\n+    expect(pkg.keywords ?? []).toEqual(expect.arrayContaining(expected[name]!));\n+  });\n+});\n",
+    "repro_notes": "Reads packages/{core,cli,mcp}/package.json and asserts descriptions mention all 12 skill areas (VietQR, addresses, tax, CCCD, phone, holidays, working days, money in words, number formatting, names, lunar, e-invoice) and keywords include the required list from the issue. Fails now: descriptions lack the new areas and keywords are missing or incomplete (cli has no keywords field)."
    }
   ],
   "prs": [
@@ -319,9 +319,24 @@
     "mergeable": "MERGEABLE",
     "ci_state": "pending",
     "review_decision": "REVIEW_REQUIRED",
-    "snapshot_at": "2026-10-21T14:52:24.449Z",
+    "snapshot_at": "2026-10-21T14:54:04.322Z",
     "ci_seen_sha": null,
     "merge_state": "BLOCKED"
+   },
+   {
+    "issue_id": 8,
+    "url": "https://github.com/beiryu/vn-skills/pull/90",
+    "number": 90,
+    "state": "open",
+    "last_seen_at": "2026-10-21T14:56:29.179Z",
+    "opened_at": "2026-10-21T14:56:29.179Z",
+    "head_sha": null,
+    "mergeable": null,
+    "ci_state": null,
+    "review_decision": null,
+    "snapshot_at": null,
+    "ci_seen_sha": null,
+    "merge_state": null
    }
   ],
   "pending_actions": [
@@ -1237,6 +1252,62 @@
     "cost_usd": 0.0351439,
     "ok": 1,
     "result_json": "{\"parsed\":{\"done\":false,\"summary\":\"Blocked: the issue and tests/mcp-registry.test.ts require adding packages/mcp/server.json to extra-files in release-please-config.json, a path the gate rejects outright. The issue itself allows it, so a maintainer needs to approve that edit or do it manually. Nothing was changed. The remaining work is the mcpName field in packages/mcp/package.json, packages/mcp/server.json (version 0.4.0, description of 100 characters or fewer, npm @vn-skills/mcp with stdio transport) and a CONTRIBUTING.md note on running mcp-publisher publish.\",\"filesChanged\":[],\"testWrong\":false},\"result\":\"I haven't made any changes. The issue can't be fully resolved within the constraints I was given.\\n\\nThe issue, and `tests/mcp-registry.test.ts`, require adding `packages/mcp/server.json` to the `extra-files` list in `release-please-config.json`. That file is on the list of paths the change gate rejects outright. The issue does explicitly allow touching the release config for this, but I wasn't given that exception, so I stopped rather than work around it.\\n\\nThe other items (`mcpName`, `server.json` and the CONTRIBUTING note) are straightforward. The release-please test can't pass without the config edit.\\n\\n```json\\n{\\\"done\\\": false, \\\"testWrong\\\": false, \\\"summary\\\": \\\"Blocked: the issue and tests/mcp-registry.test.ts require adding packages/mcp/server.json to extra-files in release-please-config.json, a path the gate rejects outright. The issue itself allows it, so a",
+    "models": "claude-sonnet-5.5"
+   },
+   {
+    "id": 64,
+    "run_id": "49758682-b935-4a65-ae19-060c80c9d7af",
+    "issue_id": 8,
+    "agent": "reproducer",
+    "started_at": "2026-10-21T14:54:09.009Z",
+    "duration_ms": 20489,
+    "input_tokens": 45863,
+    "output_tokens": 1686,
+    "cost_usd": 0.0526105,
+    "ok": 1,
+    "result_json": "{\"parsed\":{\"reproduced\":true,\"testFiles\":[\"tests/package-metadata.test.ts\"],\"testVars\":{\"file\":\"tests/package-metadata.test.ts\"},\"notes\":\"Reads packages/{core,cli,mcp}/package.json and asserts descriptions mention all 12 skill areas (VietQR, addresses, tax, CCCD, phone, holidays, working days, money in words, number formatting, names, lunar, e-invoice) and keywords include the required list from the issue. Fails now: descriptions lack the new areas and keywords are missing or incomplete (cli has no keywords field).\"},\"result\":\"I added `tests/package-metadata.test.ts`. It fails on the current base for the reason the issue describes.\\n\\nThe test checks `packages/core`, `packages/cli` and `packages/mcp`. For each it asserts that the description mentions all 12 skill areas and that `keywords` contains the required list from the issue. cli also needs `claude`, `cursor` and `codex`, and mcp needs those plus `mcp` and `model-context-protocol`.\\n\\nI only viewed the tail of the vitest output, which was the mcp failures, so I didn't see the core and cli results. The mcp description still lists only six areas, so the working days, number formatting and names checks fail. Its keywords are still just `mcp`, `model-context-protocol`, `vietnam` and `vietqr`. The cli package has no `keywords` field at all, so it fails the keywords check by construction.\\n\\nI didn't check the test against `pnpm lint` or `pnpm format:check`. I did not commit.\\n\\n```json\\n{\\\"reproduced\\\": true, \\\"testFiles\\\": [",
+    "models": "claude-sonnet-5.5"
+   },
+   {
+    "id": 65,
+    "run_id": "49758682-b935-4a65-ae19-060c80c9d7af",
+    "issue_id": 8,
+    "agent": "coder",
+    "started_at": "2026-10-21T14:54:29.588Z",
+    "duration_ms": 26297,
+    "input_tokens": 95346,
+    "output_tokens": 3093,
+    "cost_usd": 0.0785078,
+    "ok": 1,
+    "result_json": "{\"parsed\":{\"done\":true,\"summary\":\"Updated description and keywords in core, cli and mcp package.json to cover all 11 skills; removed the old duplicate core keywords block.\",\"filesChanged\":[\"packages/core/package.json\",\"packages/cli/package.json\",\"packages/mcp/package.json\"],\"testWrong\":false},\"result\":\"I'll make the edits with the edit tool instead.\\n\\nCore already had keywords further down in the file, so the new block was a duplicate key. I'll check.\\n\\nRemove the old duplicate block (the later one wins in JSON parsing).\\n\\nI updated the descriptions and keywords in all three packages. `tests/package-metadata.test.ts` now passes (39 tests) and `pnpm format:check` is clean. I did not run build, typecheck or lint.\\n\\n- **Descriptions:** core, cli and mcp now name all 11 skill areas, including CCCD, phone numbers, holidays and working days, number formatting and names.\\n- **Keywords:** all three include the full common set from the issue. cli and mcp also have `claude`, `cursor` and `codex`, and mcp keeps `mcp` and `model-context-protocol`.\\n- **Core duplicate:** `packages/core/package.json` already had a shorter `keywords` block further down. I removed it so the file has a single, complete `keywords` field.\\n- **Wording:** the cli description now ends with \\\"e-invoice\\\" rather than the old \\\"e-invoice mock\\\".\\n\\n```json\\n{\\\"done\\\": true, \\\"testWrong\\\": false, \\\"summary\\\": \\\"Updated description and keywords in core, cli and mcp package.json to cover all 11 skills; removed the ",
+    "models": "claude-sonnet-5.5"
+   },
+   {
+    "id": 66,
+    "run_id": "49758682-b935-4a65-ae19-060c80c9d7af",
+    "issue_id": 8,
+    "agent": "reviewer",
+    "started_at": "2026-10-21T14:55:37.673Z",
+    "duration_ms": 9621,
+    "input_tokens": 20164,
+    "output_tokens": 731,
+    "cost_usd": 0.0299472,
+    "ok": 1,
+    "result_json": "{\"parsed\":{\"verdict\":\"approve\",\"reasons\":[],\"redoTest\":false,\"retryable\":true},\"result\":\"The patch meets the issue's acceptance criteria. I read the diff but did not run any tests, `pnpm format:check` or lint.\\n\\n- **Descriptions:** all three package descriptions now cover every listed area.\\n- **Keywords:** each package has the required set. The cli and mcp packages also have `claude`, `cursor` and `codex`, and mcp keeps `mcp` and `model-context-protocol`.\\n- **Test:** `tests/package-metadata.test.ts` checks the descriptions and keywords of all three packages, so it would fail on the base.\\n\\nMoving the core `keywords` block up beside `description` is extra diff noise, but it changes no field values and I would leave it as a non-blocking remark.\\n\\n```json\\n{\\\"verdict\\\": \\\"approve\\\", \\\"reasons\\\": [], \\\"redoTest\\\": false, \\\"retryable\\\": true}\\n```\\n\"}",
+    "models": "claude-sonnet-5.5"
+   },
+   {
+    "id": 67,
+    "run_id": "49758682-b935-4a65-ae19-060c80c9d7af",
+    "issue_id": 8,
+    "agent": "pr-writer",
+    "started_at": "2026-10-21T14:55:47.371Z",
+    "duration_ms": 10618,
+    "input_tokens": 32699,
+    "output_tokens": 1148,
+    "cost_usd": 0.0373029,
+    "ok": 1,
+    "result_json": "{\"parsed\":{\"title\":\"docs(repo): cover all 11 skills in npm descriptions and keywords\",\"body\":\"Closes #89\\n\\n## What & why\\n\\nThe npm descriptions for `@vn-skills/core`, `@vn-skills/cli` and `@vn-skills/mcp` listed only the first six skills. CCCD, phone, holidays and working days, number formatting and names were missing, so npm search could not match them.\\n\\n- Updated `description` in all three `package.json` files to name every skill area.\\n- Added `keywords` to cli (it had none), extended them in mcp, and extended them in core.\\n- Moved the core `keywords` block up next to `description` and removed the old one. No other fields changed.\\n- Added `tests/package-metadata.test.ts`.\\n\\nAcceptance:\\n\\n- [x] All three descriptions mention the current skill areas\\n- [x] `keywords` in all three include the required list; cli and mcp also have `claude`, `cursor`, `codex`; mcp keeps `mcp` and `model-context-protocol`\\n- [x] No other fields change; `pnpm format:check` passes\\n\\n## Testing\\n\\nNew `tests/package-metadata.test.ts` checks, for each of core, cli and mcp:\\n\\n- the description mentions each of the 12 skill areas (one case per area);\\n- the keywords contain the required set for that package.\\n\\n## Checklist\\n\\n- [x] Title follows Conventional Commits (`feat|fix|docs|data|test|refactor|perf|build|ci|chore(scope): …`)\\n- [x] Tests added or updated (golden test for every bug fix)\\n- [ ] `pnpm build && pnpm typecheck && pnpm lint && pnpm test && pnpm format:check` pass locally\\n-",
     "models": "claude-sonnet-5.5"
    }
   ],
