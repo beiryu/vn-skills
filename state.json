@@ -1,6 +1,6 @@
 {
  "version": 1,
- "exported_at": "2026-10-21T10:45:04.418Z",
+ "exported_at": "2026-10-21T10:46:05.819Z",
  "tables": {
   "repos": [
    {
@@ -10,7 +10,7 @@
     "policy_status": null,
     "policy_excerpts": null,
     "block_reason": null,
-    "last_scanned": "2026-10-21T10:44:37.071Z"
+    "last_scanned": "2026-10-21T10:45:40.169Z"
    }
   ],
   "issues": [
@@ -185,9 +185,9 @@
     "opened_at": "2026-10-21T10:37:30.693Z",
     "head_sha": "a74e7d88bf772baf7913b1e2ae844c7b725b5bcf",
     "mergeable": "MERGEABLE",
-    "ci_state": "pending",
+    "ci_state": "success",
     "review_decision": null,
-    "snapshot_at": "2026-10-21T10:43:32.445Z",
+    "snapshot_at": "2026-10-21T10:45:33.408Z",
     "ci_seen_sha": null,
     "merge_state": "BLOCKED"
    },
@@ -202,7 +202,7 @@
     "mergeable": "MERGEABLE",
     "ci_state": "success",
     "review_decision": "REVIEW_REQUIRED",
-    "snapshot_at": "2026-10-21T10:44:32.795Z",
+    "snapshot_at": "2026-10-21T10:45:36.369Z",
     "ci_seen_sha": null,
     "merge_state": "BLOCKED"
    }
@@ -977,7 +977,7 @@
    },
    {
     "key": "dashboard-last-comment:beiryu/maintainer-desk:beiryu/vn-skills",
-    "value": "6313741031"
+    "value": "6314045551"
    },
    {
     "key": "audited:beiryu/vn-skills",
