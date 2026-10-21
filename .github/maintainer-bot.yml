@@ -66,6 +66,8 @@ pr_scopes:
   ]
 audit_files:
   [README.md, CONTRIBUTING.md, AGENTS.md, vn-skills-SPEC.md, packages/core/data/SOURCES.md]
+auto_approve: true # what the bot can implement becomes an issue right away; the rest waits on the dashboard
+packages: ['@vn-skills/core', '@vn-skills/cli', '@vn-skills/mcp']
 sources:
   - {
       name: provinces,
