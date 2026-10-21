@@ -1,6 +1,6 @@
 {
  "version": 1,
- "exported_at": "2026-10-21T14:08:05.420Z",
+ "exported_at": "2026-10-21T14:11:48.565Z",
  "tables": {
   "repos": [
    {
@@ -10,7 +10,7 @@
     "policy_status": null,
     "policy_excerpts": null,
     "block_reason": null,
-    "last_scanned": "2026-10-21T14:07:31.619Z"
+    "last_scanned": "2026-10-21T14:11:17.836Z"
    }
   ],
   "issues": [
@@ -137,7 +137,7 @@
     "title": "docs: list vn-skills in MCP registries and Agent Skills directories",
     "body": "## Task (a person does this)\n- [ ] Check that `@vn-skills/mcp` has a clear npm description and keywords: `mcp`, `vietnam`, `vietqr`.\n- [ ] Submit the server to the official MCP registry and to popular community MCP lists.\n- [ ] Submit the skills folder to Agent Skills directories and awesome-lists, including Vietnamese developer communities.\n- [ ] Record each link in the issue as it is done.\n\nThe tool list in the README is the text to use for the submissions.",
     "url": "https://github.com/beiryu/vn-skills/issues/79",
-    "state": "pr_open",
+    "state": "done",
     "score": 1,
     "triage_reason": "[needs you] There are no stars and no outside discovery. Listings are the cheapest way to reach people who search for VN-specific agent tools.",
     "attempts": 0,
@@ -153,7 +153,7 @@
     "pr_body": "Closes #79\n\n## What & why\n\nAdds `mcp`, `model-context-protocol`, `vietnam` and `vietqr` keywords to `packages/mcp/package.json`, so `@vn-skills/mcp` is easier to find on npm. The package already had a clear description. A test now checks the description and the three required keywords.\n\nIssue checklist:\n\n- [x] Check that `@vn-skills/mcp` has a clear npm description and keywords: `mcp`, `vietnam`, `vietqr`.\n- [ ] Submit the server to the official MCP registry and to popular community MCP lists. Not done: manual task for a person.\n- [ ] Submit the skills folder to Agent Skills directories and awesome-lists. Not done: manual task for a person.\n- [ ] Record each link in the issue. Not done: depends on the submissions above.\n\nSo this PR covers only the first item. The issue should stay open for the submissions.\n\nTests: added `@vn-skills/mcp npm metadata` in `tests/readme.test.ts`. It checks that the description is non-empty and that the `mcp`, `vietnam` and `vietqr` keywords are present. The readme test passes.\n\n## Checklist\n\n- [x] Title follows Conventional Commits (`feat|fix|docs|data|test|refactor|perf|build|ci|chore(scope): …`)\n- [x] Tests added or updated (golden test for every bug fix)\n- [ ] `pnpm build && pnpm typecheck && pnpm lint && pnpm test && pnpm format:check` pass locally\n- [x] Core stays offline (no `fetch`/HTTP in `packages/core`)\n- [x] Data changes go through `scripts/build-data.ts` and `SOURCES.md` (source + license): no data changes\n- [ ] SKILL.md / README updated if behaviour changed: no behaviour change\n",
     "dry": 0,
     "claimed_at": null,
-    "updated_at": "2026-10-21T10:12:57.968Z",
+    "updated_at": "2026-10-21T14:11:15.620Z",
     "blocked": null,
     "patch": "diff --git a/packages/mcp/package.json b/packages/mcp/package.json\nindex 046292b..2a4be14 100644\n--- a/packages/mcp/package.json\n+++ b/packages/mcp/package.json\n@@ -2,6 +2,12 @@\n   \"name\": \"@vn-skills/mcp\",\n   \"version\": \"0.4.0\",\n   \"description\": \"MCP server exposing vn-skills tools (VietQR, Vietnamese addresses, tax IDs, money in words, lunar calendar, e-invoice) over stdio.\",\n+  \"keywords\": [\n+    \"mcp\",\n+    \"model-context-protocol\",\n+    \"vietnam\",\n+    \"vietqr\"\n+  ],\n   \"license\": \"MIT\",\n   \"type\": \"module\",\n   \"bin\": {\ndiff --git a/tests/readme.test.ts b/tests/readme.test.ts\nindex ae41b63..dec10d2 100644\n--- a/tests/readme.test.ts\n+++ b/tests/readme.test.ts\n@@ -31,3 +31,18 @@ describe.each(['README.md', 'README.vi.md'])('%s', (file) => {\n     expect(section).not.toContain('vn-skills install');\n   });\n });\n+\n+describe('@vn-skills/mcp npm metadata', () => {\n+  const pkg = JSON.parse(read('packages/mcp/package.json')) as {\n+    description?: string;\n+    keywords?: string[];\n+  };\n+\n+  it('has a description', () => {\n+    expect((pkg.description ?? '').length).toBeGreaterThan(20);\n+  });\n+\n+  it.each(['mcp', 'vietnam', 'vietqr'])('has the \"%s\" keyword', (kw) => {\n+    expect(pkg.keywords ?? []).toContain(kw);\n+  });\n+});\n",
     "repro_patch": "diff --git a/tests/readme.test.ts b/tests/readme.test.ts\nindex ae41b63..dec10d2 100644\n--- a/tests/readme.test.ts\n+++ b/tests/readme.test.ts\n@@ -31,3 +31,18 @@ describe.each(['README.md', 'README.vi.md'])('%s', (file) => {\n     expect(section).not.toContain('vn-skills install');\n   });\n });\n+\n+describe('@vn-skills/mcp npm metadata', () => {\n+  const pkg = JSON.parse(read('packages/mcp/package.json')) as {\n+    description?: string;\n+    keywords?: string[];\n+  };\n+\n+  it('has a description', () => {\n+    expect((pkg.description ?? '').length).toBeGreaterThan(20);\n+  });\n+\n+  it.each(['mcp', 'vietnam', 'vietqr'])('has the \"%s\" keyword', (kw) => {\n+    expect(pkg.keywords ?? []).toContain(kw);\n+  });\n+});\n",
@@ -184,12 +184,12 @@
     "last_seen_at": "2026-10-21T14:04:23.601Z",
     "opened_at": "2026-10-21T14:04:23.601Z",
     "head_sha": "41f3ed59846e71e4346d32ac5129036787490514",
-    "mergeable": "MERGEABLE",
+    "mergeable": "UNKNOWN",
     "ci_state": "pending",
     "review_decision": "REVIEW_REQUIRED",
-    "snapshot_at": "2026-10-21T14:07:19.997Z",
+    "snapshot_at": "2026-10-21T14:11:09.424Z",
     "ci_seen_sha": null,
-    "merge_state": "BLOCKED"
+    "merge_state": "UNKNOWN"
    },
    {
     "issue_id": 4,
@@ -198,28 +198,28 @@
     "state": "open",
     "last_seen_at": "2026-10-21T10:43:01Z",
     "opened_at": "2026-10-21T10:37:30.693Z",
-    "head_sha": "e918d1777a37c313a7508c3725d8fee195ed4914",
+    "head_sha": "106d126c0ea37e1a2fcd7e10c63e4f379533faa0",
     "mergeable": "MERGEABLE",
-    "ci_state": "success",
+    "ci_state": "pending",
     "review_decision": "REVIEW_REQUIRED",
-    "snapshot_at": "2026-10-21T14:07:23.806Z",
+    "snapshot_at": "2026-10-21T14:11:12.885Z",
     "ci_seen_sha": null,
-    "merge_state": "BEHIND"
+    "merge_state": "BLOCKED"
    },
    {
     "issue_id": 5,
     "url": "https://github.com/beiryu/vn-skills/pull/80",
     "number": 80,
-    "state": "open",
+    "state": "merged",
     "last_seen_at": "2026-10-21T10:12:57.968Z",
     "opened_at": "2026-10-21T10:12:57.968Z",
     "head_sha": "9f288afd1ec56c90a117d4b518402b65fb3bdff2",
-    "mergeable": "MERGEABLE",
+    "mergeable": "UNKNOWN",
     "ci_state": "pending",
     "review_decision": "REVIEW_REQUIRED",
-    "snapshot_at": "2026-10-21T14:07:26.977Z",
+    "snapshot_at": "2026-10-21T14:11:15.619Z",
     "ci_seen_sha": null,
-    "merge_state": "BLOCKED"
+    "merge_state": "UNKNOWN"
    }
   ],
   "pending_actions": [
