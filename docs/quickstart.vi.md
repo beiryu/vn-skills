@@ -114,7 +114,7 @@ Kết quả:
 npx -y @vn-skills/cli install all --agent claude    # hoặc cursor, codex
 ```
 
-Binary tên là `vn-skills`, nên khi cài global lệnh tương đương là `vn-skills install all --agent claude|cursor|codex`.
+Binary tên là `vn-skills`, nên khi cài global lệnh tương đương là `vn-skills install all --agent claude` (thay `claude` bằng `cursor` hoặc `codex`).
 
 Lệnh này chép toàn bộ skill vào thư mục skill của agent (`.claude/skills/`, `.cursor/skills/` hoặc `.codex/skills/`
 trong dự án hiện tại). Thêm `--global` để cài vào thư mục home, `--dry-run` để chỉ in các thao tác, `--force` để ghi đè
