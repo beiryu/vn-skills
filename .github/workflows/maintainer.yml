@@ -22,15 +22,6 @@ on:
     - cron: '0 2 * * 1' # weekly: upstream sources + audit
   workflow_dispatch:
 
-# The most GITHUB_TOKEN may do in the called workflow: its agent job reads with these, its
-# publish job uses the maintainer's PAT and asks for nothing.
-permissions:
-  contents: read
-  issues: read
-  pull-requests: read
-  checks: read
-  actions: read
-
 # One pass at a time; a second event waits instead of running alongside.
 concurrency:
   group: maintainer-bot
@@ -38,9 +29,17 @@ concurrency:
 
 jobs:
   bot:
-    # Pilot: tracks the bot's main branch; pin both to a tag (v1) once settled.
-    uses: beiryu/maintainer-bot/.github/workflows/agent.yml@main
+    permissions:
+      contents: read
+      issues: read
+      pull-requests: read
+      checks: read
+      actions: read
+    # Pinned to a commit of the bot: that revision is what runs with the secrets, and its code is
+    # checked out at the same commit. Bumped by PR (Dependabot, or by hand) when the bot changes.
+    uses: beiryu/maintainer-bot/.github/workflows/agent.yml@625aa385ec99e3f706b9d0bc09e738d9cadd4120 # main 2026-10-21
     with:
-      bot_ref: main
-      draft_prs: true # PRs open as drafts; set false once trusted
+      draft_prs: true # pilot: PRs open as drafts; set false once trusted
+    # BOT_PAT lives in the environment "bot", which only the called workflow's publish job
+    # enters; inherit is the only way an environment secret reaches a called workflow.
     secrets: inherit
