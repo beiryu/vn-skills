@@ -1,6 +1,6 @@
 {
  "version": 1,
- "exported_at": "2026-10-21T06:52:24.760Z",
+ "exported_at": "2026-10-21T07:02:14.904Z",
  "tables": {
   "repos": [
    {
@@ -21,30 +21,46 @@
     "title": "test(vn-holidays): add tests/holidays.test.ts with edge cases beyond the golden fixtures",
     "body": "## Problem\n`vn-holidays` has only `tests/holidays-golden.test.ts` (4 `it` blocks that iterate `tests/golden/vn-holidays.json`). Every other skill has a dedicated `tests/<name>.test.ts`, and CONTRIBUTING requires one. Behaviour that is not a pure input->output case is untested: error results for malformed dates, `announced: false` for years without data, `addWorkingDays` with n=0 or a negative n, and ranges that cross a year boundary.\n\n## Acceptance\n- [ ] New `tests/holidays.test.ts` with >= 20 cases covering: invalid date input (`ok: false` with code and hint), a year with no announcement (`announced: false`, statutory days only), weekend-collision compensation, `addWorkingDays` with n = 0 and with a negative n, and a year-boundary crossing\n- [ ] Only assert behaviour the current implementation already has. If a case exposes a bug, report it in the PR instead of silently changing behaviour\n- [ ] Do not edit `packages/core/data/*.json`\n- [ ] `pnpm build && pnpm typecheck && pnpm lint && pnpm exec vitest run && pnpm format:check` pass",
     "url": "https://github.com/beiryu/vn-skills/issues/60",
-    "state": "claimed",
+    "state": "pr_open",
     "score": 1,
     "triage_reason": "The holidays skill has no dedicated test file, unlike the other skills, and CONTRIBUTING requires >= 20 tests per skill.",
     "attempts": 0,
     "skip_reason": null,
     "feedback": null,
-    "summary": null,
-    "base_sha": null,
-    "test_files": null,
-    "test_hashes": null,
-    "test_vars": null,
-    "branch": null,
-    "pr_title": null,
-    "pr_body": null,
+    "summary": "Added tests/holidays.test.ts with 33 characterization tests (invalid input, unannounced year, weekend compensation, addWorkingDays n=0/negative, year boundary). No behaviour changes; no bugs found.",
+    "base_sha": "5a2289282a79d2da87f2bbc600e4fd9e36f563b1",
+    "test_files": "[]",
+    "test_hashes": "{}",
+    "test_vars": "{}",
+    "branch": "test/60-test-vn-holidays-add-tests-holidays-test",
+    "pr_title": "test(vn-holidays): add edge-case tests beyond golden fixtures",
+    "pr_body": "## What & why\n\nCloses #60\n\nAdds `tests/holidays.test.ts` with 33 characterization tests for `vn-holidays`. Before this, the skill only had `tests/holidays-golden.test.ts`, which covers pure input/output cases. The new tests cover:\n\n- invalid or malformed date input: `ok: false` with a code and a hint\n- a year with no announcement: `announced: false`, statutory days only\n- weekend-collision compensation\n- `addWorkingDays` with n = 0 and with a negative n\n- ranges that cross a year boundary\n\nThe tests assert only what the current implementation already does. No source code or data files changed, and no bugs were found.\n\nAcceptance from the issue:\n\n- [x] New `tests/holidays.test.ts` with >= 20 cases (33) covering invalid input, unannounced year, weekend compensation, `addWorkingDays` n = 0 and negative n, and a year-boundary crossing\n- [x] Only existing behaviour is asserted; no bug found, so nothing to report\n- [x] `packages/core/data/*.json` not edited\n- [x] `pnpm build && pnpm typecheck && pnpm lint && pnpm exec vitest run && pnpm format:check` pass\n\n## Checklist\n\n- [x] Title follows Conventional Commits (`feat|fix|docs|data|test|refactor|perf|build|ci|chore(scope): …`)\n- [x] Tests added or updated (golden test for every bug fix)\n- [x] `pnpm build && pnpm typecheck && pnpm lint && pnpm test && pnpm format:check` pass locally\n- [x] Core stays offline (no `fetch`/HTTP in `packages/core`)\n- [x] Data changes go through `scripts/build-data.ts` and `SOURCES.md` (source + license)\n- [x] SKILL.md / README updated if behaviour changed\n\nThe last three boxes are ticked because they do not apply: only a test file was added. The golden-test item is also not applicable, since this is not a bug fix.\n",
     "dry": 0,
     "claimed_at": null,
-    "updated_at": "2026-10-21T06:52:22.689Z",
+    "updated_at": "2026-10-21T07:02:12.761Z",
     "blocked": null,
-    "patch": null,
+    "patch": "diff --git a/tests/holidays.test.ts b/tests/holidays.test.ts\nnew file mode 100644\nindex 0000000..9811b5c\n--- /dev/null\n+++ b/tests/holidays.test.ts\n@@ -0,0 +1,127 @@\n+import { describe, expect, it } from 'vitest';\n+import { addWorkingDays, isWorkingDay, publicHolidays } from '@vn-skills/core';\n+\n+describe('vn-holidays: invalid input', () => {\n+  it('publicHolidays rejects a non-integer year', () => {\n+    expect(publicHolidays(2025.5)).toEqual({\n+      ok: false,\n+      error: { code: 'INVALID_YEAR', message: 'Year must be an integer' },\n+    });\n+  });\n+  it('publicHolidays rejects NaN', () => {\n+    const r = publicHolidays(Number.NaN);\n+    expect(r.ok === false && r.error.code).toBe('INVALID_YEAR');\n+  });\n+  it.each([2022, 2200, 0])('publicHolidays rejects out-of-range year %i with a hint', (y) => {\n+    const r = publicHolidays(y);\n+    expect(r.ok).toBe(false);\n+    if (!r.ok) {\n+      expect(r.error.code).toBe('OUT_OF_RANGE');\n+      expect(r.error.hint).toBeTruthy();\n+    }\n+  });\n+  it('accepts the first and last supported years', () => {\n+    expect(publicHolidays(2023).ok).toBe(true);\n+    expect(publicHolidays(2199).ok).toBe(true);\n+  });\n+  it.each([\n+    [31, 2, 2025],\n+    [29, 2, 2023],\n+    [0, 1, 2025],\n+    [1, 13, 2025],\n+  ])('isWorkingDay rejects %i/%i/%i', (d, m, y) => {\n+    const r = isWorkingDay(d, m, y);\n+    expect(r.ok === false && r.error.code).toBe('INVALID_DATE');\n+  });\n+  it('isWorkingDay reports OUT_OF_RANGE for a year before the data', () => {\n+    const r = isWorkingDay(2, 1, 2022);\n+    expect(r.ok === false && r.error.code).toBe('OUT_OF_RANGE');\n+  });\n+  it('addWorkingDays rejects an invalid date', () => {\n+    const r = addWorkingDays(31, 2, 2025, 1);\n+    expect(r.ok === false && r.error.code).toBe('INVALID_DATE');\n+  });\n+  it.each([1.5, Number.NaN, 3651, -3651])('addWorkingDays rejects n = %s', (n) => {\n+    const r = addWorkingDays(5, 5, 2025, n);\n+    expect(r.ok === false && r.error.code).toBe('INVALID_COUNT');\n+  });\n+});\n+\n+describe('vn-holidays: year without an announcement', () => {\n+  const r = publicHolidays(2030);\n+  it('is flagged announced: false with no sources', () => {\n+    expect(r).toMatchObject({ ok: true, announced: false, sources: [], workingSaturdays: [] });\n+  });\n+  it('lists only statutory days and no swapped days', () => {\n+    if (!r.ok) throw new Error('unexpected');\n+    expect(r.daysOff.length).toBeGreaterThan(0);\n+    expect(r.daysOff.every((d) => d.kind !== 'swapped')).toBe(true);\n+    expect(r.daysOff.some((d) => d.holiday === 'tet')).toBe(false);\n+  });\n+  it('keeps Tết and the second National Day as pending', () => {\n+    if (!r.ok) throw new Error('unexpected');\n+    expect(r.pending.map((p) => p.holiday).sort()).toEqual(['nationalDay', 'tet']);\n+  });\n+  it('treats 2/9 as a certain day off', () => {\n+    expect(isWorkingDay(2, 9, 2030)).toMatchObject({ ok: true, working: false, certain: true });\n+  });\n+  it('an announced year has no pending days', () => {\n+    const a = publicHolidays(2025);\n+    expect(a).toMatchObject({ ok: true, announced: true, pending: [] });\n+  });\n+});\n+\n+describe('vn-holidays: weekend collision', () => {\n+  it('1/1/2023 (Sunday) is off as Sunday; 2/1 is compensatory', () => {\n+    expect(isWorkingDay(1, 1, 2023)).toMatchObject({ working: false, reason: 'Sunday' });\n+    expect(isWorkingDay(2, 1, 2023)).toMatchObject({\n+      working: false,\n+      reason: 'Tết Dương lịch (compensatory)',\n+    });\n+  });\n+  it('compensatory days are marked kind compensatory', () => {\n+    const r = publicHolidays(2023);\n+    if (!r.ok) throw new Error('unexpected');\n+    expect(r.daysOff.find((d) => d.date === '2023-01-02')).toMatchObject({\n+      holiday: 'newYear',\n+      kind: 'compensatory',\n+    });\n+  });\n+  it('a swapped Saturday is a certain working day', () => {\n+    expect(isWorkingDay(26, 4, 2025)).toMatchObject({ working: true, certain: true });\n+  });\n+  it('a plain Saturday is off with reason Saturday', () => {\n+    expect(isWorkingDay(5, 4, 2025)).toMatchObject({ working: false, reason: 'Saturday' });\n+  });\n+});\n+\n+describe('vn-holidays: addWorkingDays', () => {\n+  it('n = 0 returns the same date', () => {\n+    expect(addWorkingDays(5, 5, 2025, 0)).toEqual({ ok: true, date: '2025-05-05', certain: true });\n+  });\n+  it('n = 0 does not roll a holiday forward', () => {\n+    expect(addWorkingDays(1, 5, 2025, 0)).toMatchObject({ ok: true, date: '2025-05-01' });\n+  });\n+  it('negative n moves backwards', () => {\n+    expect(addWorkingDays(5, 5, 2025, -1)).toMatchObject({ ok: true, date: '2025-04-29' });\n+  });\n+  it('positive n skips holidays', () => {\n+    expect(addWorkingDays(29, 4, 2025, 1)).toMatchObject({ ok: true, date: '2025-05-05' });\n+  });\n+  it('adding then subtracting a working day round-trips', () => {\n+    expect(addWorkingDays(7, 5, 2025, 1)).toMatchObject({ date: '2025-05-08' });\n+    expect(addWorkingDays(8, 5, 2025, -1)).toMatchObject({ date: '2025-05-07' });\n+  });\n+});\n+\n+describe('vn-holidays: year boundary', () => {\n+  it('adds across 31/12 -> 1/1 holiday', () => {\n+    expect(addWorkingDays(31, 12, 2024, 1)).toMatchObject({ ok: true, date: '2025-01-02' });\n+  });\n+  it('adds across a weekend plus New Year', () => {\n+    expect(addWorkingDays(29, 12, 2023, 1)).toMatchObject({ ok: true, date: '2024-01-02' });\n+  });\n+  it('subtracts across the boundary', () => {\n+    expect(addWorkingDays(2, 1, 2025, -1)).toMatchObject({ ok: true, date: '2024-12-31' });\n+  });\n+});\n",
     "repro_patch": null,
-    "repro_notes": null
+    "repro_notes": "Issue asks for a characterization test file for existing behaviour; such tests pass on base, so no failing test can be written for the right reason. Left unchanged."
    }
   ],
-  "prs": [],
+  "prs": [
+   {
+    "issue_id": 1,
+    "url": "https://github.com/beiryu/vn-skills/pull/62",
+    "number": 62,
+    "state": "open",
+    "last_seen_at": "2026-10-21T07:02:12.761Z",
+    "opened_at": "2026-10-21T07:02:12.761Z",
+    "head_sha": null,
+    "mergeable": null,
+    "ci_state": null,
+    "review_decision": null,
+    "snapshot_at": null,
+    "ci_seen_sha": null,
+    "merge_state": null
+   }
+  ],
   "pending_actions": [],
   "agent_calls": [
    {
@@ -59,6 +75,62 @@
     "cost_usd": 0.1182854,
     "ok": 1,
     "result_json": "{\"parsed\":{\"proposals\":[{\"title\":\"test(vn-holidays): add tests/holidays.test.ts with edge cases beyond the golden fixtures\",\"body\":\"## Problem\\n`vn-holidays` has only `tests/holidays-golden.test.ts` (4 `it` blocks that iterate `tests/golden/vn-holidays.json`). Every other skill has a dedicated `tests/<name>.test.ts`, and CONTRIBUTING requires one. Behaviour that is not a pure input->output case is untested: error results for malformed dates, `announced: false` for years without data, `addWorkingDays` with n=0 or a negative n, and ranges that cross a year boundary.\\n\\n## Acceptance\\n- [ ] New `tests/holidays.test.ts` with >= 20 cases covering: invalid date input (`ok: false` with code and hint), a year with no announcement (`announced: false`, statutory days only), weekend-collision compensation, `addWorkingDays` with n = 0 and with a negative n, and a year-boundary crossing\\n- [ ] Only assert behaviour the current implementation already has. If a case exposes a bug, report it in the PR instead of silently changing behaviour\\n- [ ] Do not edit `packages/core/data/*.json`\\n- [ ] `pnpm build && pnpm typecheck && pnpm lint && pnpm exec vitest run && pnpm format:check` pass\",\"labels\":[\"type: chore\",\"area: core\"],\"kind\":\"test\",\"rationale\":\"The holidays skill has no dedicated test file, unlike the other skills, and CONTRIBUTING requires >= 20 tests per skill.\",\"evidence\":[\"tests/holidays-golden.test.ts\",\"tests/golden/vn-holidays.json\",\"CONTRIBUTING.md#adding-a-skill\"],\"covers_issue\"",
+    "models": "claude-sonnet-5.5"
+   },
+   {
+    "id": 2,
+    "run_id": "6578a8ab-3791-42b5-b59e-6c1397f8c396",
+    "issue_id": 1,
+    "agent": "reproducer",
+    "started_at": "2026-10-21T06:58:17.972Z",
+    "duration_ms": 14259,
+    "input_tokens": 47530,
+    "output_tokens": 1246,
+    "cost_usd": 0.06630760000000001,
+    "ok": 1,
+    "result_json": "{\"parsed\":{\"reproduced\":false,\"testFiles\":[],\"testVars\":{\"file\":\"tests/holidays.test.ts\"},\"notes\":\"Issue asks for a characterization test file for existing behaviour; such tests pass on base, so no failing test can be written for the right reason. Left unchanged.\"},\"result\":\"I made no changes. This issue asks for a new test file that covers behaviour the code already has: error results, `announced: false`, `addWorkingDays` with n = 0 or a negative n, and year-boundary ranges. A test for that passes on the current code, so I can't write one that fails for the right reason. I also didn't run any tests.\\n\\nThe only way to make a failure is to run vitest on a `tests/holidays.test.ts` that doesn't exist yet. That fails with \\\"no test files found\\\", which says nothing about a bug.\\n\\nThe work still needs doing, but it's a plain test-writing task. I read `packages/core/src/holidays/index.ts` and these are the behaviours to assert:\\n- `isWorkingDay` and `addWorkingDays` return `INVALID_DATE` for a malformed date.\\n- `addWorkingDays` returns `INVALID_COUNT` for a non-integer n or `|n| > 3650`.\\n- `publicHolidays` returns `INVALID_YEAR` for a non-integer year and `OUT_OF_RANGE` (with a hint) outside 2023–2199.\\n- An unannounced year returns `announced: false`, empty `sources`, and `pending` entries for `tet` and `nationalDay`.\\n- A holiday on a weekend produces a `compensatory` day off.\\n- n = 0 returns the same date; a negative n steps backwards.\\n\\n```json\\n{\\\"reproduced\\\": false, \\\"",
+    "models": "claude-sonnet-5.5"
+   },
+   {
+    "id": 3,
+    "run_id": "6578a8ab-3791-42b5-b59e-6c1397f8c396",
+    "issue_id": 1,
+    "agent": "coder",
+    "started_at": "2026-10-21T06:58:32.354Z",
+    "duration_ms": 89767,
+    "input_tokens": 184505,
+    "output_tokens": 5661,
+    "cost_usd": 0.1466299,
+    "ok": 1,
+    "result_json": "{\"parsed\":{\"done\":true,\"summary\":\"Added tests/holidays.test.ts with 33 characterization tests (invalid input, unannounced year, weekend compensation, addWorkingDays n=0/negative, year boundary). No behaviour changes; no bugs found.\",\"filesChanged\":[\"tests/holidays.test.ts\"],\"testWrong\":false},\"result\":\"Need to build core first.\\n\\nI added `tests/holidays.test.ts` with 33 cases that pass against the current implementation. I found no bugs and changed no behaviour. `pnpm build`, `typecheck`, `lint`, `format:check` and the full `vitest run` (812 tests) all pass. I ran `pnpm lint` and `pnpm format:check` before the last full-suite run and did not re-run them afterwards.\\n\\nCoverage:\\n- **Invalid input:** non-integer years, NaN, out-of-range years (with hint), invalid dates and invalid `n` (`INVALID_YEAR`, `OUT_OF_RANGE`, `INVALID_DATE`, `INVALID_COUNT`).\\n- **Year without announcement:** 2030 gives `announced: false`, no sources, statutory days only and pending Tết and second National Day.\\n- **Weekend collision:** 1/1/2023 on a Sunday is compensated on 2/1, and the swapped Saturday 26/4/2025 is a working day.\\n- **`addWorkingDays`:** n = 0, negative n, and skipping holidays.\\n- **Year boundaries:** forward and backward across 31/12 and 1/1.\\n\\n```json\\n{\\\"done\\\": true, \\\"testWrong\\\": false, \\\"summary\\\": \\\"Added tests/holidays.test.ts with 33 characterization tests (invalid input, unannounced year, weekend compensation, addWorkingDays n=0/negative, year boundary). No behaviour ch",
+    "models": "claude-sonnet-5.5"
+   },
+   {
+    "id": 4,
+    "run_id": "6578a8ab-3791-42b5-b59e-6c1397f8c396",
+    "issue_id": 1,
+    "agent": "reviewer",
+    "started_at": "2026-10-21T07:00:52.600Z",
+    "duration_ms": 40017,
+    "input_tokens": 144060,
+    "output_tokens": 4491,
+    "cost_usd": 0.1124102,
+    "ok": 1,
+    "result_json": "{\"parsed\":{\"verdict\":\"approve\",\"reasons\":[],\"redoTest\":false,\"retryable\":true},\"result\":\"I read the diff and checked each assertion by hand against `packages/core/src/holidays/index.ts` and `schedules.ts`. I did not run the build, tests, lint or `pnpm format:check`.\\n\\n- **Error cases:** the `INVALID_YEAR`, `OUT_OF_RANGE`, `INVALID_DATE` and `INVALID_COUNT` codes match the implementation, as does the hint on out-of-range years.\\n- **Year without an announcement:** 2030 gives `announced: false`, no sources, no swapped days, and both Tết and the second National Day as pending. 2/9/2030 is a certain day off.\\n- **Weekend collision:** 1/1/2023 is a Sunday, so it is off as \\\"Sunday\\\", and 2/1/2023 is the compensatory day. 26/4/2025 is a swapped working Saturday, and 5/4/2025 is a plain Saturday.\\n- **`addWorkingDays`:** the n = 0 results and the date calculations all hold (for example, -1 from 5/5/2025 gives 29/4/2025, and +1 from 29/4/2025 gives 5/5/2025).\\n- **Year boundary:** the three cases (31/12/2024 +1, 29/12/2023 +1, 2/1/2025 -1) all hold.\\n- **Scope:** only `tests/holidays.test.ts` is added. It has well over 20 cases once the `it.each` rows are counted, no data files are touched, and no behaviour is changed.\\n\\n```json\\n{\\\"verdict\\\": \\\"approve\\\", \\\"reasons\\\": [], \\\"redoTest\\\": false, \\\"retryable\\\": true}\\n```\\n\"}",
+    "models": "claude-sonnet-5.5"
+   },
+   {
+    "id": 5,
+    "run_id": "6578a8ab-3791-42b5-b59e-6c1397f8c396",
+    "issue_id": 1,
+    "agent": "pr-writer",
+    "started_at": "2026-10-21T07:01:32.725Z",
+    "duration_ms": 10020,
+    "input_tokens": 26815,
+    "output_tokens": 1013,
+    "cost_usd": 0.0285245,
+    "ok": 1,
+    "result_json": "{\"parsed\":{\"title\":\"test(vn-holidays): add edge-case tests beyond golden fixtures\",\"body\":\"## What & why\\n\\nCloses #60\\n\\nAdds `tests/holidays.test.ts` with 33 characterization tests for `vn-holidays`. Before this, the skill only had `tests/holidays-golden.test.ts`, which covers pure input/output cases. The new tests cover:\\n\\n- invalid or malformed date input: `ok: false` with a code and a hint\\n- a year with no announcement: `announced: false`, statutory days only\\n- weekend-collision compensation\\n- `addWorkingDays` with n = 0 and with a negative n\\n- ranges that cross a year boundary\\n\\nThe tests assert only what the current implementation already does. No source code or data files changed, and no bugs were found.\\n\\nAcceptance from the issue:\\n\\n- [x] New `tests/holidays.test.ts` with >= 20 cases (33) covering invalid input, unannounced year, weekend compensation, `addWorkingDays` n = 0 and negative n, and a year-boundary crossing\\n- [x] Only existing behaviour is asserted; no bug found, so nothing to report\\n- [x] `packages/core/data/*.json` not edited\\n- [x] `pnpm build && pnpm typecheck && pnpm lint && pnpm exec vitest run && pnpm format:check` pass\\n\\n## Checklist\\n\\n- [x] Title follows Conventional Commits (`feat|fix|docs|data|test|refactor|perf|build|ci|chore(scope): …`)\\n- [x] Tests added or updated (golden test for every bug fix)\\n- [x] `pnpm build && pnpm typecheck && pnpm lint && pnpm test && pnpm format:check` pass locally\\n- [x] Core stays offline (no `fetch`",
     "models": "claude-sonnet-5.5"
    }
   ],
