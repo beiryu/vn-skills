@@ -36,7 +36,7 @@ jobs:
       checks: read
       actions: read
     # Pinned to the commit of a release; Dependabot bumps it.
-    uses: beiryu/maintainer-bot/.github/workflows/agent.yml@65fd81415603e7dab648764caa4a8edb349d8f7b # v1.0.0
+    uses: beiryu/maintainer-bot/.github/workflows/agent.yml@beb66fbe1d43446d0467c7d478e77ab1bcf55186 # v1.1.0
     with:
       draft_prs: false
     # BOT_PAT lives in the environment "bot", which only the called workflow's publish job
