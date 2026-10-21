@@ -32,6 +32,24 @@ describe.each(['README.md', 'README.vi.md'])('%s', (file) => {
   });
 });
 
+describe.each([
+  ['README.md', 'docs/quickstart.md'],
+  ['README.vi.md', 'docs/quickstart.vi.md'],
+])('%s quickstart', (readme, quickstart) => {
+  it('links to the quickstart near the top', () => {
+    const top = read(readme).split('\n').slice(0, 30).join('\n');
+    expect(top).toContain(quickstart);
+  });
+
+  it('covers the CLI, MCP and library paths and the install command', () => {
+    const text = read(quickstart);
+    expect(text).toContain('npx -y @vn-skills/cli');
+    expect(text).toContain('claude mcp add');
+    expect(text).toContain('npm i @vn-skills/core');
+    expect(text).toContain('vn-skills install all --agent');
+  });
+});
+
 describe('@vn-skills/mcp npm metadata', () => {
   const pkg = JSON.parse(read('packages/mcp/package.json')) as {
     description?: string;
