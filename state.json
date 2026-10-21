@@ -1,6 +1,6 @@
 {
  "version": 1,
- "exported_at": "2026-10-21T08:13:04.512Z",
+ "exported_at": "2026-10-21T08:14:07.218Z",
  "tables": {
   "repos": [
    {
@@ -10,7 +10,7 @@
     "policy_status": null,
     "policy_excerpts": null,
     "block_reason": null,
-    "last_scanned": "2026-10-21T08:12:41.414Z"
+    "last_scanned": "2026-10-21T08:13:36.213Z"
    }
   ],
   "issues": [
@@ -42,6 +42,35 @@
     "patch": "diff --git a/tests/golden/vn-holidays.json b/tests/golden/vn-holidays.json\nindex c08e194..385b8df 100644\n--- a/tests/golden/vn-holidays.json\n+++ b/tests/golden/vn-holidays.json\n@@ -133,6 +133,52 @@\n             \"code\": \"OUT_OF_RANGE\"\n           }\n         }\n+      },\n+      {\n+        \"name\": \"a non-integer year is rejected\",\n+        \"input\": 2025.5,\n+        \"expected\": {\n+          \"ok\": false,\n+          \"error\": {\n+            \"code\": \"INVALID_YEAR\"\n+          }\n+        }\n+      },\n+      {\n+        \"name\": \"years after the data set are rejected with a hint\",\n+        \"input\": 2200,\n+        \"expected\": {\n+          \"ok\": false,\n+          \"error\": {\n+            \"code\": \"OUT_OF_RANGE\",\n+            \"hint\": \"The data set starts with the 2023 notices.\"\n+          }\n+        }\n+      },\n+      {\n+        \"name\": \"year 0 is rejected with a hint\",\n+        \"input\": 0,\n+        \"expected\": {\n+          \"ok\": false,\n+          \"error\": {\n+            \"code\": \"OUT_OF_RANGE\",\n+            \"hint\": \"The data set starts with the 2023 notices.\"\n+          }\n+        }\n+      },\n+      {\n+        \"name\": \"the first supported year is accepted\",\n+        \"input\": 2023,\n+        \"expected\": {\n+          \"ok\": true\n+        }\n+      },\n+      {\n+        \"name\": \"the last supported year is accepted\",\n+        \"input\": 2199,\n+        \"expected\": {\n+          \"ok\": true\n+        }\n       }\n     ],\n     \"isWorkingDay\": [\n@@ -388,6 +434,76 @@\n             \"code\": \"INVALID_DATE\"\n           }\n         }\n+      },\n+      {\n+        \"name\": \"invalid date: 31/2 does not exist\",\n+        \"input\": [\n+          31,\n+          2,\n+          2025\n+        ],\n+        \"expected\": {\n+          \"ok\": false,\n+          \"error\": {\n+            \"code\": \"INVALID_DATE\"\n+          }\n+        }\n+      },\n+      {\n+        \"name\": \"invalid date: 29/2 in a non-leap year\",\n+        \"input\": [\n+          29,\n+          2,\n+          2023\n+        ],\n+        \"expected\": {\n+          \"ok\": false,\n+          \"error\": {\n+            \"code\": \"INVALID_DATE\"\n+          }\n+        }\n+      },\n+      {\n+        \"name\": \"invalid date: day 0\",\n+        \"input\": [\n+          0,\n+          1,\n+          2025\n+        ],\n+        \"expected\": {\n+          \"ok\": false,\n+          \"error\": {\n+            \"code\": \"INVALID_DATE\"\n+          }\n+        }\n+      },\n+      {\n+        \"name\": \"invalid date: month 13\",\n+        \"input\": [\n+          1,\n+          13,\n+          2025\n+        ],\n+        \"expected\": {\n+          \"ok\": false,\n+          \"error\": {\n+            \"code\": \"INVALID_DATE\"\n+          }\n+        }\n+      },\n+      {\n+        \"name\": \"a year before the data is out of range\",\n+        \"input\": [\n+          2,\n+          1,\n+          2022\n+        ],\n+        \"expected\": {\n+          \"ok\": false,\n+          \"error\": {\n+            \"code\": \"OUT_OF_RANGE\"\n+          }\n+        }\n       }\n     ],\n     \"addWorkingDays\": [\n@@ -473,6 +589,66 @@\n           \"ok\": true,\n           \"certain\": false\n         }\n+      },\n+      {\n+        \"name\": \"invalid date is rejected\",\n+        \"input\": [\n+          31,\n+          2,\n+          2025,\n+          1\n+        ],\n+        \"expected\": {\n+          \"ok\": false,\n+          \"error\": {\n+            \"code\": \"INVALID_DATE\"\n+          }\n+        }\n+      },\n+      {\n+        \"name\": \"n = 1.5 is rejected\",\n+        \"input\": [\n+          5,\n+          5,\n+          2025,\n+          1.5\n+        ],\n+        \"expected\": {\n+          \"ok\": false,\n+          \"error\": {\n+            \"code\": \"INVALID_COUNT\"\n+          }\n+        }\n+      },\n+      {\n+        \"name\": \"n = 3651 is rejected\",\n+        \"input\": [\n+          5,\n+          5,\n+          2025,\n+          3651\n+        ],\n+        \"expected\": {\n+          \"ok\": false,\n+          \"error\": {\n+            \"code\": \"INVALID_COUNT\"\n+          }\n+        }\n+      },\n+      {\n+        \"name\": \"n = -3651 is rejected\",\n+        \"input\": [\n+          5,\n+          5,\n+          2025,\n+          -3651\n+        ],\n+        \"expected\": {\n+          \"ok\": false,\n+          \"error\": {\n+            \"code\": \"INVALID_COUNT\"\n+          }\n+        }\n       }\n     ]\n   }\ndiff --git a/tests/holidays.test.ts b/tests/holidays.test.ts\nnew file mode 100644\nindex 0000000..5805ecc\n--- /dev/null\n+++ b/tests/holidays.test.ts\n@@ -0,0 +1,92 @@\n+import { describe, expect, it } from 'vitest';\n+import { addWorkingDays, isWorkingDay, publicHolidays } from '@vn-skills/core';\n+\n+describe('vn-holidays: invalid input (non-JSON inputs; the rest is in tests/golden/vn-holidays.json)', () => {\n+  it('publicHolidays rejects NaN', () => {\n+    const r = publicHolidays(Number.NaN);\n+    expect(r.ok === false && r.error.code).toBe('INVALID_YEAR');\n+  });\n+  it('addWorkingDays rejects n = NaN', () => {\n+    const r = addWorkingDays(5, 5, 2025, Number.NaN);\n+    expect(r.ok === false && r.error.code).toBe('INVALID_COUNT');\n+  });\n+});\n+\n+describe('vn-holidays: year without an announcement', () => {\n+  const r = publicHolidays(2030);\n+  it('is flagged announced: false with no sources', () => {\n+    expect(r).toMatchObject({ ok: true, announced: false, sources: [], workingSaturdays: [] });\n+  });\n+  it('lists only statutory days and no swapped days', () => {\n+    if (!r.ok) throw new Error('unexpected');\n+    expect(r.daysOff.length).toBeGreaterThan(0);\n+    expect(r.daysOff.every((d) => d.kind !== 'swapped')).toBe(true);\n+    expect(r.daysOff.some((d) => d.holiday === 'tet')).toBe(false);\n+  });\n+  it('keeps Tết and the second National Day as pending', () => {\n+    if (!r.ok) throw new Error('unexpected');\n+    expect(r.pending.map((p) => p.holiday).sort()).toEqual(['nationalDay', 'tet']);\n+  });\n+  it('treats 2/9 as a certain day off', () => {\n+    expect(isWorkingDay(2, 9, 2030)).toMatchObject({ ok: true, working: false, certain: true });\n+  });\n+  it('an announced year has no pending days', () => {\n+    const a = publicHolidays(2025);\n+    expect(a).toMatchObject({ ok: true, announced: true, pending: [] });\n+  });\n+});\n+\n+describe('vn-holidays: weekend collision', () => {\n+  it('1/1/2023 (Sunday) is off as Sunday; 2/1 is compensatory', () => {\n+    expect(isWorkingDay(1, 1, 2023)).toMatchObject({ working: false, reason: 'Sunday' });\n+    expect(isWorkingDay(2, 1, 2023)).toMatchObject({\n+      working: false,\n+      reason: 'Tết Dương lịch (compensatory)',\n+    });\n+  });\n+  it('compensatory days are marked kind compensatory', () => {\n+    const r = publicHolidays(2023);\n+    if (!r.ok) throw new Error('unexpected');\n+    expect(r.daysOff.find((d) => d.date === '2023-01-02')).toMatchObject({\n+      holiday: 'newYear',\n+      kind: 'compensatory',\n+    });\n+  });\n+  it('a swapped Saturday is a certain working day', () => {\n+    expect(isWorkingDay(26, 4, 2025)).toMatchObject({ working: true, certain: true });\n+  });\n+  it('a plain Saturday is off with reason Saturday', () => {\n+    expect(isWorkingDay(5, 4, 2025)).toMatchObject({ working: false, reason: 'Saturday' });\n+  });\n+});\n+\n+describe('vn-holidays: addWorkingDays', () => {\n+  it('n = 0 returns the same date', () => {\n+    expect(addWorkingDays(5, 5, 2025, 0)).toEqual({ ok: true, date: '2025-05-05', certain: true });\n+  });\n+  it('n = 0 does not roll a holiday forward', () => {\n+    expect(addWorkingDays(1, 5, 2025, 0)).toMatchObject({ ok: true, date: '2025-05-01' });\n+  });\n+  it('negative n moves backwards', () => {\n+    expect(addWorkingDays(5, 5, 2025, -1)).toMatchObject({ ok: true, date: '2025-04-29' });\n+  });\n+  it('positive n skips holidays', () => {\n+    expect(addWorkingDays(29, 4, 2025, 1)).toMatchObject({ ok: true, date: '2025-05-05' });\n+  });\n+  it('adding then subtracting a working day round-trips', () => {\n+    expect(addWorkingDays(7, 5, 2025, 1)).toMatchObject({ date: '2025-05-08' });\n+    expect(addWorkingDays(8, 5, 2025, -1)).toMatchObject({ date: '2025-05-07' });\n+  });\n+});\n+\n+describe('vn-holidays: year boundary', () => {\n+  it('adds across 31/12 -> 1/1 holiday', () => {\n+    expect(addWorkingDays(31, 12, 2024, 1)).toMatchObject({ ok: true, date: '2025-01-02' });\n+  });\n+  it('adds across a weekend plus New Year', () => {\n+    expect(addWorkingDays(29, 12, 2023, 1)).toMatchObject({ ok: true, date: '2024-01-02' });\n+  });\n+  it('subtracts across the boundary', () => {\n+    expect(addWorkingDays(2, 1, 2025, -1)).toMatchObject({ ok: true, date: '2024-12-31' });\n+  });\n+});\n",
     "repro_patch": null,
     "repro_notes": "Issue asks for a characterization test file for existing behaviour; such tests pass on base, so no failing test can be written for the right reason. Left unchanged."
+   },
+   {
+    "id": 2,
+    "repo": "beiryu/vn-skills",
+    "number": 69,
+    "title": "vn-pit: personal income tax calculator (needs a legal source first)",
+    "body": "## Problem\nROADMAP RM-015 is still `idea`. A PIT calculator needs the current brackets, personal and dependant deduction amounts, insurance rates and effective dates. None of these are in the repository.\n\n## Acceptance\n- [ ] The maintainer cites the legal source and effective dates in this issue\n- [ ] Then: core function + CLI command + MCP tool + `skills/vn-pit/SKILL.md` with Vietnamese trigger words + >= 20 tests in `tests/vn-pit.test.ts` + an entry in `tests/skills.test.ts`\n- [ ] Rates live in a data file with a source URL, not in code",
+    "url": "https://github.com/beiryu/vn-skills/issues/69",
+    "state": "claimed",
+    "score": 1,
+    "triage_reason": "[needs a person] RM-015 has no open issue. It cannot be implemented without a legal source that only the maintainer can supply.",
+    "attempts": 0,
+    "skip_reason": null,
+    "feedback": null,
+    "summary": null,
+    "base_sha": null,
+    "test_files": null,
+    "test_hashes": null,
+    "test_vars": null,
+    "branch": null,
+    "pr_title": null,
+    "pr_body": null,
+    "dry": 0,
+    "claimed_at": null,
+    "updated_at": "2026-10-21T08:14:04.011Z",
+    "blocked": null,
+    "patch": null,
+    "repro_patch": null,
+    "repro_notes": null
    }
   ],
   "prs": [
@@ -199,10 +228,10 @@
     "evidence": "[\"ROADMAP.md#rm-015\"]",
     "covers_issue": null,
     "covers_rm": "RM-015",
-    "status": "pending",
+    "status": "filed",
     "reject_reason": null,
-    "issue_number": null,
-    "issue_id": null,
+    "issue_number": 69,
+    "issue_id": 2,
     "run_id": "64cc9638-c460-49a9-bfaa-02d8aa884435",
     "created_at": "2026-10-21T06:49:43.947Z"
    }
@@ -253,7 +282,7 @@
    },
    {
     "key": "dashboard-last-comment:beiryu/vn-skills",
-    "value": "6311174940"
+    "value": "6311296754"
    },
    {
     "key": "behind-drafted:1",
