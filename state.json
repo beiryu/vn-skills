@@ -1,6 +1,6 @@
 {
  "version": 1,
- "exported_at": "2026-10-21T14:56:30.715Z",
+ "exported_at": "2026-10-21T14:57:46.159Z",
  "tables": {
   "repos": [
    {
@@ -10,7 +10,7 @@
     "policy_status": null,
     "policy_excerpts": null,
     "block_reason": null,
-    "last_scanned": "2026-10-21T14:51:14.928Z"
+    "last_scanned": "2026-10-21T14:57:03.058Z"
    }
   ],
   "issues": [
@@ -166,7 +166,7 @@
     "title": "repo: ship a Claude Code plugin marketplace so all skills + the MCP server install with one command",
     "body": "## Problem\nTo install vn-skills in Claude Code today you either `git clone` and `cp -r skills/<name>` one folder at a time, or run `npx -y @vn-skills/cli install …` and then add the MCP server separately with `claude mcp add`. Claude Code can install plugins straight from a git repo that contains `.claude-plugin/marketplace.json` (docs: https://code.claude.com/docs/en/plugin-marketplaces). This repo has no `.claude-plugin/` directory, `marketplace.json`, `plugin.json` or `.mcp.json`.\n\n## Proposal\nMake the repository root a single plugin listed in its own marketplace:\n\n- `.claude-plugin/marketplace.json`:\n  ```json\n  {\n    \"name\": \"vn-skills\",\n    \"owner\": { \"name\": \"beiryu\" },\n    \"plugins\": [\n      {\n        \"name\": \"vn-skills\",\n        \"source\": \"./\",\n        \"description\": \"Vietnam business logic for agents: VietQR, 34-province addresses, tax IDs, CCCD, phones, holidays, lunar calendar, e-invoices.\"\n      }\n    ]\n  }\n  ```\n- `.claude-plugin/plugin.json` with `name: \"vn-skills\"`, a `description`, `author`, `homepage`/`repository` = https://github.com/beiryu/vn-skills, `license: \"MIT\"`. Do not add a `version` field (release-please does not manage this file).\n- `.mcp.json` at the repo root: `{ \"mcpServers\": { \"vn-skills\": { \"command\": \"npx\", \"args\": [\"-y\", \"@vn-skills/mcp\"] } } }`.\n- The existing `skills/` folder is the plugin's skills directory; do not move it.\n\nCheck the field names against the docs page above before finishing; if a field is not in the documented schema, leave it out.\n\n## Acceptance\n- [ ] `.claude-plugin/marketplace.json`, `.claude-plugin/plugin.json` and `.mcp.json` exist, are valid JSON and end with a newline\n- [ ] New test `tests/plugin.test.ts`: parses the three files, checks that the plugin name is `vn-skills`, that `source` resolves to the repo root, that every folder in `skills/` has a `SKILL.md`, and that `.mcp.json` runs `npx -y @vn-skills/mcp`\n- [ ] README.md and README.vi.md install sections gain a \"Claude Code plugin\" subsection placed first: `/plugin marketplace add beiryu/vn-skills` then `/plugin install vn-skills@vn-skills`\n- [ ] `pnpm build && pnpm typecheck && pnpm lint && pnpm exec vitest run && pnpm format:check` pass",
     "url": "https://github.com/beiryu/vn-skills/issues/86",
-    "state": "pr_open",
+    "state": "done",
     "score": 1,
     "triage_reason": "The project has 0 stars but ~650–830 npm downloads a month, so people who find it do try it. One install command that brings in all 11 skills plus the MCP server is the cheapest way to turn Claude Code visitors into users.",
     "attempts": 0,
@@ -182,7 +182,7 @@
     "pr_body": "## What & why\n\nCloses #86\n\nThe repo root is now a Claude Code plugin listed in its own marketplace, so skills and the MCP server install with two commands:\n\n```\n/plugin marketplace add beiryu/vn-skills\n/plugin install vn-skills@vn-skills\n```\n\nChanges:\n- `.claude-plugin/marketplace.json` lists the `vn-skills` plugin with `source: \"./\"`.\n- `.claude-plugin/plugin.json` has name, description, author, homepage, repository and license. It has no `version` field.\n- `.mcp.json` runs `npx -y @vn-skills/mcp`.\n- `README.md` and `README.vi.md` get a \"Claude Code plugin\" subsection placed first in the install section.\n- `eslint.config.js` gets a file-scoped override so `tests/plugin.test.ts` (which uses `any`) passes lint.\n\n`skills/` is not moved.\n\nAcceptance:\n- [x] `.claude-plugin/marketplace.json`, `.claude-plugin/plugin.json` and `.mcp.json` exist, are valid JSON and end with a newline\n- [x] New test `tests/plugin.test.ts` parses the three files, checks the plugin name, that `source` resolves to the repo root, that every folder in `skills/` has a `SKILL.md`, and that `.mcp.json` runs `npx -y @vn-skills/mcp`\n- [x] README.md and README.vi.md install sections gain a \"Claude Code plugin\" subsection placed first\n- [x] `pnpm build && pnpm typecheck && pnpm lint && pnpm exec vitest run && pnpm format:check` pass\n\n## Testing\n\nAdded `tests/plugin.test.ts`. It fails on the base because the three files do not exist. Build, typecheck, lint, vitest and format:check all pass with the change.\n\n## Checklist\n\n- [x] Title follows Conventional Commits (`feat|fix|docs|data|test|refactor|perf|build|ci|chore(scope): …`)\n- [x] Tests added or updated (golden test for every bug fix)\n- [x] `pnpm build && pnpm typecheck && pnpm lint && pnpm test && pnpm format:check` pass locally\n- [x] Core stays offline (no `fetch`/HTTP in `packages/core`)\n- [x] Data changes go through `scripts/build-data.ts` and `SOURCES.md` (source + license) (no data changes)\n- [x] SKILL.md / README updated if behaviour changed\n",
     "dry": 0,
     "claimed_at": null,
-    "updated_at": "2026-10-21T14:45:42.549Z",
+    "updated_at": "2026-10-21T14:56:58.212Z",
     "blocked": null,
     "patch": "diff --git a/.claude-plugin/marketplace.json b/.claude-plugin/marketplace.json\nnew file mode 100644\nindex 0000000..da378c0\n--- /dev/null\n+++ b/.claude-plugin/marketplace.json\n@@ -0,0 +1,11 @@\n+{\n+  \"name\": \"vn-skills\",\n+  \"owner\": { \"name\": \"beiryu\" },\n+  \"plugins\": [\n+    {\n+      \"name\": \"vn-skills\",\n+      \"source\": \"./\",\n+      \"description\": \"Vietnam business logic for agents: VietQR, 34-province addresses, tax IDs, CCCD, phones, holidays, lunar calendar, e-invoices.\"\n+    }\n+  ]\n+}\ndiff --git a/.claude-plugin/plugin.json b/.claude-plugin/plugin.json\nnew file mode 100644\nindex 0000000..ae7edcf\n--- /dev/null\n+++ b/.claude-plugin/plugin.json\n@@ -0,0 +1,8 @@\n+{\n+  \"name\": \"vn-skills\",\n+  \"description\": \"Vietnam business logic for agents: VietQR, 34-province addresses, tax IDs, CCCD, phones, holidays, lunar calendar, e-invoices.\",\n+  \"author\": { \"name\": \"beiryu\" },\n+  \"homepage\": \"https://github.com/beiryu/vn-skills\",\n+  \"repository\": \"https://github.com/beiryu/vn-skills\",\n+  \"license\": \"MIT\"\n+}\ndiff --git a/.mcp.json b/.mcp.json\nnew file mode 100644\nindex 0000000..fa17b7c\n--- /dev/null\n+++ b/.mcp.json\n@@ -0,0 +1,5 @@\n+{\n+  \"mcpServers\": {\n+    \"vn-skills\": { \"command\": \"npx\", \"args\": [\"-y\", \"@vn-skills/mcp\"] }\n+  }\n+}\ndiff --git a/README.md b/README.md\nindex 9ad621f..41f962a 100644\n--- a/README.md\n+++ b/README.md\n@@ -35,6 +35,13 @@ pre-2025 provinces and districts, misread amounts in words, or confuse the Chine\n \n ## Install the skills\n \n+**Claude Code plugin** (all skills + the MCP server, one command):\n+\n+```text\n+/plugin marketplace add beiryu/vn-skills\n+/plugin install vn-skills@vn-skills\n+```\n+\n **Claude Code** (project or user scope):\n \n ```bash\ndiff --git a/README.vi.md b/README.vi.md\nindex 1d2ecef..d90bf40 100644\n--- a/README.vi.md\n+++ b/README.vi.md\n@@ -35,6 +35,13 @@ trên cùng một lõi chạy offline:\n \n ## Cài skill\n \n+**Plugin Claude Code** (tất cả skill + MCP server, một lệnh):\n+\n+```text\n+/plugin marketplace add beiryu/vn-skills\n+/plugin install vn-skills@vn-skills\n+```\n+\n **Claude Code:**\n \n ```bash\ndiff --git a/eslint.config.js b/eslint.config.js\nindex f5f8a40..e484b70 100644\n--- a/eslint.config.js\n+++ b/eslint.config.js\n@@ -76,6 +76,15 @@ export default tseslint.config(\n       '@typescript-eslint/no-unsafe-argument': 'off',\n     },\n   },\n+  {\n+    // Parses untyped JSON manifests.\n+    files: ['tests/plugin.test.ts'],\n+    rules: {\n+      '@typescript-eslint/no-explicit-any': 'off',\n+      '@typescript-eslint/no-unsafe-return': 'off',\n+      '@typescript-eslint/no-unsafe-call': 'off',\n+    },\n+  },\n   {\n     // Upstream JSON fields are strings or numbers, read as `unknown`.\n     files: ['scripts/**/*.ts'],\ndiff --git a/tests/plugin.test.ts b/tests/plugin.test.ts\nnew file mode 100644\nindex 0000000..aaabdef\n--- /dev/null\n+++ b/tests/plugin.test.ts\n@@ -0,0 +1,71 @@\n+import { describe, expect, it } from 'vitest';\n+import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';\n+import { join, resolve } from 'node:path';\n+\n+const ROOT = resolve(__dirname, '..');\n+const FILES = {\n+  marketplace: join(ROOT, '.claude-plugin', 'marketplace.json'),\n+  plugin: join(ROOT, '.claude-plugin', 'plugin.json'),\n+  mcp: join(ROOT, '.mcp.json'),\n+};\n+\n+function read(path: string): string {\n+  return readFileSync(path, 'utf8');\n+}\n+function json(path: string): any {\n+  return JSON.parse(read(path));\n+}\n+\n+describe('Claude Code plugin marketplace', () => {\n+  for (const [name, path] of Object.entries(FILES)) {\n+    it(`${name} file exists, is valid JSON and ends with a newline`, () => {\n+      expect(existsSync(path)).toBe(true);\n+      const text = read(path);\n+      expect(text.endsWith('\\n')).toBe(true);\n+      expect(() => JSON.parse(text)).not.toThrow();\n+    });\n+  }\n+\n+  it('marketplace lists the vn-skills plugin at the repo root', () => {\n+    const m = json(FILES.marketplace);\n+    expect(m.name).toBe('vn-skills');\n+    expect(m.owner.name).toBe('beiryu');\n+    const entry = m.plugins.find((p: { name: string }) => p.name === 'vn-skills');\n+    expect(entry).toBeDefined();\n+    expect(resolve(ROOT, entry.source)).toBe(ROOT);\n+    expect(typeof entry.description).toBe('string');\n+    expect(entry.description.length).toBeGreaterThan(0);\n+  });\n+\n+  it('plugin.json has metadata and no version', () => {\n+    const p = json(FILES.plugin);\n+    expect(p.name).toBe('vn-skills');\n+    expect(p.description).toBeTruthy();\n+    expect(p.author).toBeTruthy();\n+    expect(p.license).toBe('MIT');\n+    expect(p.homepage).toBe('https://github.com/beiryu/vn-skills');\n+    expect(p.repository).toBe('https://github.com/beiryu/vn-skills');\n+    expect(p).not.toHaveProperty('version');\n+  });\n+\n+  it('every folder in skills/ has a SKILL.md', () => {\n+    const dir = join(ROOT, 'skills');\n+    const dirs = readdirSync(dir).filter((d) => statSync(join(dir, d)).isDirectory());\n+    expect(dirs.length).toBeGreaterThan(0);\n+    for (const d of dirs) expect(existsSync(join(dir, d, 'SKILL.md'))).toBe(true);\n+  });\n+\n+  it('.mcp.json runs npx -y @vn-skills/mcp', () => {\n+    const s = json(FILES.mcp).mcpServers['vn-skills'];\n+    expect(s.command).toBe('npx');\n+    expect(s.args).toEqual(['-y', '@vn-skills/mcp']);\n+  });\n+\n+  for (const readme of ['README.md', 'README.vi.md']) {\n+    it(`${readme} documents the plugin install commands`, () => {\n+      const text = read(join(ROOT, readme));\n+      expect(text).toContain('/plugin marketplace add beiryu/vn-skills');\n+      expect(text).toContain('/plugin install vn-skills@vn-skills');\n+    });\n+  }\n+});\n",
     "repro_patch": "diff --git a/tests/plugin.test.ts b/tests/plugin.test.ts\nnew file mode 100644\nindex 0000000..aaabdef\n--- /dev/null\n+++ b/tests/plugin.test.ts\n@@ -0,0 +1,71 @@\n+import { describe, expect, it } from 'vitest';\n+import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';\n+import { join, resolve } from 'node:path';\n+\n+const ROOT = resolve(__dirname, '..');\n+const FILES = {\n+  marketplace: join(ROOT, '.claude-plugin', 'marketplace.json'),\n+  plugin: join(ROOT, '.claude-plugin', 'plugin.json'),\n+  mcp: join(ROOT, '.mcp.json'),\n+};\n+\n+function read(path: string): string {\n+  return readFileSync(path, 'utf8');\n+}\n+function json(path: string): any {\n+  return JSON.parse(read(path));\n+}\n+\n+describe('Claude Code plugin marketplace', () => {\n+  for (const [name, path] of Object.entries(FILES)) {\n+    it(`${name} file exists, is valid JSON and ends with a newline`, () => {\n+      expect(existsSync(path)).toBe(true);\n+      const text = read(path);\n+      expect(text.endsWith('\\n')).toBe(true);\n+      expect(() => JSON.parse(text)).not.toThrow();\n+    });\n+  }\n+\n+  it('marketplace lists the vn-skills plugin at the repo root', () => {\n+    const m = json(FILES.marketplace);\n+    expect(m.name).toBe('vn-skills');\n+    expect(m.owner.name).toBe('beiryu');\n+    const entry = m.plugins.find((p: { name: string }) => p.name === 'vn-skills');\n+    expect(entry).toBeDefined();\n+    expect(resolve(ROOT, entry.source)).toBe(ROOT);\n+    expect(typeof entry.description).toBe('string');\n+    expect(entry.description.length).toBeGreaterThan(0);\n+  });\n+\n+  it('plugin.json has metadata and no version', () => {\n+    const p = json(FILES.plugin);\n+    expect(p.name).toBe('vn-skills');\n+    expect(p.description).toBeTruthy();\n+    expect(p.author).toBeTruthy();\n+    expect(p.license).toBe('MIT');\n+    expect(p.homepage).toBe('https://github.com/beiryu/vn-skills');\n+    expect(p.repository).toBe('https://github.com/beiryu/vn-skills');\n+    expect(p).not.toHaveProperty('version');\n+  });\n+\n+  it('every folder in skills/ has a SKILL.md', () => {\n+    const dir = join(ROOT, 'skills');\n+    const dirs = readdirSync(dir).filter((d) => statSync(join(dir, d)).isDirectory());\n+    expect(dirs.length).toBeGreaterThan(0);\n+    for (const d of dirs) expect(existsSync(join(dir, d, 'SKILL.md'))).toBe(true);\n+  });\n+\n+  it('.mcp.json runs npx -y @vn-skills/mcp', () => {\n+    const s = json(FILES.mcp).mcpServers['vn-skills'];\n+    expect(s.command).toBe('npx');\n+    expect(s.args).toEqual(['-y', '@vn-skills/mcp']);\n+  });\n+\n+  for (const readme of ['README.md', 'README.vi.md']) {\n+    it(`${readme} documents the plugin install commands`, () => {\n+      const text = read(join(ROOT, readme));\n+      expect(text).toContain('/plugin marketplace add beiryu/vn-skills');\n+      expect(text).toContain('/plugin install vn-skills@vn-skills');\n+    });\n+  }\n+});\n",
@@ -245,6 +245,64 @@
     "patch": "diff --git a/packages/cli/package.json b/packages/cli/package.json\nindex a6dd6d4..61d42ab 100644\n--- a/packages/cli/package.json\n+++ b/packages/cli/package.json\n@@ -1,7 +1,26 @@\n {\n   \"name\": \"@vn-skills/cli\",\n   \"version\": \"0.4.0\",\n-  \"description\": \"CLI used by the vn-skills Agent Skills: VietQR, Vietnamese addresses (34 provinces), tax IDs, money in words, lunar calendar, e-invoice mock.\",\n+  \"description\": \"CLI used by the vn-skills Agent Skills: VietQR, addresses (34 provinces), tax IDs, CCCD citizen IDs, phone numbers, public holidays and working days, money in words, number formatting, names, lunar calendar, e-invoice.\",\n+  \"keywords\": [\n+    \"vietnam\",\n+    \"vietnamese\",\n+    \"vietqr\",\n+    \"napas\",\n+    \"cccd\",\n+    \"ma-so-thue\",\n+    \"am-lich\",\n+    \"lunar\",\n+    \"hoa-don\",\n+    \"einvoice\",\n+    \"dia-chi\",\n+    \"address\",\n+    \"holidays\",\n+    \"agent-skills\",\n+    \"claude\",\n+    \"cursor\",\n+    \"codex\"\n+  ],\n   \"license\": \"MIT\",\n   \"type\": \"module\",\n   \"exports\": {\ndiff --git a/packages/core/package.json b/packages/core/package.json\nindex 4d90b2f..4ae51b0 100644\n--- a/packages/core/package.json\n+++ b/packages/core/package.json\n@@ -1,7 +1,23 @@\n {\n   \"name\": \"@vn-skills/core\",\n   \"version\": \"0.4.0\",\n-  \"description\": \"Offline, dependency-free Vietnam business logic: VietQR, 34-province addresses, tax ID validation, money-in-words, lunar calendar, e-invoice schema.\",\n+  \"description\": \"Offline, dependency-free Vietnam business logic: VietQR, addresses (34 provinces), tax IDs, CCCD citizen IDs, phone numbers, public holidays and working days, money in words, number formatting, names, lunar calendar, e-invoice.\",\n+  \"keywords\": [\n+    \"vietnam\",\n+    \"vietnamese\",\n+    \"vietqr\",\n+    \"napas\",\n+    \"cccd\",\n+    \"ma-so-thue\",\n+    \"am-lich\",\n+    \"lunar\",\n+    \"hoa-don\",\n+    \"einvoice\",\n+    \"dia-chi\",\n+    \"address\",\n+    \"holidays\",\n+    \"agent-skills\"\n+  ],\n   \"license\": \"MIT\",\n   \"type\": \"module\",\n   \"main\": \"./dist/index.js\",\n@@ -23,17 +39,6 @@\n     \"build\": \"tsup\",\n     \"typecheck\": \"tsc --noEmit -p tsconfig.json\"\n   },\n-  \"keywords\": [\n-    \"vietnam\",\n-    \"vietqr\",\n-    \"napas\",\n-    \"ma-so-thue\",\n-    \"am-lich\",\n-    \"lunar\",\n-    \"address\",\n-    \"einvoice\",\n-    \"agent-skills\"\n-  ],\n   \"repository\": {\n     \"type\": \"git\",\n     \"url\": \"git+https://github.com/beiryu/vn-skills.git\",\ndiff --git a/packages/mcp/package.json b/packages/mcp/package.json\nindex a00f1e6..453ff8f 100644\n--- a/packages/mcp/package.json\n+++ b/packages/mcp/package.json\n@@ -1,12 +1,27 @@\n {\n   \"name\": \"@vn-skills/mcp\",\n   \"version\": \"0.4.0\",\n-  \"description\": \"MCP server exposing vn-skills tools (VietQR, Vietnamese addresses, tax IDs, money in words, lunar calendar, e-invoice) over stdio.\",\n+  \"description\": \"MCP server exposing vn-skills tools (VietQR, addresses, tax IDs, CCCD citizen IDs, phone numbers, public holidays and working days, money in words, number formatting, names, lunar calendar, e-invoice) over stdio.\",\n   \"keywords\": [\n     \"mcp\",\n     \"model-context-protocol\",\n     \"vietnam\",\n-    \"vietqr\"\n+    \"vietnamese\",\n+    \"vietqr\",\n+    \"napas\",\n+    \"cccd\",\n+    \"ma-so-thue\",\n+    \"am-lich\",\n+    \"lunar\",\n+    \"hoa-don\",\n+    \"einvoice\",\n+    \"dia-chi\",\n+    \"address\",\n+    \"holidays\",\n+    \"agent-skills\",\n+    \"claude\",\n+    \"cursor\",\n+    \"codex\"\n   ],\n   \"license\": \"MIT\",\n   \"type\": \"module\",\ndiff --git a/tests/package-metadata.test.ts b/tests/package-metadata.test.ts\nnew file mode 100644\nindex 0000000..e7ef5d1\n--- /dev/null\n+++ b/tests/package-metadata.test.ts\n@@ -0,0 +1,65 @@\n+import { describe, expect, it } from 'vitest';\n+import { readFileSync } from 'node:fs';\n+import { resolve } from 'node:path';\n+\n+interface Pkg {\n+  description: string;\n+  keywords?: string[];\n+}\n+\n+function load(name: string): Pkg {\n+  return JSON.parse(\n+    readFileSync(resolve(__dirname, '..', 'packages', name, 'package.json'), 'utf8'),\n+  ) as Pkg;\n+}\n+\n+const COMMON = [\n+  'vietnam',\n+  'vietnamese',\n+  'vietqr',\n+  'napas',\n+  'cccd',\n+  'ma-so-thue',\n+  'am-lich',\n+  'lunar',\n+  'hoa-don',\n+  'einvoice',\n+  'dia-chi',\n+  'address',\n+  'holidays',\n+  'agent-skills',\n+];\n+const AGENTS = ['claude', 'cursor', 'codex'];\n+\n+const AREAS: Array<[string, RegExp]> = [\n+  ['VietQR', /vietqr/i],\n+  ['addresses', /address/i],\n+  ['tax IDs', /tax/i],\n+  ['CCCD', /cccd/i],\n+  ['phone', /phone/i],\n+  ['holidays', /holiday/i],\n+  ['working days', /working day/i],\n+  ['money in words', /money in words|money-in-words/i],\n+  ['number formatting', /number format/i],\n+  ['names', /names?\\b/i],\n+  ['lunar calendar', /lunar/i],\n+  ['e-invoice', /e-invoice/i],\n+];\n+\n+const expected: Record<string, string[]> = {\n+  core: COMMON,\n+  cli: [...COMMON, ...AGENTS],\n+  mcp: [...COMMON, ...AGENTS, 'mcp', 'model-context-protocol'],\n+};\n+\n+describe.each(Object.keys(expected))('packages/%s metadata', (name) => {\n+  const pkg = load(name);\n+\n+  it.each(AREAS)('description mentions %s', (_label, re) => {\n+    expect(pkg.description).toMatch(re);\n+  });\n+\n+  it('has the required keywords', () => {\n+    expect(pkg.keywords ?? []).toEqual(expect.arrayContaining(expected[name]!));\n+  });\n+});\n",
     "repro_patch": "diff --git a/tests/package-metadata.test.ts b/tests/package-metadata.test.ts\nnew file mode 100644\nindex 0000000..e7ef5d1\n--- /dev/null\n+++ b/tests/package-metadata.test.ts\n@@ -0,0 +1,65 @@\n+import { describe, expect, it } from 'vitest';\n+import { readFileSync } from 'node:fs';\n+import { resolve } from 'node:path';\n+\n+interface Pkg {\n+  description: string;\n+  keywords?: string[];\n+}\n+\n+function load(name: string): Pkg {\n+  return JSON.parse(\n+    readFileSync(resolve(__dirname, '..', 'packages', name, 'package.json'), 'utf8'),\n+  ) as Pkg;\n+}\n+\n+const COMMON = [\n+  'vietnam',\n+  'vietnamese',\n+  'vietqr',\n+  'napas',\n+  'cccd',\n+  'ma-so-thue',\n+  'am-lich',\n+  'lunar',\n+  'hoa-don',\n+  'einvoice',\n+  'dia-chi',\n+  'address',\n+  'holidays',\n+  'agent-skills',\n+];\n+const AGENTS = ['claude', 'cursor', 'codex'];\n+\n+const AREAS: Array<[string, RegExp]> = [\n+  ['VietQR', /vietqr/i],\n+  ['addresses', /address/i],\n+  ['tax IDs', /tax/i],\n+  ['CCCD', /cccd/i],\n+  ['phone', /phone/i],\n+  ['holidays', /holiday/i],\n+  ['working days', /working day/i],\n+  ['money in words', /money in words|money-in-words/i],\n+  ['number formatting', /number format/i],\n+  ['names', /names?\\b/i],\n+  ['lunar calendar', /lunar/i],\n+  ['e-invoice', /e-invoice/i],\n+];\n+\n+const expected: Record<string, string[]> = {\n+  core: COMMON,\n+  cli: [...COMMON, ...AGENTS],\n+  mcp: [...COMMON, ...AGENTS, 'mcp', 'model-context-protocol'],\n+};\n+\n+describe.each(Object.keys(expected))('packages/%s metadata', (name) => {\n+  const pkg = load(name);\n+\n+  it.each(AREAS)('description mentions %s', (_label, re) => {\n+    expect(pkg.description).toMatch(re);\n+  });\n+\n+  it('has the required keywords', () => {\n+    expect(pkg.keywords ?? []).toEqual(expect.arrayContaining(expected[name]!));\n+  });\n+});\n",
     "repro_notes": "Reads packages/{core,cli,mcp}/package.json and asserts descriptions mention all 12 skill areas (VietQR, addresses, tax, CCCD, phone, holidays, working days, money in words, number formatting, names, lunar, e-invoice) and keywords include the required list from the issue. Fails now: descriptions lack the new areas and keywords are missing or incomplete (cli has no keywords field)."
+   },
+   {
+    "id": 9,
+    "repo": "beiryu/vn-skills",
+    "number": 91,
+    "title": "vn-number-format: formatNumber throws for maxFractionDigits outside 0–100 and garbles |n| ≥ 1e21",
+    "body": "## Problem\nIn `packages/core/src/numfmt/index.ts`, `formatNumber` passes `opts.maxFractionDigits` straight to `Math.abs(n).toFixed(digits)`:\n- `formatNumber(1, { maxFractionDigits: 101 })` (or `-1`, or `1.5`) throws `RangeError: toFixed() digits argument must be between 0 and 100`. This breaks the library contract (\"Every function returns `{ ok: true, ... }` or `{ ok: false, error }` — no exceptions for bad input\", README.md).\n- For `|n| >= 1e21`, `toFixed` returns exponent notation (`\"1e+21\"`). The grouping regex then produces a malformed string instead of `1.000.000.000.000.000.000.000`. `formatVnd` and `formatCompactVnd` inherit both problems.\n\n## Fix\n- Validate `maxFractionDigits`: an integer in 0–20 (or 0–100), otherwise `fail('INVALID_OPTION', …)` with a hint naming the allowed range.\n- For finite numbers whose `toFixed` output contains `e`, either format the integer part via `BigInt(Math.trunc(n))` or return `fail('INVALID_NUMBER', …)` with a clear message. Document the chosen behaviour in the JSDoc and in `skills/vn-number-format/SKILL.md`.\n\n## Acceptance\n- [ ] `formatNumber(1, { maxFractionDigits: 101 })`, `-1` and `1.5` return `ok: false` and do not throw\n- [ ] `formatNumber(1e21)` returns either a correctly grouped string or `ok: false`, never a string containing `e`\n- [ ] Golden cases added to `tests/golden/` for vn-number-format (the file loaded by `tests/golden.ts`), plus `tests/vn-number-format.test.ts` cases for the throwing inputs\n- [ ] Existing tests still pass",
+    "url": "https://github.com/beiryu/vn-skills/issues/91",
+    "state": "claimed",
+    "score": 1,
+    "triage_reason": "Breaks the library's documented no-throw contract. Library callers can crash the process with an option value.",
+    "attempts": 0,
+    "skip_reason": null,
+    "feedback": null,
+    "summary": null,
+    "base_sha": null,
+    "test_files": null,
+    "test_hashes": null,
+    "test_vars": null,
+    "branch": null,
+    "pr_title": null,
+    "pr_body": null,
+    "dry": 0,
+    "claimed_at": null,
+    "updated_at": "2026-10-21T14:57:32.531Z",
+    "blocked": null,
+    "patch": null,
+    "repro_patch": null,
+    "repro_notes": null
+   },
+   {
+    "id": 10,
+    "repo": "beiryu/vn-skills",
+    "number": 92,
+    "title": "docs: record the README demo GIF (agent builds a VietQR and converts an address)",
+    "body": "## Problem\nREADME.md still has `<!-- TODO: GIF — agent builds a VietQR and converts an address in 15 seconds -->`. ROADMAP RM-003 says this needs a human screen recording. The README is the main landing page, and it has no visual proof that the skills work.\n\n## Checklist (maintainer)\n- [ ] Clean project, then `npx -y @vn-skills/cli install all --agent claude`\n- [ ] In Claude Code ask: \"tạo QR chuyển 500k vào VCB số tài khoản 0011001234567, nội dung don 123\", then show the generated `qr.png`\n- [ ] Ask: \"đổi địa chỉ 12 Nguyễn Huệ, P. Bến Nghé, Q.1, TP.HCM sang địa chỉ mới\", expected `12 Nguyễn Huệ, Phường Sài Gòn, Thành phố Hồ Chí Minh`\n- [ ] Keep it to about 15 s and under 2 MB; save as `docs/demo.gif`\n- [ ] Replace the TODO comment in README.md and add the same image to README.vi.md, with alt text in both languages",
+    "url": "https://github.com/beiryu/vn-skills/issues/92",
+    "state": "claimed",
+    "score": 1,
+    "triage_reason": "[needs you] A working demo is the strongest first-glance reason to star or try a project with 0 stars. Only a person can record it.",
+    "attempts": 0,
+    "skip_reason": null,
+    "feedback": null,
+    "summary": null,
+    "base_sha": null,
+    "test_files": null,
+    "test_hashes": null,
+    "test_vars": null,
+    "branch": null,
+    "pr_title": null,
+    "pr_body": null,
+    "dry": 0,
+    "claimed_at": null,
+    "updated_at": "2026-10-21T14:57:39.136Z",
+    "blocked": null,
+    "patch": null,
+    "repro_patch": null,
+    "repro_notes": null
    }
   ],
   "prs": [
@@ -312,16 +370,16 @@
     "issue_id": 6,
     "url": "https://github.com/beiryu/vn-skills/pull/87",
     "number": 87,
-    "state": "open",
+    "state": "merged",
     "last_seen_at": "2026-10-21T14:45:42.548Z",
     "opened_at": "2026-10-21T14:45:42.548Z",
     "head_sha": "662a9d6f5d8fde7cad66f8c403dda69ee9aa4fba",
-    "mergeable": "MERGEABLE",
+    "mergeable": "UNKNOWN",
     "ci_state": "pending",
     "review_decision": "REVIEW_REQUIRED",
-    "snapshot_at": "2026-10-21T14:54:04.322Z",
+    "snapshot_at": "2026-10-21T14:56:58.211Z",
     "ci_seen_sha": null,
-    "merge_state": "BLOCKED"
+    "merge_state": "UNKNOWN"
    },
    {
     "issue_id": 8,
@@ -330,13 +388,13 @@
     "state": "open",
     "last_seen_at": "2026-10-21T14:56:29.179Z",
     "opened_at": "2026-10-21T14:56:29.179Z",
-    "head_sha": null,
-    "mergeable": null,
-    "ci_state": null,
-    "review_decision": null,
-    "snapshot_at": null,
+    "head_sha": "adb1ebfc6cfa6fee65ba09b682ef4b59a6f0c89c",
+    "mergeable": "MERGEABLE",
+    "ci_state": "pending",
+    "review_decision": "REVIEW_REQUIRED",
+    "snapshot_at": "2026-10-21T14:56:59.142Z",
     "ci_seen_sha": null,
-    "merge_state": null
+    "merge_state": "BEHIND"
    }
   ],
   "pending_actions": [
@@ -1467,10 +1525,10 @@
     "evidence": "[\"README.md (TODO: GIF comment)\",\"ROADMAP.md RM-003\"]",
     "covers_issue": null,
     "covers_rm": "RM-003",
-    "status": "pending",
+    "status": "filed",
     "reject_reason": null,
-    "issue_number": null,
-    "issue_id": null,
+    "issue_number": 92,
+    "issue_id": 10,
     "run_id": "9900733c-f489-453c-9a25-ab0d50770655",
     "created_at": "2026-10-21T14:37:50.847Z"
    },
@@ -1485,10 +1543,10 @@
     "evidence": "[\"packages/core/src/numfmt/index.ts formatNumber (toFixed call)\",\"README.md#library (no exceptions for bad input)\",\"$ formatNumber(1,{maxFractionDigits:101}) -> THROW toFixed() digits argument must be between 0 and 100\"]",
     "covers_issue": null,
     "covers_rm": null,
-    "status": "pending",
+    "status": "filed",
     "reject_reason": null,
-    "issue_number": null,
-    "issue_id": null,
+    "issue_number": 91,
+    "issue_id": 9,
     "run_id": "9900733c-f489-453c-9a25-ab0d50770655",
     "created_at": "2026-10-21T14:37:50.847Z"
    },
@@ -1648,14 +1706,6 @@
    {
     "key": "audited:beiryu/vn-skills",
     "value": "2026-10-21T14:37:50.848Z"
-   },
-   {
-    "key": "item:beiryu/maintainer-desk:beiryu/vn-skills:p9",
-    "value": "6318721880"
-   },
-   {
-    "key": "item:beiryu/maintainer-desk:beiryu/vn-skills:p10",
-    "value": "6318722165"
    },
    {
     "key": "item:beiryu/maintainer-desk:beiryu/vn-skills:p11",
