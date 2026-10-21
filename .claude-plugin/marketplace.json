@@ -1,0 +1,11 @@
+{
+  "name": "vn-skills",
+  "owner": { "name": "beiryu" },
+  "plugins": [
+    {
+      "name": "vn-skills",
+      "source": "./",
+      "description": "Vietnam business logic for agents: VietQR, 34-province addresses, tax IDs, CCCD, phones, holidays, lunar calendar, e-invoices."
+    }
+  ]
+}

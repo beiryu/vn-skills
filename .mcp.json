@@ -1,0 +1,5 @@
+{
+  "mcpServers": {
+    "vn-skills": { "command": "npx", "args": ["-y", "@vn-skills/mcp"] }
+  }
+}
