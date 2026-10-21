@@ -31,3 +31,18 @@ describe.each(['README.md', 'README.vi.md'])('%s', (file) => {
     expect(section).not.toContain('vn-skills install');
   });
 });
+
+describe('@vn-skills/mcp npm metadata', () => {
+  const pkg = JSON.parse(read('packages/mcp/package.json')) as {
+    description?: string;
+    keywords?: string[];
+  };
+
+  it('has a description', () => {
+    expect((pkg.description ?? '').length).toBeGreaterThan(20);
+  });
+
+  it.each(['mcp', 'vietnam', 'vietqr'])('has the "%s" keyword', (kw) => {
+    expect(pkg.keywords ?? []).toContain(kw);
+  });
+});
