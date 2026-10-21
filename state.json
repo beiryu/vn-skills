@@ -1,6 +1,6 @@
 {
  "version": 1,
- "exported_at": "2026-10-21T08:42:33.000Z",
+ "exported_at": "2026-10-21T08:55:35.452Z",
  "tables": {
   "repos": [
    {
@@ -10,7 +10,7 @@
     "policy_status": null,
     "policy_excerpts": null,
     "block_reason": null,
-    "last_scanned": "2026-10-21T08:42:10.445Z"
+    "last_scanned": "2026-10-21T08:55:07.985Z"
    }
   ],
   "issues": [
@@ -345,6 +345,10 @@
    {
     "key": "dashboard-last-comment:beiryu/vn-skills:beiryu/vn-skills",
     "value": "6311484307"
+   },
+   {
+    "key": "dashboard:beiryu/maintainer-desk:beiryu/vn-skills",
+    "value": "1"
    }
   ]
  }
