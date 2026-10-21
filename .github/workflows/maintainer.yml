@@ -19,7 +19,7 @@ on:
   check_suite:
     types: [completed] # CI failed on a bot PR → a fix is drafted
   schedule:
-    - cron: '0 2 * * 1' # weekly: upstream sources + audit
+    - cron: '0 2 * * *' # daily 09:00 Vietnam: upstream sources + audit
   workflow_dispatch:
 
 # One pass at a time; a second event waits instead of running alongside.
