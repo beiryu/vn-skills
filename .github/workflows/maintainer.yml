@@ -37,7 +37,7 @@ jobs:
       actions: read
     # Pinned to a commit of the bot: that revision is what runs with the secrets, and its code is
     # checked out at the same commit. Bumped by PR (Dependabot, or by hand) when the bot changes.
-    uses: beiryu/maintainer-bot/.github/workflows/agent.yml@625aa385ec99e3f706b9d0bc09e738d9cadd4120 # main 2026-10-21
+    uses: beiryu/maintainer-bot/.github/workflows/agent.yml@113e3115f375d9201ba66f78e9526406de950657 # main 2026-10-21
     with:
       draft_prs: true # pilot: PRs open as drafts; set false once trusted
     # BOT_PAT lives in the environment "bot", which only the called workflow's publish job
