@@ -1,6 +1,6 @@
 {
  "version": 1,
- "exported_at": "2026-10-21T14:51:51.237Z",
+ "exported_at": "2026-10-21T14:53:33.195Z",
  "tables": {
   "repos": [
    {
@@ -195,9 +195,38 @@
     "title": "mcp: add mcpName and server.json so @vn-skills/mcp can be published to the official MCP Registry",
     "body": "## Problem\nThe official MCP Registry has no entry for this server: https://registry.modelcontextprotocol.io/v0.1/servers?search=vn-skills returns `{\"servers\":[],\"count\":0}`. Before an npm package can be published there, it needs:\n1. `\"mcpName\": \"io.github.beiryu/vn-skills\"` in `packages/mcp/package.json`. Logging in with GitHub requires the `io.github.<user>/` prefix. The field is missing today.\n2. A `server.json` that describes the package. The registry rejects descriptions longer than 100 characters, and the current npm description is about 130.\n\nReference: https://raw.githubusercontent.com/modelcontextprotocol/registry/main/docs/modelcontextprotocol-io/quickstart.mdx\n\nThis issue covers the code change only. Publishing to the registry (`mcp-publisher login github` + `mcp-publisher publish`) is a maintainer step after the next npm release.\n\n## Acceptance\n- [ ] `packages/mcp/package.json` has `\"mcpName\": \"io.github.beiryu/vn-skills\"`\n- [ ] `packages/mcp/server.json` follows the registry quickstart: `name` = `io.github.beiryu/vn-skills`, a `description` of 100 characters or fewer, `repository` pointing at https://github.com/beiryu/vn-skills, `version` equal to the package version, and one `packages` entry for npm `@vn-skills/mcp` with stdio transport\n- [ ] The release config bumps the `version` fields in `server.json` together with the package (add it as an extra file in the release-please config; this issue explicitly allows touching release config for that)\n- [ ] A test asserts that `server.json` `name` equals `mcpName`, that its versions equal `packages/mcp/package.json` `version`, and that the description is 100 characters or fewer\n- [ ] Short note in CONTRIBUTING.md (release section, or a new one) on running `mcp-publisher publish` after an npm release",
     "url": "https://github.com/beiryu/vn-skills/issues/88",
-    "state": "claimed",
+    "state": "skipped",
     "score": 1,
     "triage_reason": "@vn-skills/mcp is the most downloaded package (827/month). Many MCP clients read the official registry, and right now the server cannot be listed there at all. #79 (registries/directories) is no longer open, but this code-side requirement is still missing.",
+    "attempts": 0,
+    "skip_reason": "coder gave up: Blocked: the issue and tests/mcp-registry.test.ts require adding packages/mcp/server.json to extra-files in release-please-config.json, a path the gate rejects outright. The issue itself allows it, so a maintainer needs to approve that edit or do it manually. Nothing was changed. The remaining work is the mcpName field in packages/mcp/package.json, packages/mcp/server.json (version 0.4.0, description of 100 characters or fewer, npm @vn-skills/mcp with stdio transport) and a CONTRIBUTING.md note on running mcp-publisher publish.",
+    "feedback": null,
+    "summary": null,
+    "base_sha": "a733de694693ed0e2b373d1b66eb0129f4914770",
+    "test_files": "[\"tests/mcp-registry.test.ts\"]",
+    "test_hashes": "{\"tests/mcp-registry.test.ts\":\"cffb0aa9431ba56f392eb706e646ec31e4360bbca189327c24ab3f72e4861a82\"}",
+    "test_vars": "{\"file\":\"tests/mcp-registry.test.ts\"}",
+    "branch": null,
+    "pr_title": null,
+    "pr_body": null,
+    "dry": 0,
+    "claimed_at": null,
+    "updated_at": "2026-10-21T14:52:57.922Z",
+    "blocked": null,
+    "patch": null,
+    "repro_patch": "diff --git a/tests/mcp-registry.test.ts b/tests/mcp-registry.test.ts\nnew file mode 100644\nindex 0000000..4512027\n--- /dev/null\n+++ b/tests/mcp-registry.test.ts\n@@ -0,0 +1,50 @@\n+import { describe, expect, it } from 'vitest';\n+import { readFileSync } from 'node:fs';\n+import { resolve } from 'node:path';\n+\n+const MCP_DIR = resolve(__dirname, '..', 'packages', 'mcp');\n+const readJson = (p: string) => JSON.parse(readFileSync(p, 'utf8')) as Record<string, any>;\n+\n+describe('MCP Registry metadata', () => {\n+  const pkg = readJson(resolve(MCP_DIR, 'package.json'));\n+  const server = readJson(resolve(MCP_DIR, 'server.json'));\n+\n+  it('package.json declares mcpName', () => {\n+    expect(pkg.mcpName).toBe('io.github.beiryu/vn-skills');\n+  });\n+\n+  it('server.json name equals mcpName', () => {\n+    expect(server.name).toBe(pkg.mcpName);\n+  });\n+\n+  it('server.json description is 100 characters or fewer', () => {\n+    expect(typeof server.description).toBe('string');\n+    expect(server.description.length).toBeGreaterThan(0);\n+    expect(server.description.length).toBeLessThanOrEqual(100);\n+  });\n+\n+  it('server.json points at the repository', () => {\n+    expect(server.repository.url).toBe('https://github.com/beiryu/vn-skills');\n+  });\n+\n+  it('server.json versions equal the package version', () => {\n+    expect(server.version).toBe(pkg.version);\n+    expect(server.packages).toHaveLength(1);\n+    expect(server.packages[0].version).toBe(pkg.version);\n+  });\n+\n+  it('server.json lists the npm package with stdio transport', () => {\n+    const p = server.packages[0];\n+    expect(p.registryType).toBe('npm');\n+    expect(p.identifier).toBe('@vn-skills/mcp');\n+    expect(p.transport.type).toBe('stdio');\n+  });\n+\n+  it('release-please bumps server.json with the package', () => {\n+    const cfg = readJson(resolve(__dirname, '..', 'release-please-config.json'));\n+    const extra = cfg.packages['.']['extra-files'] as { path: string; jsonpath?: string }[];\n+    const paths = extra.filter((e) => e.path === 'packages/mcp/server.json').map((e) => e.jsonpath);\n+    expect(paths).toContain('$.version');\n+    expect(paths).toContain('$.packages[0].version');\n+  });\n+});\n",
+    "repro_notes": "Fails because packages/mcp/server.json does not exist (ENOENT at load); mcpName and the release-please extra-files entries are also missing. Field names for server.json assume the registry quickstart schema."
+   },
+   {
+    "id": 8,
+    "repo": "beiryu/vn-skills",
+    "number": 89,
+    "title": "repo: update npm descriptions and keywords to cover all 11 skills",
+    "body": "## Problem\nThe npm descriptions still list only the first six skills:\n- `packages/core/package.json`: \"…VietQR, 34-province addresses, tax ID validation, money-in-words, lunar calendar, e-invoice schema.\"\n- `packages/cli/package.json`: \"…VietQR, Vietnamese addresses (34 provinces), tax IDs, money in words, lunar calendar, e-invoice mock.\" This package has no `keywords` field.\n- `packages/mcp/package.json`: same six areas; keywords are only `mcp`, `model-context-protocol`, `vietnam`, `vietqr`.\n\nCitizen IDs (CCCD), phone numbers, public holidays and working days, names and number formatting appear nowhere, so npm search cannot match them. A search for `vietnam mcp` on npm does not put vn-skills near the top.\n\n## Acceptance\n- [ ] All three descriptions mention the current skill areas: VietQR, addresses, tax IDs, CCCD, phone, holidays/working days, money in words, number formatting, names, lunar calendar, e-invoice\n- [ ] `keywords` in all three include at least: `vietnam`, `vietnamese`, `vietqr`, `napas`, `cccd`, `ma-so-thue`, `am-lich`, `lunar`, `hoa-don`, `einvoice`, `dia-chi`, `address`, `holidays`, `agent-skills`; cli and mcp also get `claude`, `cursor`, `codex`, and mcp keeps `mcp`, `model-context-protocol`\n- [ ] No other fields change; `pnpm format:check` passes",
+    "url": "https://github.com/beiryu/vn-skills/issues/89",
+    "state": "claimed",
+    "score": 1,
+    "triage_reason": "Small metadata fix. Five of the eleven skills cannot be found through npm search today.",
     "attempts": 0,
     "skip_reason": null,
     "feedback": null,
@@ -211,7 +240,7 @@
     "pr_body": null,
     "dry": 0,
     "claimed_at": null,
-    "updated_at": "2026-10-21T14:51:45.425Z",
+    "updated_at": "2026-10-21T14:53:26.280Z",
     "blocked": null,
     "patch": null,
     "repro_patch": null,
@@ -290,7 +319,7 @@
     "mergeable": "MERGEABLE",
     "ci_state": "pending",
     "review_decision": "REVIEW_REQUIRED",
-    "snapshot_at": "2026-10-21T14:51:11.733Z",
+    "snapshot_at": "2026-10-21T14:52:24.449Z",
     "ci_seen_sha": null,
     "merge_state": "BLOCKED"
    }
@@ -1181,6 +1210,34 @@
     "ok": 1,
     "result_json": "{\"parsed\":{\"title\":\"feat(repo): add Claude Code plugin marketplace manifest\",\"body\":\"## What & why\\n\\nCloses #86\\n\\nThe repo root is now a Claude Code plugin listed in its own marketplace, so skills and the MCP server install with two commands:\\n\\n```\\n/plugin marketplace add beiryu/vn-skills\\n/plugin install vn-skills@vn-skills\\n```\\n\\nChanges:\\n- `.claude-plugin/marketplace.json` lists the `vn-skills` plugin with `source: \\\"./\\\"`.\\n- `.claude-plugin/plugin.json` has name, description, author, homepage, repository and license. It has no `version` field.\\n- `.mcp.json` runs `npx -y @vn-skills/mcp`.\\n- `README.md` and `README.vi.md` get a \\\"Claude Code plugin\\\" subsection placed first in the install section.\\n- `eslint.config.js` gets a file-scoped override so `tests/plugin.test.ts` (which uses `any`) passes lint.\\n\\n`skills/` is not moved.\\n\\nAcceptance:\\n- [x] `.claude-plugin/marketplace.json`, `.claude-plugin/plugin.json` and `.mcp.json` exist, are valid JSON and end with a newline\\n- [x] New test `tests/plugin.test.ts` parses the three files, checks the plugin name, that `source` resolves to the repo root, that every folder in `skills/` has a `SKILL.md`, and that `.mcp.json` runs `npx -y @vn-skills/mcp`\\n- [x] README.md and README.vi.md install sections gain a \\\"Claude Code plugin\\\" subsection placed first\\n- [x] `pnpm build && pnpm typecheck && pnpm lint && pnpm exec vitest run && pnpm format:check` pass\\n\\n## Testing\\n\\nAdded `tests/plugin.test.ts`. It fails on the base ",
     "models": "claude-sonnet-5.5"
+   },
+   {
+    "id": 62,
+    "run_id": "44bc38af-0624-4986-81eb-d3ed267b6a63",
+    "issue_id": 7,
+    "agent": "reproducer",
+    "started_at": "2026-10-21T14:52:27.389Z",
+    "duration_ms": 21195,
+    "input_tokens": 45876,
+    "output_tokens": 1706,
+    "cost_usd": 0.063751,
+    "ok": 1,
+    "result_json": "{\"parsed\":{\"reproduced\":true,\"testFiles\":[\"tests/mcp-registry.test.ts\"],\"testVars\":{\"file\":\"tests/mcp-registry.test.ts\"},\"notes\":\"Fails because packages/mcp/server.json does not exist (ENOENT at load); mcpName and the release-please extra-files entries are also missing. Field names for server.json assume the registry quickstart schema.\"},\"result\":\"I added `tests/mcp-registry.test.ts`, and it fails as expected: `packages/mcp/server.json` doesn't exist yet, so the file read throws ENOENT when the suite loads. I didn't commit anything or touch production files.\\n\\nThe test covers the issue's checklist:\\n- `package.json` has `mcpName` set to `io.github.beiryu/vn-skills`.\\n- `server.json` `name` equals `mcpName`.\\n- The `server.json` description is 100 characters or fewer.\\n- The repository URL is `https://github.com/beiryu/vn-skills`.\\n- `server.json` `version` and `packages[0].version` equal the package version, with exactly one package entry.\\n- That entry is npm `@vn-skills/mcp` with stdio transport.\\n- `release-please-config.json` has `extra-files` entries for `packages/mcp/server.json` at `$.version` and `$.packages[0].version`.\\n\\nThe issue didn't name the `server.json` field keys, so I assumed the registry quickstart's layout: `repository.url`, and per-package `registryType`, `identifier`, `version` and `transport.type`.\\n\\n```json\\n{\\\"reproduced\\\": true, \\\"testFiles\\\": [\\\"tests/mcp-registry.test.ts\\\"], \\\"testVars\\\": {\\\"file\\\": \\\"tests/mcp-registry.test.ts\\\"}, \\\"notes\\\": \\",
+    "models": "claude-sonnet-5.5"
+   },
+   {
+    "id": 63,
+    "run_id": "44bc38af-0624-4986-81eb-d3ed267b6a63",
+    "issue_id": 7,
+    "agent": "coder",
+    "started_at": "2026-10-21T14:52:48.714Z",
+    "duration_ms": 9207,
+    "input_tokens": 27879,
+    "output_tokens": 832,
+    "cost_usd": 0.0351439,
+    "ok": 1,
+    "result_json": "{\"parsed\":{\"done\":false,\"summary\":\"Blocked: the issue and tests/mcp-registry.test.ts require adding packages/mcp/server.json to extra-files in release-please-config.json, a path the gate rejects outright. The issue itself allows it, so a maintainer needs to approve that edit or do it manually. Nothing was changed. The remaining work is the mcpName field in packages/mcp/package.json, packages/mcp/server.json (version 0.4.0, description of 100 characters or fewer, npm @vn-skills/mcp with stdio transport) and a CONTRIBUTING.md note on running mcp-publisher publish.\",\"filesChanged\":[],\"testWrong\":false},\"result\":\"I haven't made any changes. The issue can't be fully resolved within the constraints I was given.\\n\\nThe issue, and `tests/mcp-registry.test.ts`, require adding `packages/mcp/server.json` to the `extra-files` list in `release-please-config.json`. That file is on the list of paths the change gate rejects outright. The issue does explicitly allow touching the release config for this, but I wasn't given that exception, so I stopped rather than work around it.\\n\\nThe other items (`mcpName`, `server.json` and the CONTRIBUTING note) are straightforward. The release-please test can't pass without the config edit.\\n\\n```json\\n{\\\"done\\\": false, \\\"testWrong\\\": false, \\\"summary\\\": \\\"Blocked: the issue and tests/mcp-registry.test.ts require adding packages/mcp/server.json to extra-files in release-please-config.json, a path the gate rejects outright. The issue itself allows it, so a",
+    "models": "claude-sonnet-5.5"
    }
   ],
   "proposals": [
@@ -1321,10 +1378,10 @@
     "evidence": "[\"packages/core/package.json\",\"packages/cli/package.json\",\"packages/mcp/package.json\",\"https://registry.npmjs.org/-/v1/search?text=vietnam%20mcp&size=10\"]",
     "covers_issue": null,
     "covers_rm": null,
-    "status": "pending",
+    "status": "filed",
     "reject_reason": null,
-    "issue_number": null,
-    "issue_id": null,
+    "issue_number": 89,
+    "issue_id": 8,
     "run_id": "9900733c-f489-453c-9a25-ab0d50770655",
     "created_at": "2026-10-21T14:37:50.847Z"
    },
@@ -1522,10 +1579,6 @@
     "value": "2026-10-21T14:37:50.848Z"
    },
    {
-    "key": "item:beiryu/maintainer-desk:beiryu/vn-skills:p8",
-    "value": "6318721559"
-   },
-   {
     "key": "item:beiryu/maintainer-desk:beiryu/vn-skills:p9",
     "value": "6318721880"
    },
@@ -1548,6 +1601,14 @@
    {
     "key": "item:beiryu/maintainer-desk:beiryu/vn-skills:p14",
     "value": "6318723259"
+   },
+   {
+    "key": "handed-back:7",
+    "value": "2026-10-21T14:52:57.922Z"
+   },
+   {
+    "key": "stop-noted:7",
+    "value": "2026-10-21T14:53:31.346Z"
    }
   ]
  }
