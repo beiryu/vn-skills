@@ -1,6 +1,6 @@
 {
  "version": 1,
- "exported_at": "2026-10-21T14:38:25.138Z",
+ "exported_at": "2026-10-21T14:40:49.277Z",
  "tables": {
   "repos": [
    {
@@ -10,7 +10,7 @@
     "policy_status": null,
     "policy_excerpts": null,
     "block_reason": null,
-    "last_scanned": "2026-10-21T14:37:51.232Z"
+    "last_scanned": "2026-10-21T14:40:11.066Z"
    }
   ],
   "issues": [
@@ -158,6 +158,35 @@
     "patch": "diff --git a/packages/mcp/package.json b/packages/mcp/package.json\nindex 046292b..2a4be14 100644\n--- a/packages/mcp/package.json\n+++ b/packages/mcp/package.json\n@@ -2,6 +2,12 @@\n   \"name\": \"@vn-skills/mcp\",\n   \"version\": \"0.4.0\",\n   \"description\": \"MCP server exposing vn-skills tools (VietQR, Vietnamese addresses, tax IDs, money in words, lunar calendar, e-invoice) over stdio.\",\n+  \"keywords\": [\n+    \"mcp\",\n+    \"model-context-protocol\",\n+    \"vietnam\",\n+    \"vietqr\"\n+  ],\n   \"license\": \"MIT\",\n   \"type\": \"module\",\n   \"bin\": {\ndiff --git a/tests/readme.test.ts b/tests/readme.test.ts\nindex ae41b63..dec10d2 100644\n--- a/tests/readme.test.ts\n+++ b/tests/readme.test.ts\n@@ -31,3 +31,18 @@ describe.each(['README.md', 'README.vi.md'])('%s', (file) => {\n     expect(section).not.toContain('vn-skills install');\n   });\n });\n+\n+describe('@vn-skills/mcp npm metadata', () => {\n+  const pkg = JSON.parse(read('packages/mcp/package.json')) as {\n+    description?: string;\n+    keywords?: string[];\n+  };\n+\n+  it('has a description', () => {\n+    expect((pkg.description ?? '').length).toBeGreaterThan(20);\n+  });\n+\n+  it.each(['mcp', 'vietnam', 'vietqr'])('has the \"%s\" keyword', (kw) => {\n+    expect(pkg.keywords ?? []).toContain(kw);\n+  });\n+});\n",
     "repro_patch": "diff --git a/tests/readme.test.ts b/tests/readme.test.ts\nindex ae41b63..dec10d2 100644\n--- a/tests/readme.test.ts\n+++ b/tests/readme.test.ts\n@@ -31,3 +31,18 @@ describe.each(['README.md', 'README.vi.md'])('%s', (file) => {\n     expect(section).not.toContain('vn-skills install');\n   });\n });\n+\n+describe('@vn-skills/mcp npm metadata', () => {\n+  const pkg = JSON.parse(read('packages/mcp/package.json')) as {\n+    description?: string;\n+    keywords?: string[];\n+  };\n+\n+  it('has a description', () => {\n+    expect((pkg.description ?? '').length).toBeGreaterThan(20);\n+  });\n+\n+  it.each(['mcp', 'vietnam', 'vietqr'])('has the \"%s\" keyword', (kw) => {\n+    expect(pkg.keywords ?? []).toContain(kw);\n+  });\n+});\n",
     "repro_notes": "Fails because packages/mcp/package.json has no `keywords` field; the test expects mcp, vietnam and vietqr. The description check already passes. Registry and directory submissions are manual and not testable."
+   },
+   {
+    "id": 6,
+    "repo": "beiryu/vn-skills",
+    "number": 86,
+    "title": "repo: ship a Claude Code plugin marketplace so all skills + the MCP server install with one command",
+    "body": "## Problem\nTo install vn-skills in Claude Code today you either `git clone` and `cp -r skills/<name>` one folder at a time, or run `npx -y @vn-skills/cli install …` and then add the MCP server separately with `claude mcp add`. Claude Code can install plugins straight from a git repo that contains `.claude-plugin/marketplace.json` (docs: https://code.claude.com/docs/en/plugin-marketplaces). This repo has no `.claude-plugin/` directory, `marketplace.json`, `plugin.json` or `.mcp.json`.\n\n## Proposal\nMake the repository root a single plugin listed in its own marketplace:\n\n- `.claude-plugin/marketplace.json`:\n  ```json\n  {\n    \"name\": \"vn-skills\",\n    \"owner\": { \"name\": \"beiryu\" },\n    \"plugins\": [\n      {\n        \"name\": \"vn-skills\",\n        \"source\": \"./\",\n        \"description\": \"Vietnam business logic for agents: VietQR, 34-province addresses, tax IDs, CCCD, phones, holidays, lunar calendar, e-invoices.\"\n      }\n    ]\n  }\n  ```\n- `.claude-plugin/plugin.json` with `name: \"vn-skills\"`, a `description`, `author`, `homepage`/`repository` = https://github.com/beiryu/vn-skills, `license: \"MIT\"`. Do not add a `version` field (release-please does not manage this file).\n- `.mcp.json` at the repo root: `{ \"mcpServers\": { \"vn-skills\": { \"command\": \"npx\", \"args\": [\"-y\", \"@vn-skills/mcp\"] } } }`.\n- The existing `skills/` folder is the plugin's skills directory; do not move it.\n\nCheck the field names against the docs page above before finishing; if a field is not in the documented schema, leave it out.\n\n## Acceptance\n- [ ] `.claude-plugin/marketplace.json`, `.claude-plugin/plugin.json` and `.mcp.json` exist, are valid JSON and end with a newline\n- [ ] New test `tests/plugin.test.ts`: parses the three files, checks that the plugin name is `vn-skills`, that `source` resolves to the repo root, that every folder in `skills/` has a `SKILL.md`, and that `.mcp.json` runs `npx -y @vn-skills/mcp`\n- [ ] README.md and README.vi.md install sections gain a \"Claude Code plugin\" subsection placed first: `/plugin marketplace add beiryu/vn-skills` then `/plugin install vn-skills@vn-skills`\n- [ ] `pnpm build && pnpm typecheck && pnpm lint && pnpm exec vitest run && pnpm format:check` pass",
+    "url": "https://github.com/beiryu/vn-skills/issues/86",
+    "state": "claimed",
+    "score": 1,
+    "triage_reason": "The project has 0 stars but ~650–830 npm downloads a month, so people who find it do try it. One install command that brings in all 11 skills plus the MCP server is the cheapest way to turn Claude Code visitors into users.",
+    "attempts": 0,
+    "skip_reason": null,
+    "feedback": null,
+    "summary": null,
+    "base_sha": null,
+    "test_files": null,
+    "test_hashes": null,
+    "test_vars": null,
+    "branch": null,
+    "pr_title": null,
+    "pr_body": null,
+    "dry": 0,
+    "claimed_at": null,
+    "updated_at": "2026-10-21T14:40:44.451Z",
+    "blocked": null,
+    "patch": null,
+    "repro_patch": null,
+    "repro_notes": null
    }
   ],
   "prs": [
@@ -1156,10 +1185,10 @@
     "evidence": "[\"https://code.claude.com/docs/en/plugin-marketplaces\",\"README.md#install-the-skills\",\"skills/\",\"glob **/{marketplace.json,plugin.json,server.json} -> no files\"]",
     "covers_issue": null,
     "covers_rm": "RM-003",
-    "status": "pending",
+    "status": "filed",
     "reject_reason": null,
-    "issue_number": null,
-    "issue_id": null,
+    "issue_number": 86,
+    "issue_id": 6,
     "run_id": "9900733c-f489-453c-9a25-ab0d50770655",
     "created_at": "2026-10-21T14:37:50.847Z"
    },
@@ -1378,7 +1407,7 @@
    },
    {
     "key": "dashboard-last-comment:beiryu/maintainer-desk:beiryu/vn-skills",
-    "value": "6317758851"
+    "value": "6318723259"
    },
    {
     "key": "stop-noted:3",
@@ -1391,10 +1420,6 @@
    {
     "key": "audited:beiryu/vn-skills",
     "value": "2026-10-21T14:37:50.848Z"
-   },
-   {
-    "key": "item:beiryu/maintainer-desk:beiryu/vn-skills:p6",
-    "value": "6318721014"
    },
    {
     "key": "item:beiryu/maintainer-desk:beiryu/vn-skills:p7",
