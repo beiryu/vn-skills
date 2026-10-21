@@ -2,7 +2,7 @@
 
 > Teach your AI agent to work with VietQR, e-invoices, the new 34-province addresses and more — with one command.
 
-[Tiếng Việt](README.vi.md)
+[Tiếng Việt](README.vi.md) · **[5-minute quickstart](docs/quickstart.md)**
 
 Coding agents (Claude Code, Codex, Cursor, …) get Vietnam-specific tasks wrong: they invent bank BINs, use the
 pre-2025 provinces and districts, misread amounts in words, or confuse the Chinese and Vietnamese lunar calendars.
