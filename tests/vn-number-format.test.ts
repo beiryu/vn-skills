@@ -174,3 +174,21 @@ describe('formatNumber robustness (no throw, no exponent)', () => {
     expect(formatVnd(1e21)).toEqual({ ok: true, text: '1.000.000.000.000.000.000.000 ₫' });
   });
 });
+
+describe('parseAmount decimal-point hint', () => {
+  it.each(['1.5', '1.50tr'])('%s -> INVALID_AMOUNT with "," hint', (s) => {
+    const r = parseAmount(s);
+    expect(r.ok).toBe(false);
+    if (r.ok) return;
+    expect(r.error.code).toBe('INVALID_AMOUNT');
+    expect(r.error.hint).toContain('use "," for decimals');
+    expect(r.error.hint).toContain('1,5');
+  });
+
+  it('keeps the generic hint for other failures', () => {
+    const r = parseAmount('abc');
+    expect(r.ok).toBe(false);
+    if (r.ok) return;
+    expect(r.error.hint).toBe('Try "1tr2", "500k", "1.200.000"');
+  });
+});

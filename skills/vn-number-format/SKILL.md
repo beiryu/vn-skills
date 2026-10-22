@@ -30,3 +30,7 @@ MCP tool: `vn_number_format` (`mode`: number, vnd, compact, date, parse).
 - `,` is always the decimal mark: `1,5` = 1.5, `1,50` = 1.5.
 - Ambiguous `1.500`: a lone `.` followed by exactly 3-digit groups is a **thousands separator** (= 1500). Use `1,5k` or `1,5` for decimals.
 - Invalid input (`1..2`, `abc`, empty) returns an error.
+
+## Common mistakes
+
+- English decimals such as `1.5` or `1.50tr` are rejected with `INVALID_AMOUNT`: `.` groups thousands in Vietnamese (`1.500` = 1500), so write `1,5` or `1,5tr` instead.
