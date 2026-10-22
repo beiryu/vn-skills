@@ -142,3 +142,44 @@ describe('vn-name (golden)', () => {
     expect(initials(c.input)).toBe(c.expected);
   });
 });
+
+describe('non-string input does not throw', () => {
+  const bad: [string, unknown][] = [
+    ['null', null],
+    ['undefined', undefined],
+    ['a number', 42],
+    ['an object', { name: 'An' }],
+  ];
+
+  it.each(bad)('splitName returns ok:false for %s', (_, v) => {
+    const r = splitName(v as string);
+    expect(r.ok).toBe(false);
+  });
+
+  it('splitName returns EMPTY_NAME for null, undefined and whitespace', () => {
+    for (const v of [null, undefined, '   ']) {
+      const r = splitName(v as unknown as string);
+      expect(r.ok).toBe(false);
+      if (!r.ok) expect(r.error.code).toBe('EMPTY_NAME');
+    }
+  });
+
+  it.each(bad)('slugifyName returns empty string for %s', (_, v) => {
+    expect(slugifyName(v as string)).toBe('');
+  });
+
+  it.each(bad)('initials returns empty string for %s', (_, v) => {
+    expect(initials(v as string)).toBe('');
+  });
+
+  it.each(bad)('sortNames drops %s entries', (_, v) => {
+    const input = ['Trần Thị Bích Ngọc', v, 'Nguyễn Văn An'] as string[];
+    let out: string[] = [];
+    expect(() => {
+      out = sortNames(input);
+    }).not.toThrow();
+    expect(out).toHaveLength(2);
+    expect(out).toContain('Nguyễn Văn An');
+    expect(out).toContain('Trần Thị Bích Ngọc');
+  });
+});

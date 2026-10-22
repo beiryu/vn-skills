@@ -14,8 +14,15 @@ function words(input: string): string[] {
   return input.normalize('NFC').trim().split(/\s+/).filter(Boolean);
 }
 
-/** Split a Vietnamese full name into họ / tên đệm / tên. Single words become the given name. */
+/**
+ * Split a Vietnamese full name into họ / tên đệm / tên. Single words become the given name.
+ * null, undefined and blank input return `EMPTY_NAME`; other non-strings return `INVALID_NAME`.
+ */
 export function splitName(input: string): Result<SplitName> {
+  if (typeof input !== 'string' && input != null) {
+    return fail('INVALID_NAME', 'Name must be a string', 'Pass the full name as a string');
+  }
+  input = input ?? '';
   const parts = words(input);
   if (parts.length === 0) {
     return fail('EMPTY_NAME', 'Name is empty', 'Pass a non-empty full name');
@@ -34,13 +41,15 @@ export function splitName(input: string): Result<SplitName> {
   };
 }
 
-/** Unaccented, lowercase, hyphen-separated slug. */
+/** Unaccented, lowercase, hyphen-separated slug. Returns '' for null, undefined or non-string input. */
 export function slugifyName(input: string): string {
+  if (typeof input !== 'string') return '';
   return normalizeText(input).replace(/ /g, '-');
 }
 
-/** First letter of each word, uppercased, tone mark removed (Á -> A, Ấ -> Â). `ascii` also strips diacritics. */
+/** First letter of each word, uppercased, tone mark removed (Á -> A, Ấ -> Â). `ascii` also strips diacritics. Returns '' for null, undefined or non-string input. */
 export function initials(input: string, opts: { ascii?: boolean } = {}): string {
+  if (typeof input !== 'string') return '';
   return words(input)
     .map((w) => {
       const c = stripTones(Array.from(w.normalize('NFC'))[0]!.toLocaleUpperCase('vi'));
@@ -78,12 +87,14 @@ function cmp(a: string, b: string): number {
   return a < b ? -1 : a > b ? 1 : 0;
 }
 
-/** Sort full names the Vietnamese way: by tên, then tên đệm, then họ. Returns a new array. */
+/** Sort full names the Vietnamese way: by tên, then tên đệm, then họ. Returns a new array; non-string entries are dropped. */
 export function sortNames(names: readonly string[]): string[] {
-  const keyed = names.map((n) => {
-    const r = splitName(n);
-    return { n, f: r.ok ? r.family : '', m: r.ok ? r.middle : '', g: r.ok ? r.given : n };
-  });
+  const keyed = names
+    .filter((n) => typeof n === 'string')
+    .map((n) => {
+      const r = splitName(n);
+      return { n, f: r.ok ? r.family : '', m: r.ok ? r.middle : '', g: r.ok ? r.given : n };
+    });
   keyed.sort((a, b) => cmp(a.g, b.g) || cmp(a.m, b.m) || cmp(a.f, b.f));
   return keyed.map((k) => k.n);
 }
