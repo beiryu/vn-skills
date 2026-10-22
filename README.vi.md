@@ -29,7 +29,7 @@ trên cùng một lõi chạy offline:
 | [`vn-holidays`](skills/vn-holidays/SKILL.md)           | Lịch nghỉ lễ, Tết chính thức từng năm (thông báo, nghỉ bù, hoán đổi), kiểm tra ngày làm việc, cộng N ngày làm việc | `vn-skills holidays add 2026-02-12 3`                                                                     |
 | [`vn-money-words`](skills/vn-money-words/SKILL.md)     | Đọc số tiền bằng chữ (nghìn/ngàn, lẻ/linh, mốt/lăm/tư, tỷ tỷ)                                                      | `vn-skills money words 1200000` → `một triệu hai trăm nghìn đồng`                                         |
 | [`vn-lunar`](skills/vn-lunar/SKILL.md)                 | Dương ↔ âm lịch, tháng nhuận, can chi, Tết, ngày lễ (thuật toán thiên văn Meeus, UTC+7)                            | `vn-skills lunar tet 2027` → `2027-02-06 Đinh Mùi`                                                        |
-| [`vn-einvoice`](skills/vn-einvoice/SKILL.md)           | Schema hóa đơn điện tử, tính thuế/tổng, số tiền bằng chữ, provider mock; khung adapter MISA/Viettel/VNPT           | `vn-skills einvoice totals invoice.json`                                                                  |
+| [`vn-einvoice`](skills/vn-einvoice/SKILL.md)           | Schema hóa đơn điện tử, tính thuế/tổng, số tiền bằng chữ, provider mock; khung adapter MISA/Viettel/VNPT           | `vn-skills einvoice example > invoice.json && vn-skills einvoice totals invoice.json`                     |
 | [`vn-name`](skills/vn-name/SKILL.md)                   | Tách họ / tên đệm / tên, họ kép, sắp xếp theo tên (collation tiếng Việt), slug không dấu và chữ cái đầu            | `vn-skills name split "Tôn Thất Tùng"`                                                                    |
 | [`vn-number-format`](skills/vn-number-format/SKILL.md) | Định dạng/đọc số, tiền ₫, ngày dd/MM/yyyy kiểu Việt Nam; đọc "1tr2", "500k", "1,5 tỷ"                              | `vn-skills numfmt parse "1tr2"` → `1200000`                                                               |
 
@@ -63,7 +63,7 @@ npx -y @vn-skills/cli install all --agent cursor --global  # ~/.cursor/skills/*
 **Cursor / Codex / agent khác:** copy đúng thư mục đó vào nơi agent tìm `SKILL.md` (`.cursor/skills/`, `.codex/skills/`…).
 Skill chỉ cần Node.js 22+ vì gọi `npx -y @vn-skills/cli`.
 
-**Khi làm việc trong repo này** (chưa publish npm) dùng `pnpm vn-skills …` thay cho `npx -y @vn-skills/cli …`.
+**Khi làm việc trong repo này** chạy `node packages/cli/dist/index.js …` thay cho `npx -y @vn-skills/cli …` để có JSON sạch. `pnpm vn-skills …` vẫn chạy được nhưng thêm output của wrapper (dòng lệnh được echo và `[ELIFECYCLE]` khi lỗi).
 
 ## MCP server
 

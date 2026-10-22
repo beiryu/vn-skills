@@ -64,3 +64,19 @@ describe('@vn-skills/mcp npm metadata', () => {
     expect(pkg.keywords ?? []).toContain(kw);
   });
 });
+
+describe.each(['README.md', 'README.vi.md'])('%s einvoice example and in-repo CLI note', (file) => {
+  const text = read(file);
+
+  it('creates invoice.json with `einvoice example` before running totals', () => {
+    expect(text).toContain(
+      'vn-skills einvoice example > invoice.json && vn-skills einvoice totals invoice.json',
+    );
+  });
+
+  it('recommends running the built CLI with node for clean JSON', () => {
+    expect(text).toContain('node packages/cli/dist/index.js');
+    expect(text).not.toContain('before the packages are published');
+    expect(text).not.toContain('chưa publish npm');
+  });
+});
