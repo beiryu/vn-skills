@@ -96,6 +96,22 @@ describe('buildVietQR', () => {
     expect(r.ok && r.note?.length).toBe(MAX_NOTE_LENGTH);
     expect(r.ok && r.warnings.some((w) => w.includes('truncated'))).toBe(true);
   });
+  it('does not split a surrogate pair when truncating a raw note', () => {
+    const r = buildVietQR({
+      bank: 'VCB',
+      account: '123',
+      note: 'a'.repeat(24) + '😀',
+      rawNote: true,
+    });
+    expect(r.ok).toBe(true);
+    if (!r.ok) return;
+    const lone = /[\uD800-\uDBFF](?![\uDC00-\uDFFF])|(?<![\uD800-\uDBFF])[\uDC00-\uDFFF]/;
+    expect(r.note).toBeDefined();
+    expect(lone.test(r.note ?? '')).toBe(false);
+    expect(lone.test(r.payload)).toBe(false);
+    const p = parseVietQR(r.payload);
+    expect(p.ok && p.note).toBe(r.note);
+  });
   it('builds card service QR', () => {
     const r = buildVietQR({ bank: 'VCB', account: '9704360123456789', service: 'card' });
     expect(r.ok && r.payload.includes('QRIBFTTC')).toBe(true);
