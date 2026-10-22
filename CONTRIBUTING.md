@@ -41,6 +41,9 @@ pnpm vn-skills --help    # run the CLI from the repo
 - Every PR needs green CI and one approval from a code owner. See [GOVERNANCE.md](GOVERNANCE.md).
 - Maintainers use AI coding tools; every change is reviewed and merged by a maintainer. Contributors may use them too,
   under the same rules: you are responsible for what you submit.
+- After a release is published to npm, publish the MCP server metadata to the
+  [MCP Registry](https://registry.modelcontextprotocol.io) from `packages/mcp`: `mcp-publisher login github`, then
+  `mcp-publisher publish`. Release Please keeps the versions in `server.json` in step with the package.
 - Link the issue (`Closes #123`). For roadmap work, keep the `RM-NNN` id in the PR body.
 - Language: English for code, commits, issues and PRs. Vietnamese is welcome in issue discussions and is required in
   `README.vi.md` and SKILL.md trigger words.
