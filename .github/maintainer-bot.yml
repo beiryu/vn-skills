@@ -18,7 +18,6 @@ bot:
     max_cost_per_month_usd: 100
   limits:
     max_attempts: 3
-    audit_interval_hours: 24 # daily; the schedule in the workflow guarantees a run
 
 default_branch: main
 branch_prefix: ''
@@ -72,7 +71,6 @@ pr_scopes:
   ]
 audit_files:
   [README.md, CONTRIBUTING.md, AGENTS.md, vn-skills-SPEC.md, packages/core/data/SOURCES.md]
-deep_audit: true # daily: research the web, try it as a newcomer, inspect the code, then propose
 packages: ['@vn-skills/core', '@vn-skills/cli', '@vn-skills/mcp']
 dependencies: existing # may add a dependency another package here already uses; anything new is refused
 sources:

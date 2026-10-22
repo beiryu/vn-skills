@@ -17,8 +17,14 @@ on:
   pull_request_target:
     types: [opened, synchronize] # other people's PRs: reviewed from the diff and CI, never run
   schedule:
-    - cron: '0 2 * * *' # daily 09:00 Vietnam: upstream sources + audit
+    - cron: '0 1 * * *' # research: web, newcomer tryout, code inspection (08:00 Vietnam)
+    - cron: '0 2 * * *' # audit: upstream sources + proposals, with the research findings (09:00 Vietnam)
   workflow_dispatch:
+    inputs:
+      task:
+        type: choice
+        options: [pass, research, audit]
+        default: pass
 
 # One pass at a time; a second event waits instead of running alongside.
 concurrency:
@@ -36,6 +42,8 @@ jobs:
     # Tracks the bot's v1 tag (same owner as this repo): bot releases apply without a PR here.
     uses: beiryu/maintainer-bot/.github/workflows/agent.yml@v1 # tracks the latest v1.x release
     with:
+      # Each schedule is one task; keep these crons in step with the ones above.
+      task: ${{ github.event.schedule == '0 1 * * *' && 'research' || github.event.schedule == '0 2 * * *' && 'audit' || inputs.task || 'pass' }}
       draft_prs: false
     # BOT_PAT lives in the environment "bot", which only the called workflow's publish job
     # enters; inherit is the only way an environment secret reaches a called workflow.
