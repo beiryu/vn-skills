@@ -1,5 +1,29 @@
 # Changelog
 
+## [0.5.0](https://github.com/beiryu/vn-skills/compare/v0.4.0...v0.5.0) (2026-10-22)
+
+
+### Features
+
+* **mcp:** add vietqr_decode tool ([#84](https://github.com/beiryu/vn-skills/issues/84)) ([2d1a4b0](https://github.com/beiryu/vn-skills/commit/2d1a4b0133d889488bfcb7f87aa91a8c6dcd5d1e)), closes [#75](https://github.com/beiryu/vn-skills/issues/75)
+* **repo:** add Claude Code plugin marketplace manifest ([#87](https://github.com/beiryu/vn-skills/issues/87)) ([e3681fb](https://github.com/beiryu/vn-skills/commit/e3681fb2da602dc660b475f55f9d2bf0b4946c4e)), closes [#86](https://github.com/beiryu/vn-skills/issues/86)
+
+
+### Bug Fixes
+
+* **vn-number-format:** accept years 0001-0099 in formatDate ([#99](https://github.com/beiryu/vn-skills/issues/99)) ([3623817](https://github.com/beiryu/vn-skills/commit/3623817ddf1cb1530fe4e5f486b98d7302e58490)), closes [#96](https://github.com/beiryu/vn-skills/issues/96)
+* **vn-number-format:** explain why amounts like '1.5' are rejected ([#101](https://github.com/beiryu/vn-skills/issues/101)) ([3588563](https://github.com/beiryu/vn-skills/commit/358856320c99234c73583d96b8d3f3fd08431fb1)), closes [#94](https://github.com/beiryu/vn-skills/issues/94)
+* **vn-number-format:** return errors for non-string input ([#100](https://github.com/beiryu/vn-skills/issues/100)) ([321d656](https://github.com/beiryu/vn-skills/commit/321d6560ab600971d1800471d85c5d271c4c9a51)), closes [#95](https://github.com/beiryu/vn-skills/issues/95)
+* **vn-number-format:** validate maxFractionDigits and group |n| &gt;= 1e21 ([#97](https://github.com/beiryu/vn-skills/issues/97)) ([571df77](https://github.com/beiryu/vn-skills/commit/571df77bbe933d4a28be34787b952593a4ecf749)), closes [#91](https://github.com/beiryu/vn-skills/issues/91)
+
+
+### Documentation
+
+* **mcp:** add mcp, vietnam, vietqr keywords to npm package ([#80](https://github.com/beiryu/vn-skills/issues/80)) ([86b5091](https://github.com/beiryu/vn-skills/commit/86b5091b1fc4f00811beca6e215adc1cdf354c23)), closes [#79](https://github.com/beiryu/vn-skills/issues/79)
+* **repo:** add 5-minute quickstart in English and Vietnamese ([#82](https://github.com/beiryu/vn-skills/issues/82)) ([2fbfa57](https://github.com/beiryu/vn-skills/commit/2fbfa5748aecb2e01ad25d6f644b33ce8dab37d5))
+* **repo:** cover all 11 skills in npm descriptions and keywords ([#90](https://github.com/beiryu/vn-skills/issues/90)) ([d15df39](https://github.com/beiryu/vn-skills/commit/d15df394e1b94aa994b96bad4cafcd6e07cb0f6b)), closes [#89](https://github.com/beiryu/vn-skills/issues/89)
+* **repo:** make README einvoice example runnable ([#102](https://github.com/beiryu/vn-skills/issues/102)) ([0d78a87](https://github.com/beiryu/vn-skills/commit/0d78a87ed497be9e21a3beb2a84c7b47602fdc55)), closes [#93](https://github.com/beiryu/vn-skills/issues/93)
+
 ## [0.4.0](https://github.com/beiryu/vn-skills/compare/v0.3.3...v0.4.0) (2026-10-21)
 
 
