@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any -- deliberately passing untyped input */
 import { describe, expect, it } from 'vitest';
 import {
   formatCompactVnd,
@@ -190,5 +191,23 @@ describe('parseAmount decimal-point hint', () => {
     expect(r.ok).toBe(false);
     if (r.ok) return;
     expect(r.error.hint).toBe('Try "1tr2", "500k", "1.200.000"');
+  });
+});
+
+describe('non-string input (untyped callers)', () => {
+  it('parseAmount coerces numbers', () => {
+    expect(parseAmount(5 as any)).toEqual({ ok: true, value: 5 });
+  });
+
+  it.each([null, undefined])('parseAmount(%s) returns INVALID_AMOUNT', (v) => {
+    const r = parseAmount(v as any);
+    expect(r.ok).toBe(false);
+    if (!r.ok) expect(r.error.code).toBe('INVALID_AMOUNT');
+  });
+
+  it.each([null, undefined, 20250101])('formatDate(%s) returns INVALID_DATE', (v) => {
+    const r = formatDate(v as any);
+    expect(r.ok).toBe(false);
+    if (!r.ok) expect(r.error.code).toBe('INVALID_DATE');
   });
 });
