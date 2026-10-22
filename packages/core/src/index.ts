@@ -12,4 +12,4 @@ export * from './holidays/index.js';
 export { removeDiacritics, normalizeText, compactKey } from './shared/diacritics.js';
 export { tlvEncode, tlvDecode, type TlvNode } from './shared/tlv.js';
 export type { Result, VnError } from './shared/result.js';
-export const VERSION = '0.4.0'; // x-release-please-version
+export const VERSION = '0.5.0'; // x-release-please-version
