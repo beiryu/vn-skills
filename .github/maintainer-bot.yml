@@ -8,16 +8,19 @@ bot:
   setup: [node@22, pnpm@12.11.2]
   hours: '9-21' # works 09:00–21:00 Vietnam only; a run started by hand always works
   timezone: Asia/Ho_Chi_Minh
-  models: # stronger model for the research; the hourly audit uses the default
+  models: # stronger model for research and planning; the audit's agents use the default
     researcher: claude-opus-5.5
+    planner: claude-opus-5.5
   reasoning:
     researcher: high
+    planner: high
   budget:
-    per_agent_usd: { researcher: 5, tryout: 4, inspector: 4, auditor: 1 }
+    per_agent_usd: { researcher: 5, tryout: 4, inspector: 4, planner: 5 }
     max_cost_per_call_usd: 3 # Copilot AI credits at $0.01 each
     max_cost_per_month_usd: 100
   limits:
     max_attempts: 3
+    max_open_prs: 10 # the only limit: open PRs + issues being worked on
 
 default_branch: main
 branch_prefix: ''
