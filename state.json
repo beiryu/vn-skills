@@ -1,6 +1,6 @@
 {
  "version": 1,
- "exported_at": "2026-10-22T06:42:54.074Z",
+ "exported_at": "2026-10-22T06:43:52.773Z",
  "tables": {
   "repos": [
    {
@@ -10,7 +10,7 @@
     "policy_status": null,
     "policy_excerpts": null,
     "block_reason": null,
-    "last_scanned": "2026-10-22T06:42:23.600Z"
+    "last_scanned": "2026-10-22T06:43:28.477Z"
    }
   ],
   "issues": [
@@ -538,7 +538,7 @@
     "mergeable": "MERGEABLE",
     "ci_state": "success",
     "review_decision": "REVIEW_REQUIRED",
-    "snapshot_at": "2026-10-22T06:42:17.182Z",
+    "snapshot_at": "2026-10-22T06:43:18.914Z",
     "ci_seen_sha": null,
     "merge_state": "BEHIND"
    },
@@ -553,7 +553,7 @@
     "mergeable": "CONFLICTING",
     "ci_state": "success",
     "review_decision": "REVIEW_REQUIRED",
-    "snapshot_at": "2026-10-22T06:42:19.206Z",
+    "snapshot_at": "2026-10-22T06:43:21.333Z",
     "ci_seen_sha": null,
     "merge_state": "DIRTY"
    },
@@ -568,7 +568,7 @@
     "mergeable": "CONFLICTING",
     "ci_state": "success",
     "review_decision": null,
-    "snapshot_at": "2026-10-22T06:42:20.298Z",
+    "snapshot_at": "2026-10-22T06:43:22.592Z",
     "ci_seen_sha": null,
     "merge_state": "DIRTY"
    },
@@ -580,12 +580,12 @@
     "last_seen_at": "2026-10-21T15:17:25.432Z",
     "opened_at": "2026-10-21T15:17:25.432Z",
     "head_sha": "dbfc90793824fff529742dfaf8dc39216e71bd5a",
-    "mergeable": "UNKNOWN",
+    "mergeable": "MERGEABLE",
     "ci_state": "pending",
     "review_decision": "REVIEW_REQUIRED",
-    "snapshot_at": "2026-10-22T06:42:21.321Z",
+    "snapshot_at": "2026-10-22T06:43:23.846Z",
     "ci_seen_sha": null,
-    "merge_state": "DIRTY"
+    "merge_state": "BLOCKED"
    }
   ],
   "pending_actions": [
