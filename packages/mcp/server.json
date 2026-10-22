@@ -1,0 +1,22 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.beiryu/vn-skills",
+  "title": "vn-skills",
+  "description": "Vietnam tools: VietQR, addresses, tax IDs, CCCD, holidays, money in words, lunar calendar, e-invoice",
+  "repository": {
+    "url": "https://github.com/beiryu/vn-skills",
+    "source": "github",
+    "subfolder": "packages/mcp"
+  },
+  "version": "0.5.0",
+  "packages": [
+    {
+      "registryType": "npm",
+      "identifier": "@vn-skills/mcp",
+      "version": "0.5.0",
+      "transport": {
+        "type": "stdio"
+      }
+    }
+  ]
+}

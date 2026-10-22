@@ -80,3 +80,32 @@ describe.each(['README.md', 'README.vi.md'])('%s einvoice example and in-repo CL
     expect(text).not.toContain('chưa publish npm');
   });
 });
+
+describe('@vn-skills/mcp MCP Registry metadata', () => {
+  const pkg = JSON.parse(read('packages/mcp/package.json')) as {
+    mcpName?: string;
+    version: string;
+  };
+  const srv = JSON.parse(read('packages/mcp/server.json')) as {
+    name: string;
+    description: string;
+    version: string;
+    packages: { identifier: string; version: string }[];
+  };
+
+  it('server.json name equals package.json mcpName', () => {
+    expect(pkg.mcpName).toBe('io.github.beiryu/vn-skills');
+    expect(srv.name).toBe(pkg.mcpName);
+  });
+
+  it('server.json versions equal the package version', () => {
+    expect(srv.version).toBe(pkg.version);
+    expect(srv.packages.map((p) => [p.identifier, p.version])).toEqual([
+      ['@vn-skills/mcp', pkg.version],
+    ]);
+  });
+
+  it('description fits the registry limit of 100 characters', () => {
+    expect(srv.description.length).toBeLessThanOrEqual(100);
+  });
+});
