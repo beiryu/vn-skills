@@ -39,16 +39,28 @@ function province2025(legacyName: string): string | undefined {
 /** Normalise and classify a Vietnamese phone number offline. */
 export function parsePhone(input: string): Result<PhoneInfo> {
   const raw = String(input ?? '').trim();
+  if (!raw) {
+    return fail(
+      'EMPTY',
+      'Phone number is empty',
+      'Pass a phone number, e.g. 0912345678 or +84912345678.',
+    );
+  }
   if (!/^\+?[\d\s.\-()+]+$/.test(raw) || /.\+/.test(raw.replace(/^\(\+/, '').replace(/^\+/, ''))) {
     return fail(
       'INVALID_FORMAT',
       'Phone number may only contain digits, spaces, . - ( ) and a leading +',
+      'Remove letters and symbols; use 10 digits starting with 0, or +84 followed by 9 digits.',
     );
   }
   let digits = raw.replace(/\D/g, '');
   if (digits.startsWith('84')) digits = '0' + digits.slice(2);
   if (!digits.startsWith('0')) {
-    return fail('INVALID_FORMAT', 'Expected a number starting with 0, 84 or +84');
+    return fail(
+      'INVALID_FORMAT',
+      'Expected a number starting with 0, 84 or +84',
+      'Use 10 digits starting with 0, or +84 followed by 9 digits.',
+    );
   }
 
   let convertedFrom: string | undefined;
@@ -64,8 +76,17 @@ export function parsePhone(input: string): Result<PhoneInfo> {
   if (digits.length === 10) {
     const carrier = CARRIER_BY_PREFIX.get(digits.slice(0, 3));
     if (!carrier && digits.startsWith('02'))
-      return fail('INVALID_LENGTH', 'Landline numbers have 11 digits including the leading 0');
-    if (!carrier) return fail('UNKNOWN_PREFIX', `Unknown mobile prefix ${digits.slice(0, 3)}`);
+      return fail(
+        'INVALID_LENGTH',
+        'Landline numbers have 11 digits including the leading 0',
+        'Landline numbers have 11 digits including the leading 0, e.g. 02812345678.',
+      );
+    if (!carrier)
+      return fail(
+        'UNKNOWN_PREFIX',
+        `Unknown mobile prefix ${digits.slice(0, 3)}`,
+        'Check the first three digits against a valid mobile prefix.',
+      );
     return {
       ok: true,
       type: 'mobile',
@@ -79,7 +100,11 @@ export function parsePhone(input: string): Result<PhoneInfo> {
   if (digits.length === 11) {
     const areaCode = [digits.slice(0, 3), digits.slice(0, 4)].find((c) => c in AREA_CODES);
     if (!areaCode)
-      return fail('UNKNOWN_PREFIX', `Unknown area code or prefix ${digits.slice(0, 4)}`);
+      return fail(
+        'UNKNOWN_PREFIX',
+        `Unknown area code or prefix ${digits.slice(0, 4)}`,
+        'Check the area code or prefix at the start of the number.',
+      );
     const rest = digits.slice(areaCode.length);
     const split = rest.length === 8 ? 4 : 3;
     const province = AREA_CODES[areaCode]!;
@@ -97,5 +122,6 @@ export function parsePhone(input: string): Result<PhoneInfo> {
   return fail(
     'INVALID_LENGTH',
     `Expected 10 digits (mobile) or 11 digits (landline), got ${digits.length}`,
+    'Use 10 digits (mobile) or 11 digits (landline) starting with 0, or the same without the 0 after +84.',
   );
 }
