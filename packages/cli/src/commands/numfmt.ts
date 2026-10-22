@@ -25,10 +25,10 @@ export function registerNumfmt(program: Command): void {
       else process.stdout.write(r.text + '\n');
     });
   cmd
-    .command('parse <text>')
-    .description('Parse a typed amount: "1tr2", "500k", "1,5 tỷ", "1.234.567,89"')
-    .action((text: string, _opts, c: Command) => {
-      const r = parseAmount(text);
+    .command('parse <text...>')
+    .description('Parse a typed amount: "1tr2", "500k", "1,5 tỷ", "1.234.567,89" (quotes optional)')
+    .action((words: string[], _opts, c: Command) => {
+      const r = parseAmount(words.join(' '));
       if (!r.ok) failExit(c, r.error);
       if (wantsJson(c)) printJson({ ok: true, value: r.value });
       else process.stdout.write(String(r.value) + '\n');
