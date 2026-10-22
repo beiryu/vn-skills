@@ -1,6 +1,6 @@
 {
  "version": 1,
- "exported_at": "2026-10-22T07:31:55.804Z",
+ "exported_at": "2026-10-22T07:39:32.373Z",
  "tables": {
   "repos": [
    {
@@ -10,7 +10,7 @@
     "policy_status": null,
     "policy_excerpts": null,
     "block_reason": null,
-    "last_scanned": "2026-10-22T07:31:30.492Z"
+    "last_scanned": "2026-10-22T07:39:05.871Z"
    }
   ],
   "issues": [
@@ -538,7 +538,7 @@
     "mergeable": "MERGEABLE",
     "ci_state": "success",
     "review_decision": "REVIEW_REQUIRED",
-    "snapshot_at": "2026-10-22T07:31:21.774Z",
+    "snapshot_at": "2026-10-22T07:38:06.812Z",
     "ci_seen_sha": null,
     "merge_state": "BEHIND"
    },
@@ -547,13 +547,13 @@
     "url": "https://github.com/beiryu/vn-skills/pull/101",
     "number": 101,
     "state": "open",
-    "last_seen_at": "2026-10-21T15:17:38.965Z",
+    "last_seen_at": "2026-10-22T07:37:34Z",
     "opened_at": "2026-10-21T15:17:38.965Z",
     "head_sha": "6170d672181b1ff4d6d77a89426dfc8cec235958",
     "mergeable": "MERGEABLE",
     "ci_state": "pending",
-    "review_decision": "REVIEW_REQUIRED",
-    "snapshot_at": "2026-10-22T07:31:24.194Z",
+    "review_decision": null,
+    "snapshot_at": "2026-10-22T07:38:09.042Z",
     "ci_seen_sha": null,
     "merge_state": "BLOCKED"
    },
@@ -568,7 +568,7 @@
     "mergeable": "CONFLICTING",
     "ci_state": "success",
     "review_decision": null,
-    "snapshot_at": "2026-10-22T07:31:26.840Z",
+    "snapshot_at": "2026-10-22T07:39:02.888Z",
     "ci_seen_sha": null,
     "merge_state": "DIRTY"
    },
@@ -2031,6 +2031,20 @@
     "cost_usd": 0.0833019,
     "ok": 1,
     "result_json": "{\"parsed\":{\"action\":\"fix\",\"message\":\"Rebased the change onto current main by re-applying it by hand: parseAmount now gives a specific hint for English-style decimals like \\\"1.5\\\"/\\\"1.50tr\\\" (\\\".\\\" groups thousands, use \\\",\\\" for decimals), with the SKILL.md note and regression tests unchanged in intent. The vn-number-format tests pass and Prettier is clean.\"},\"result\":\"Needs a build first.\\n\\nI re-applied the PR's change by hand onto the current code, because `git apply` failed on the test file. The number-format tests pass (66/66) and Prettier is clean on the three edited files. I didn't run the full pre-finish suite (`typecheck`, `lint`, all tests).\\n\\n- **Code:** `parseAmount` in `packages/core/src/numfmt/index.ts` now returns a hint when input like `1.5` or `1.50tr` fails. The hint says `.` groups thousands and to use `,` for decimals. Other failures keep the generic hint.\\n- **Docs:** `skills/vn-number-format/SKILL.md` gets a \\\"Common mistakes\\\" section.\\n- **Test:** `tests/vn-number-format.test.ts` covers `1.5` and `1.50tr`, plus a check that `abc` keeps the generic hint.\\n\\n```json\\n{\\\"action\\\": \\\"fix\\\", \\\"message\\\": \\\"Rebased the change onto current main by re-applying it by hand: parseAmount now gives a specific hint for English-style decimals like \\\\\\\"1.5\\\\\\\"/\\\\\\\"1.50tr\\\\\\\" (\\\\\\\".\\\\\\\" groups thousands, use \\\\\\\",\\\\\\\" for decimals), with the SKILL.md note and regression tests unchanged in intent. The vn-number-format tests pass and Prettier is clean.\\\"}\\n```\\n\"}",
+    "models": "claude-sonnet-5.5"
+   },
+   {
+    "id": 99,
+    "run_id": "aac02e1f-789a-4511-931d-3d1df1108227",
+    "issue_id": 12,
+    "agent": "followup",
+    "started_at": "2026-10-22T07:38:10.785Z",
+    "duration_ms": 50960,
+    "input_tokens": 89654,
+    "output_tokens": 2733,
+    "cost_usd": 0.0927584,
+    "ok": 1,
+    "result_json": "{\"parsed\":{\"action\":\"fix\",\"message\":\"Thanks for the review! I added a source note in the parseAmount doc comment (separators follow the Unicode CLDR \\\"vi\\\" locale: decimal \\\",\\\", group \\\".\\\"). I also moved the 1.5, 1.50tr and abc cases into the parseAmount group of tests/golden/vn-number-format.json, wired the golden harness to run every parseAmount case through parseAmount, and removed the old direct hint test block. The affected tests, lint and format check pass.\"},\"result\":\"I addressed both CodeRabbit comments. The three affected test files pass (124 tests), and lint and the Prettier format check are clean. I did not run the full `pnpm typecheck` or the full vitest suite.\\n\\n- **Source citation:** the `parseAmount` doc comment in `packages/core/src/numfmt/index.ts` now says the separators follow the Unicode CLDR `vi` locale (decimal `,`, group `.`). I wrote that citation from memory and did not check it against the CLDR data, so please confirm it before this goes up.\\n- **Golden fixture:** I moved the `1.5`, `1.50tr` and `abc` cases into the `parseAmount` group in `tests/golden/vn-number-format.json`, with the expected error objects CodeRabbit gave.\\n- **Harness:** `tests/number-format-golden.test.ts` now runs every `parseAmount` fixture case through `parseAmount`.\\n- **Old test block:** I removed the direct `parseAmount decimal-point hint` block from `tests/vn-number-format.test.ts`.\\n\\n```json\\n{\\\"action\\\": \\\"fix\\\", \\\"message\\\": \\\"Thanks for the review! I added a source ",
     "models": "claude-sonnet-5.5"
    }
   ],
