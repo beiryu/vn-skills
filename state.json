@@ -1,6 +1,6 @@
 {
  "version": 1,
- "exported_at": "2026-10-22T11:45:39.271Z",
+ "exported_at": "2026-10-22T12:03:02.209Z",
  "tables": {
   "repos": [
    {
@@ -10,7 +10,7 @@
     "policy_status": null,
     "policy_excerpts": null,
     "block_reason": null,
-    "last_scanned": "2026-10-22T11:45:11.306Z"
+    "last_scanned": "2026-10-22T12:02:38.060Z"
    }
   ],
   "issues": [
@@ -195,7 +195,7 @@
     "title": "mcp: add mcpName and server.json so @vn-skills/mcp can be published to the official MCP Registry",
     "body": "## Problem\nThe official MCP Registry has no entry for this server: https://registry.modelcontextprotocol.io/v0.1/servers?search=vn-skills returns `{\"servers\":[],\"count\":0}`. Before an npm package can be published there, it needs:\n1. `\"mcpName\": \"io.github.beiryu/vn-skills\"` in `packages/mcp/package.json`. Logging in with GitHub requires the `io.github.<user>/` prefix. The field is missing today.\n2. A `server.json` that describes the package. The registry rejects descriptions longer than 100 characters, and the current npm description is about 130.\n\nReference: https://raw.githubusercontent.com/modelcontextprotocol/registry/main/docs/modelcontextprotocol-io/quickstart.mdx\n\nThis issue covers the code change only. Publishing to the registry (`mcp-publisher login github` + `mcp-publisher publish`) is a maintainer step after the next npm release.\n\n## Acceptance\n- [ ] `packages/mcp/package.json` has `\"mcpName\": \"io.github.beiryu/vn-skills\"`\n- [ ] `packages/mcp/server.json` follows the registry quickstart: `name` = `io.github.beiryu/vn-skills`, a `description` of 100 characters or fewer, `repository` pointing at https://github.com/beiryu/vn-skills, `version` equal to the package version, and one `packages` entry for npm `@vn-skills/mcp` with stdio transport\n- [ ] The release config bumps the `version` fields in `server.json` together with the package (add it as an extra file in the release-please config; this issue explicitly allows touching release config for that)\n- [ ] A test asserts that `server.json` `name` equals `mcpName`, that its versions equal `packages/mcp/package.json` `version`, and that the description is 100 characters or fewer\n- [ ] Short note in CONTRIBUTING.md (release section, or a new one) on running `mcp-publisher publish` after an npm release",
     "url": "https://github.com/beiryu/vn-skills/issues/88",
-    "state": "skipped",
+    "state": "closed",
     "score": 1,
     "triage_reason": "@vn-skills/mcp is the most downloaded package (827/month). Many MCP clients read the official registry, and right now the server cannot be listed there at all. #79 (registries/directories) is no longer open, but this code-side requirement is still missing.",
     "attempts": 0,
@@ -211,7 +211,7 @@
     "pr_body": null,
     "dry": 0,
     "claimed_at": null,
-    "updated_at": "2026-10-21T14:52:57.922Z",
+    "updated_at": "2026-10-22T12:02:35.680Z",
     "blocked": null,
     "patch": null,
     "repro_patch": "diff --git a/tests/mcp-registry.test.ts b/tests/mcp-registry.test.ts\nnew file mode 100644\nindex 0000000..4512027\n--- /dev/null\n+++ b/tests/mcp-registry.test.ts\n@@ -0,0 +1,50 @@\n+import { describe, expect, it } from 'vitest';\n+import { readFileSync } from 'node:fs';\n+import { resolve } from 'node:path';\n+\n+const MCP_DIR = resolve(__dirname, '..', 'packages', 'mcp');\n+const readJson = (p: string) => JSON.parse(readFileSync(p, 'utf8')) as Record<string, any>;\n+\n+describe('MCP Registry metadata', () => {\n+  const pkg = readJson(resolve(MCP_DIR, 'package.json'));\n+  const server = readJson(resolve(MCP_DIR, 'server.json'));\n+\n+  it('package.json declares mcpName', () => {\n+    expect(pkg.mcpName).toBe('io.github.beiryu/vn-skills');\n+  });\n+\n+  it('server.json name equals mcpName', () => {\n+    expect(server.name).toBe(pkg.mcpName);\n+  });\n+\n+  it('server.json description is 100 characters or fewer', () => {\n+    expect(typeof server.description).toBe('string');\n+    expect(server.description.length).toBeGreaterThan(0);\n+    expect(server.description.length).toBeLessThanOrEqual(100);\n+  });\n+\n+  it('server.json points at the repository', () => {\n+    expect(server.repository.url).toBe('https://github.com/beiryu/vn-skills');\n+  });\n+\n+  it('server.json versions equal the package version', () => {\n+    expect(server.version).toBe(pkg.version);\n+    expect(server.packages).toHaveLength(1);\n+    expect(server.packages[0].version).toBe(pkg.version);\n+  });\n+\n+  it('server.json lists the npm package with stdio transport', () => {\n+    const p = server.packages[0];\n+    expect(p.registryType).toBe('npm');\n+    expect(p.identifier).toBe('@vn-skills/mcp');\n+    expect(p.transport.type).toBe('stdio');\n+  });\n+\n+  it('release-please bumps server.json with the package', () => {\n+    const cfg = readJson(resolve(__dirname, '..', 'release-please-config.json'));\n+    const extra = cfg.packages['.']['extra-files'] as { path: string; jsonpath?: string }[];\n+    const paths = extra.filter((e) => e.path === 'packages/mcp/server.json').map((e) => e.jsonpath);\n+    expect(paths).toContain('$.version');\n+    expect(paths).toContain('$.packages[0].version');\n+  });\n+});\n",
