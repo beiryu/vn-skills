@@ -90,3 +90,27 @@ describe('vn-holidays: year boundary', () => {
     expect(addWorkingDays(2, 1, 2025, -1)).toMatchObject({ ok: true, date: '2024-12-31' });
   });
 });
+
+describe('vn-holidays: OUT_OF_RANGE messages', () => {
+  it('a year below the data set keeps the "starts with" hint', () => {
+    const r = publicHolidays(2022);
+    expect(r.ok === false && r.error).toMatchObject({
+      code: 'OUT_OF_RANGE',
+      hint: 'The data set starts with the 2023 notices.',
+    });
+  });
+  it('a year above the data set states the upper limit, not the start', () => {
+    const r = publicHolidays(2200);
+    if (r.ok) throw new Error('unexpected');
+    expect(r.error.code).toBe('OUT_OF_RANGE');
+    expect(r.error.hint).toContain('31/12/2199');
+    expect(r.error.hint).not.toContain('starts');
+  });
+  it('addWorkingDays names the start date when the walk leaves the range', () => {
+    const r = addWorkingDays(30, 12, 2199, 5);
+    if (r.ok) throw new Error('unexpected');
+    expect(r.error.code).toBe('OUT_OF_RANGE');
+    expect(r.error.message).toContain('30/12/2199');
+    expect(r.error.message).toMatch(/outside/);
+  });
+});
