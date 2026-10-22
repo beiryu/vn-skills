@@ -1,6 +1,6 @@
 {
  "version": 1,
- "exported_at": "2026-10-22T07:02:08.378Z",
+ "exported_at": "2026-10-22T07:18:29.335Z",
  "tables": {
   "repos": [
    {
@@ -10,7 +10,7 @@
     "policy_status": null,
     "policy_excerpts": null,
     "block_reason": null,
-    "last_scanned": "2026-10-22T07:01:43.756Z"
+    "last_scanned": "2026-10-22T07:18:05.346Z"
    }
   ],
   "issues": [
@@ -538,7 +538,7 @@
     "mergeable": "MERGEABLE",
     "ci_state": "success",
     "review_decision": "REVIEW_REQUIRED",
-    "snapshot_at": "2026-10-22T07:01:37.565Z",
+    "snapshot_at": "2026-10-22T07:16:38.760Z",
     "ci_seen_sha": null,
     "merge_state": "BEHIND"
    },
@@ -553,7 +553,7 @@
     "mergeable": "CONFLICTING",
     "ci_state": "success",
     "review_decision": "REVIEW_REQUIRED",
-    "snapshot_at": "2026-10-22T07:01:40.041Z",
+    "snapshot_at": "2026-10-22T07:16:40.693Z",
     "ci_seen_sha": null,
     "merge_state": "DIRTY"
    },
@@ -568,7 +568,7 @@
     "mergeable": "CONFLICTING",
     "ci_state": "success",
     "review_decision": null,
-    "snapshot_at": "2026-10-22T07:01:41.123Z",
+    "snapshot_at": "2026-10-22T07:18:02.974Z",
     "ci_seen_sha": null,
     "merge_state": "DIRTY"
    },
@@ -625,7 +625,7 @@
     "kind": "rebase",
     "message": "Rebase onto main @ 571df77bbe: the agent re-applied it: Rebased my change onto the latest main. The `parseAmount` hint for English-style decimals like `1.5` or `1.50tr`, the SKILL.md note and the regression tests are all re-applied unchanged. The number-format tests pass and Prettier is clean.",
     "patch": "diff --git a/packages/core/src/numfmt/index.ts b/packages/core/src/numfmt/index.ts\nindex ee03cd5..111b800 100644\n--- a/packages/core/src/numfmt/index.ts\n+++ b/packages/core/src/numfmt/index.ts\n@@ -122,12 +122,8 @@ function plainNumber(s: string): number | null {\n  * After a unit, trailing digits are the fraction: \"1tr2\" = 1,2 triệu.\n  */\n export function parseAmount(input: string): AmountResult {\n-  const bad = () =>\n-    fail<{ value: number }>(\n-      'INVALID_AMOUNT',\n-      `Cannot parse amount \"${input}\"`,\n-      'Try \"1tr2\", \"500k\", \"1.200.000\"',\n-    );\n+  const bad = (hint = 'Try \"1tr2\", \"500k\", \"1.200.000\"') =>\n+    fail<{ value: number }>('INVALID_AMOUNT', `Cannot parse amount \"${input}\"`, hint);\n   let s = input\n     .toLowerCase()\n     .normalize('NFC')\n@@ -138,7 +134,11 @@ export function parseAmount(input: string): AmountResult {\n   const m = /^([\\d.,]+)([a-z]+)?(\\d+)?$/.exec(s);\n   if (!m) return bad();\n   const base = plainNumber(m[1]!);\n-  if (base === null) return bad();\n+  if (base === null) {\n+    return m[1]!.includes('.')\n+      ? bad('\".\" groups thousands in Vietnamese (1.500 = 1500); use \",\" for decimals, e.g. \"1,5\"')\n+      : bad();\n+  }\n   if (!m[2]) return m[3] ? bad() : { ok: true, value: base };\n   const mult = MULTIPLIERS[m[2]];\n   if (!mult) return bad();\ndiff --git a/skills/vn-number-format/SKILL.md b/skills/vn-number-format/SKILL.md\nindex 2c9e40d..b9b3967 100644\n--- a/skills/vn-number-format/SKILL.md\n+++ b/skills/vn-number-format/SKILL.md\n@@ -30,3 +30,7 @@ MCP tool: `vn_number_format` (`mode`: number, vnd, compact, date, parse).\n - `,` is always the decimal mark: `1,5` = 1.5, `1,50` = 1.5.\n - Ambiguous `1.500`: a lone `.` followed by exactly 3-digit groups is a **thousands separator** (= 1500). Use `1,5k` or `1,5` for decimals.\n - Invalid input (`1..2`, `abc`, empty) returns an error.\n+\n+## Common mistakes\n+\n+- English decimals such as `1.5` or `1.50tr` are rejected with `INVALID_AMOUNT`: `.` groups thousands in Vietnamese (`1.500` = 1500), so write `1,5` or `1,5tr` instead.\ndiff --git a/tests/vn-number-format.test.ts b/tests/vn-number-format.test.ts\nindex 9407f99..6cbac4e 100644\n--- a/tests/vn-number-format.test.ts\n+++ b/tests/vn-number-format.test.ts\n@@ -147,6 +147,24 @@ describe('formatCompactVnd boundaries and extras', () => {\n   });\n });\n \n+describe('parseAmount decimal-point hint', () => {\n+  it.each(['1.5', '1.50tr'])('%s -> INVALID_AMOUNT with \",\" hint', (s) => {\n+    const r = parseAmount(s);\n+    expect(r.ok).toBe(false);\n+    if (r.ok) return;\n+    expect(r.error.code).toBe('INVALID_AMOUNT');\n+    expect(r.error.hint).toContain('use \",\" for decimals');\n+    expect(r.error.hint).toContain('1,5');\n+  });\n+\n+  it('keeps the generic hint for other failures', () => {\n+    const r = parseAmount('abc');\n+    expect(r.ok).toBe(false);\n+    if (r.ok) return;\n+    expect(r.error.hint).toBe('Try \"1tr2\", \"500k\", \"1.200.000\"');\n+  });\n+});\n+\n describe('formatNumber robustness (no throw, no exponent)', () => {\n   it.each([101, -1, 1.5, NaN, Infinity])('maxFractionDigits %s returns ok:false', (d) => {\n     let r: ReturnType<typeof formatNumber> | undefined;\n",
-    "status": "pending",
+    "status": "stale",
     "created_at": "2026-10-21T15:19:47.358Z",
     "base_sha": "571df77bbe933d4a28be34787b952593a4ecf749"
    },
@@ -648,6 +648,16 @@
     "status": "done",
     "created_at": "2026-10-21T15:22:57.244Z",
     "base_sha": "571df77bbe933d4a28be34787b952593a4ecf749"
+   },
+   {
+    "id": 7,
+    "issue_id": 12,
+    "kind": "rebase",
+    "message": "Rebase onto main @ 3623817ddf: the agent re-applied it: Rebased the change onto current main by re-applying it by hand: parseAmount now gives a specific hint for English-style decimals like \"1.5\"/\"1.50tr\" (\".\" groups thousands, use \",\" for decimals), with the SKILL.md note and regression tests unchanged in intent. The vn-number-format tests pass and Prettier is clean.",
+    "patch": "diff --git a/packages/core/src/numfmt/index.ts b/packages/core/src/numfmt/index.ts\nindex ba0d936..66a08d1 100644\n--- a/packages/core/src/numfmt/index.ts\n+++ b/packages/core/src/numfmt/index.ts\n@@ -123,12 +123,8 @@ function plainNumber(s: string): number | null {\n  * After a unit, trailing digits are the fraction: \"1tr2\" = 1,2 triệu.\n  */\n export function parseAmount(input: string): AmountResult {\n-  const bad = () =>\n-    fail<{ value: number }>(\n-      'INVALID_AMOUNT',\n-      `Cannot parse amount \"${input}\"`,\n-      'Try \"1tr2\", \"500k\", \"1.200.000\"',\n-    );\n+  const bad = (hint = 'Try \"1tr2\", \"500k\", \"1.200.000\"') =>\n+    fail<{ value: number }>('INVALID_AMOUNT', `Cannot parse amount \"${input}\"`, hint);\n   let s = input\n     .toLowerCase()\n     .normalize('NFC')\n@@ -139,7 +135,11 @@ export function parseAmount(input: string): AmountResult {\n   const m = /^([\\d.,]+)([a-z]+)?(\\d+)?$/.exec(s);\n   if (!m) return bad();\n   const base = plainNumber(m[1]!);\n-  if (base === null) return bad();\n+  if (base === null) {\n+    return m[1]!.includes('.')\n+      ? bad('\".\" groups thousands in Vietnamese (1.500 = 1500); use \",\" for decimals, e.g. \"1,5\"')\n+      : bad();\n+  }\n   if (!m[2]) return m[3] ? bad() : { ok: true, value: base };\n   const mult = MULTIPLIERS[m[2]];\n   if (!mult) return bad();\ndiff --git a/skills/vn-number-format/SKILL.md b/skills/vn-number-format/SKILL.md\nindex 2c9e40d..b9b3967 100644\n--- a/skills/vn-number-format/SKILL.md\n+++ b/skills/vn-number-format/SKILL.md\n@@ -30,3 +30,7 @@ MCP tool: `vn_number_format` (`mode`: number, vnd, compact, date, parse).\n - `,` is always the decimal mark: `1,5` = 1.5, `1,50` = 1.5.\n - Ambiguous `1.500`: a lone `.` followed by exactly 3-digit groups is a **thousands separator** (= 1500). Use `1,5k` or `1,5` for decimals.\n - Invalid input (`1..2`, `abc`, empty) returns an error.\n+\n+## Common mistakes\n+\n+- English decimals such as `1.5` or `1.50tr` are rejected with `INVALID_AMOUNT`: `.` groups thousands in Vietnamese (`1.500` = 1500), so write `1,5` or `1,5tr` instead.\ndiff --git a/tests/vn-number-format.test.ts b/tests/vn-number-format.test.ts\nindex 9407f99..f8d9888 100644\n--- a/tests/vn-number-format.test.ts\n+++ b/tests/vn-number-format.test.ts\n@@ -174,3 +174,21 @@ describe('formatNumber robustness (no throw, no exponent)', () => {\n     expect(formatVnd(1e21)).toEqual({ ok: true, text: '1.000.000.000.000.000.000.000 ₫' });\n   });\n });\n+\n+describe('parseAmount decimal-point hint', () => {\n+  it.each(['1.5', '1.50tr'])('%s -> INVALID_AMOUNT with \",\" hint', (s) => {\n+    const r = parseAmount(s);\n+    expect(r.ok).toBe(false);\n+    if (r.ok) return;\n+    expect(r.error.code).toBe('INVALID_AMOUNT');\n+    expect(r.error.hint).toContain('use \",\" for decimals');\n+    expect(r.error.hint).toContain('1,5');\n+  });\n+\n+  it('keeps the generic hint for other failures', () => {\n+    const r = parseAmount('abc');\n+    expect(r.ok).toBe(false);\n+    if (r.ok) return;\n+    expect(r.error.hint).toBe('Try \"1tr2\", \"500k\", \"1.200.000\"');\n+  });\n+});\n",
+    "status": "pending",
+    "created_at": "2026-10-22T07:18:01.972Z",
+    "base_sha": "3623817ddf1cb1530fe4e5f486b98d7302e58490"
    }
   ],
   "agent_calls": [
@@ -2008,6 +2018,20 @@
     "ok": 1,
     "result_json": "{\"parsed\":{\"action\":\"reply\",\"message\":\"Rebased the change onto current main. `formatDate` and `parseAmount` now coerce their input with `String(input ?? '')`, so null, undefined and numbers no longer throw. Invalid input returns INVALID_DATE or INVALID_AMOUNT. The regression tests for non-string input are included unchanged. The number-format tests, lint and the format check pass.\"},\"result\":\"Core isn't built, so tests and lint fail on unresolved imports. Building first.\\n\\nI re-applied the PR's change onto the current code in `packages/core/src/numfmt/index.ts` and `tests/vn-number-format.test.ts`. The number-format tests pass (69/69), and lint and the format check are clean. I didn't run the full test suite, and I didn't commit.\\n\\n```json\\n{\\\"action\\\": \\\"reply\\\", \\\"message\\\": \\\"Rebased the change onto current main. `formatDate` and `parseAmount` now coerce their input with `String(input ?? '')`, so null, undefined and numbers no longer throw. Invalid input returns INVALID_DATE or INVALID_AMOUNT. The regression tests for non-string input are included unchanged. The number-format tests, lint and the format check pass.\\\"}\\n```\\n\"}",
     "models": "claude-sonnet-5.5"
+   },
+   {
+    "id": 98,
+    "run_id": "f847379d-b3bf-45df-b3b4-39217d9d2b07",
+    "issue_id": 12,
+    "agent": "followup",
+    "started_at": "2026-10-22T07:16:41.309Z",
+    "duration_ms": 28667,
+    "input_tokens": 111025,
+    "output_tokens": 2524,
+    "cost_usd": 0.0833019,
+    "ok": 1,
+    "result_json": "{\"parsed\":{\"action\":\"fix\",\"message\":\"Rebased the change onto current main by re-applying it by hand: parseAmount now gives a specific hint for English-style decimals like \\\"1.5\\\"/\\\"1.50tr\\\" (\\\".\\\" groups thousands, use \\\",\\\" for decimals), with the SKILL.md note and regression tests unchanged in intent. The vn-number-format tests pass and Prettier is clean.\"},\"result\":\"Needs a build first.\\n\\nI re-applied the PR's change by hand onto the current code, because `git apply` failed on the test file. The number-format tests pass (66/66) and Prettier is clean on the three edited files. I didn't run the full pre-finish suite (`typecheck`, `lint`, all tests).\\n\\n- **Code:** `parseAmount` in `packages/core/src/numfmt/index.ts` now returns a hint when input like `1.5` or `1.50tr` fails. The hint says `.` groups thousands and to use `,` for decimals. Other failures keep the generic hint.\\n- **Docs:** `skills/vn-number-format/SKILL.md` gets a \\\"Common mistakes\\\" section.\\n- **Test:** `tests/vn-number-format.test.ts` covers `1.5` and `1.50tr`, plus a check that `abc` keeps the generic hint.\\n\\n```json\\n{\\\"action\\\": \\\"fix\\\", \\\"message\\\": \\\"Rebased the change onto current main by re-applying it by hand: parseAmount now gives a specific hint for English-style decimals like \\\\\\\"1.5\\\\\\\"/\\\\\\\"1.50tr\\\\\\\" (\\\\\\\".\\\\\\\" groups thousands, use \\\\\\\",\\\\\\\" for decimals), with the SKILL.md note and regression tests unchanged in intent. The vn-number-format tests pass and Prettier is clean.\\\"}\\n```\\n\"}",
+    "models": "claude-sonnet-5.5"
    }
   ],
   "proposals": [
@@ -2366,7 +2390,7 @@
    },
    {
     "key": "rebase-tried:12",
-    "value": "571df77bbe933d4a28be34787b952593a4ecf749"
+    "value": "3623817ddf1cb1530fe4e5f486b98d7302e58490"
    },
    {
     "key": "rebase-tried:13",
@@ -2377,8 +2401,8 @@
     "value": "571df77bbe933d4a28be34787b952593a4ecf749"
    },
    {
-    "key": "item:beiryu/maintainer-desk:beiryu/vn-skills:a4",
-    "value": "6319632184"
+    "key": "item:beiryu/maintainer-desk:beiryu/vn-skills:a7",
+    "value": "6335098387"
    }
   ]
  }
