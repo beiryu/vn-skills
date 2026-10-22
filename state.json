@@ -1,6 +1,6 @@
 {
  "version": 1,
- "exported_at": "2026-10-22T06:46:37.030Z",
+ "exported_at": "2026-10-22T06:56:12.262Z",
  "tables": {
   "repos": [
    {
@@ -10,7 +10,7 @@
     "policy_status": null,
     "policy_excerpts": null,
     "block_reason": null,
-    "last_scanned": "2026-10-22T06:46:10.203Z"
+    "last_scanned": "2026-10-22T06:55:40.470Z"
    }
   ],
   "issues": [
@@ -376,7 +376,7 @@
     "skip_reason": null,
     "feedback": "Attempt 1:\nCI gate failed: `pnpm lint` failed:\n$ eslint .\n\n/home/runner/work/vn-skills/vn-skills/.bot/work/beiryu__vn-skills/95/gate-fix/tests/vn-number-format.test.ts\n  147:29  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any\n  151:32  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any\n  157:31  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any\n\n✖ 3 problems (3 errors, 0 warnings)\n\n[ELIFECYCLE] Command failed with exit code 1.",
     "summary": "parseAmount and formatDate now coerce input with String(input ?? ''), so non-string/null input returns INVALID_AMOUNT/INVALID_DATE (numbers parse) instead of throwing. Added an eslint-disable comment line at the top of the test file to fix the no-explicit-any lint failure; lint and tests pass.",
-    "base_sha": "d15df394e1b94aa994b96bad4cafcd6e07cb0f6b",
+    "base_sha": "571df77bbe933d4a28be34787b952593a4ecf749",
     "test_files": "[\"tests/vn-number-format.test.ts\"]",
     "test_hashes": "{\"tests/vn-number-format.test.ts\":\"daab12304515e7c7b93167004e43b54aa35204526ddce2bdc695a01cac94d251\"}",
     "test_vars": "{\"file\":\"tests/vn-number-format.test.ts\"}",
@@ -385,9 +385,9 @@
     "pr_body": "## What & why\n\nCloses #95\n\n`parseAmount` and `formatDate` threw a `TypeError` on non-string input (`parseAmount(5)`, `formatDate(null)`). Both now start with `const raw = String(input ?? '')`, as `parsePhone`, `validateTaxId` and `parseCitizenId` already do. The `string` parameter type is unchanged. Numbers parse normally, and `null`/`undefined` return `INVALID_AMOUNT` / `INVALID_DATE`. Error messages use `raw`.\n\nAcceptance:\n\n- [x] `parseAmount(5 as any)` → `{ ok: true, value: 5 }`; `parseAmount(null as any)` → `ok: false`, code `INVALID_AMOUNT`\n- [x] `formatDate(null as any)` and `formatDate(20250101 as any)` → `ok: false`, code `INVALID_DATE`, no throw\n- [x] Tests in `tests/vn-number-format.test.ts` cover these cases\n\nTests: added a `non-string input (untyped callers)` block in `tests/vn-number-format.test.ts`. It covers `parseAmount` with a number, `null` and `undefined`, and `formatDate` with `null`, `undefined` and `20250101`. The test file has an `eslint-disable` comment for `no-explicit-any`, because the tests pass untyped input on purpose. Lint and tests pass.\n\n## Checklist\n\n- [ ] Title follows Conventional Commits (`feat|fix|docs|data|test|refactor|perf|build|ci|chore(scope): …`)\n- [x] Tests added or updated (golden test for every bug fix)\n- [x] `pnpm build && pnpm typecheck && pnpm lint && pnpm test && pnpm format:check` pass locally\n- [x] Core stays offline (no `fetch`/HTTP in `packages/core`)\n- [ ] Data changes go through `scripts/build-data.ts` and `SOURCES.md` (source + license)\n- [ ] SKILL.md / README updated if behaviour changed\n",
     "dry": 0,
     "claimed_at": null,
-    "updated_at": "2026-10-21T15:17:32.325Z",
+    "updated_at": "2026-10-22T06:56:08.184Z",
     "blocked": null,
-    "patch": "diff --git a/packages/core/src/numfmt/index.ts b/packages/core/src/numfmt/index.ts\nindex 284dee1..8e4c551 100644\n--- a/packages/core/src/numfmt/index.ts\n+++ b/packages/core/src/numfmt/index.ts\n@@ -46,7 +46,8 @@ export function formatCompactVnd(n: number): TextResult {\n \n /** yyyy-mm-dd or dd/mm/yyyy -> dd/MM/yyyy */\n export function formatDate(input: string): TextResult {\n-  const s = input.trim();\n+  const raw = String(input ?? '');\n+  const s = raw.trim();\n   const iso = /^(\\d{4})-(\\d{1,2})-(\\d{1,2})$/.exec(s);\n   const vn = /^(\\d{1,2})\\/(\\d{1,2})\\/(\\d{4})$/.exec(s);\n   const m = iso\n@@ -54,11 +55,10 @@ export function formatDate(input: string): TextResult {\n     : vn\n       ? { y: +vn[3]!, mo: +vn[2]!, d: +vn[1]! }\n       : null;\n-  if (!m)\n-    return fail('INVALID_DATE', `Unrecognised date \"${input}\"`, 'Use yyyy-mm-dd or dd/mm/yyyy');\n+  if (!m) return fail('INVALID_DATE', `Unrecognised date \"${raw}\"`, 'Use yyyy-mm-dd or dd/mm/yyyy');\n   const dt = new Date(Date.UTC(m.y, m.mo - 1, m.d));\n   if (dt.getUTCFullYear() !== m.y || dt.getUTCMonth() !== m.mo - 1 || dt.getUTCDate() !== m.d) {\n-    return fail('INVALID_DATE', `\"${input}\" is not a real calendar date`);\n+    return fail('INVALID_DATE', `\"${raw}\" is not a real calendar date`);\n   }\n   const p = (x: number, w: number) => String(x).padStart(w, '0');\n   return { ok: true, text: `${p(m.d, 2)}/${p(m.mo, 2)}/${p(m.y, 4)}` };\n@@ -109,13 +109,14 @@ function plainNumber(s: string): number | null {\n  * After a unit, trailing digits are the fraction: \"1tr2\" = 1,2 triệu.\n  */\n export function parseAmount(input: string): AmountResult {\n+  const raw = String(input ?? '');\n   const bad = () =>\n     fail<{ value: number }>(\n       'INVALID_AMOUNT',\n-      `Cannot parse amount \"${input}\"`,\n+      `Cannot parse amount \"${raw}\"`,\n       'Try \"1tr2\", \"500k\", \"1.200.000\"',\n     );\n-  let s = input\n+  let s = raw\n     .toLowerCase()\n     .normalize('NFC')\n     .replace(/\\s+/g, '')\ndiff --git a/tests/vn-number-format.test.ts b/tests/vn-number-format.test.ts\nindex fd9159c..44f6031 100644\n--- a/tests/vn-number-format.test.ts\n+++ b/tests/vn-number-format.test.ts\n@@ -1,3 +1,4 @@\n+/* eslint-disable @typescript-eslint/no-explicit-any -- deliberately passing untyped input */\n import { describe, expect, it } from 'vitest';\n import {\n   formatCompactVnd,\n@@ -141,3 +142,21 @@ describe('formatCompactVnd boundaries and extras', () => {\n     expect(parseAmount(s).ok).toBe(false);\n   });\n });\n+\n+describe('non-string input (untyped callers)', () => {\n+  it('parseAmount coerces numbers', () => {\n+    expect(parseAmount(5 as any)).toEqual({ ok: true, value: 5 });\n+  });\n+\n+  it.each([null, undefined])('parseAmount(%s) returns INVALID_AMOUNT', (v) => {\n+    const r = parseAmount(v as any);\n+    expect(r.ok).toBe(false);\n+    if (!r.ok) expect(r.error.code).toBe('INVALID_AMOUNT');\n+  });\n+\n+  it.each([null, undefined, 20250101])('formatDate(%s) returns INVALID_DATE', (v) => {\n+    const r = formatDate(v as any);\n+    expect(r.ok).toBe(false);\n+    if (!r.ok) expect(r.error.code).toBe('INVALID_DATE');\n+  });\n+});\n",
+    "patch": "diff --git a/packages/core/src/numfmt/index.ts b/packages/core/src/numfmt/index.ts\nindex ee03cd5..79191ef 100644\n--- a/packages/core/src/numfmt/index.ts\n+++ b/packages/core/src/numfmt/index.ts\n@@ -59,7 +59,8 @@ export function formatCompactVnd(n: number): TextResult {\n \n /** yyyy-mm-dd or dd/mm/yyyy -> dd/MM/yyyy */\n export function formatDate(input: string): TextResult {\n-  const s = input.trim();\n+  const raw = String(input ?? '');\n+  const s = raw.trim();\n   const iso = /^(\\d{4})-(\\d{1,2})-(\\d{1,2})$/.exec(s);\n   const vn = /^(\\d{1,2})\\/(\\d{1,2})\\/(\\d{4})$/.exec(s);\n   const m = iso\n@@ -67,11 +68,10 @@ export function formatDate(input: string): TextResult {\n     : vn\n       ? { y: +vn[3]!, mo: +vn[2]!, d: +vn[1]! }\n       : null;\n-  if (!m)\n-    return fail('INVALID_DATE', `Unrecognised date \"${input}\"`, 'Use yyyy-mm-dd or dd/mm/yyyy');\n+  if (!m) return fail('INVALID_DATE', `Unrecognised date \"${raw}\"`, 'Use yyyy-mm-dd or dd/mm/yyyy');\n   const dt = new Date(Date.UTC(m.y, m.mo - 1, m.d));\n   if (dt.getUTCFullYear() !== m.y || dt.getUTCMonth() !== m.mo - 1 || dt.getUTCDate() !== m.d) {\n-    return fail('INVALID_DATE', `\"${input}\" is not a real calendar date`);\n+    return fail('INVALID_DATE', `\"${raw}\" is not a real calendar date`);\n   }\n   const p = (x: number, w: number) => String(x).padStart(w, '0');\n   return { ok: true, text: `${p(m.d, 2)}/${p(m.mo, 2)}/${p(m.y, 4)}` };\n@@ -122,13 +122,14 @@ function plainNumber(s: string): number | null {\n  * After a unit, trailing digits are the fraction: \"1tr2\" = 1,2 triệu.\n  */\n export function parseAmount(input: string): AmountResult {\n+  const raw = String(input ?? '');\n   const bad = () =>\n     fail<{ value: number }>(\n       'INVALID_AMOUNT',\n-      `Cannot parse amount \"${input}\"`,\n+      `Cannot parse amount \"${raw}\"`,\n       'Try \"1tr2\", \"500k\", \"1.200.000\"',\n     );\n-  let s = input\n+  let s = raw\n     .toLowerCase()\n     .normalize('NFC')\n     .replace(/\\s+/g, '')\ndiff --git a/tests/vn-number-format.test.ts b/tests/vn-number-format.test.ts\nindex 9407f99..f9a5166 100644\n--- a/tests/vn-number-format.test.ts\n+++ b/tests/vn-number-format.test.ts\n@@ -1,3 +1,4 @@\n+/* eslint-disable @typescript-eslint/no-explicit-any -- deliberately passing untyped input */\n import { describe, expect, it } from 'vitest';\n import {\n   formatCompactVnd,\n@@ -174,3 +175,21 @@ describe('formatNumber robustness (no throw, no exponent)', () => {\n     expect(formatVnd(1e21)).toEqual({ ok: true, text: '1.000.000.000.000.000.000.000 ₫' });\n   });\n });\n+\n+describe('non-string input (untyped callers)', () => {\n+  it('parseAmount coerces numbers', () => {\n+    expect(parseAmount(5 as any)).toEqual({ ok: true, value: 5 });\n+  });\n+\n+  it.each([null, undefined])('parseAmount(%s) returns INVALID_AMOUNT', (v) => {\n+    const r = parseAmount(v as any);\n+    expect(r.ok).toBe(false);\n+    if (!r.ok) expect(r.error.code).toBe('INVALID_AMOUNT');\n+  });\n+\n+  it.each([null, undefined, 20250101])('formatDate(%s) returns INVALID_DATE', (v) => {\n+    const r = formatDate(v as any);\n+    expect(r.ok).toBe(false);\n+    if (!r.ok) expect(r.error.code).toBe('INVALID_DATE');\n+  });\n+});\n",
     "repro_patch": "diff --git a/tests/vn-number-format.test.ts b/tests/vn-number-format.test.ts\nindex fd9159c..99e6b9a 100644\n--- a/tests/vn-number-format.test.ts\n+++ b/tests/vn-number-format.test.ts\n@@ -141,3 +141,21 @@ describe('formatCompactVnd boundaries and extras', () => {\n     expect(parseAmount(s).ok).toBe(false);\n   });\n });\n+\n+describe('non-string input (untyped callers)', () => {\n+  it('parseAmount coerces numbers', () => {\n+    expect(parseAmount(5 as any)).toEqual({ ok: true, value: 5 });\n+  });\n+\n+  it.each([null, undefined])('parseAmount(%s) returns INVALID_AMOUNT', (v) => {\n+    const r = parseAmount(v as any);\n+    expect(r.ok).toBe(false);\n+    if (!r.ok) expect(r.error.code).toBe('INVALID_AMOUNT');\n+  });\n+\n+  it.each([null, undefined, 20250101])('formatDate(%s) returns INVALID_DATE', (v) => {\n+    const r = formatDate(v as any);\n+    expect(r.ok).toBe(false);\n+    if (!r.ok) expect(r.error.code).toBe('INVALID_DATE');\n+  });\n+});\n",
     "repro_notes": "New describe block 'non-string input (untyped callers)': parseAmount(5) expects {ok:true,value:5}; parseAmount(null/undefined) expects INVALID_AMOUNT; formatDate(null/undefined/20250101) expects INVALID_DATE. All 6 currently throw TypeError (toLowerCase/trim)."
    },
@@ -535,12 +535,12 @@
     "last_seen_at": "2026-10-21T15:17:44.649Z",
     "opened_at": "2026-10-21T15:17:44.649Z",
     "head_sha": "59e18f216af9b865bf20193043bede41286bdaae",
-    "mergeable": "UNKNOWN",
+    "mergeable": "MERGEABLE",
     "ci_state": "success",
     "review_decision": "REVIEW_REQUIRED",
-    "snapshot_at": "2026-10-22T06:46:00.627Z",
+    "snapshot_at": "2026-10-22T06:55:32.569Z",
     "ci_seen_sha": null,
-    "merge_state": "UNKNOWN"
+    "merge_state": "BEHIND"
    },
    {
     "issue_id": 12,
@@ -550,12 +550,12 @@
     "last_seen_at": "2026-10-21T15:17:38.965Z",
     "opened_at": "2026-10-21T15:17:38.965Z",
     "head_sha": "307f0533591f202f9dca69feaf6485690db6b992",
-    "mergeable": "UNKNOWN",
+    "mergeable": "CONFLICTING",
     "ci_state": "success",
     "review_decision": "REVIEW_REQUIRED",
-    "snapshot_at": "2026-10-22T06:46:02.791Z",
+    "snapshot_at": "2026-10-22T06:55:35.432Z",
     "ci_seen_sha": null,
-    "merge_state": "UNKNOWN"
+    "merge_state": "DIRTY"
    },
    {
     "issue_id": 13,
@@ -564,13 +564,13 @@
     "state": "open",
     "last_seen_at": "2026-10-21T15:17:32.324Z",
     "opened_at": "2026-10-21T15:17:32.324Z",
-    "head_sha": "a74d59b9d28b5abae3cc3a4feb87277764ec7015",
+    "head_sha": "ab7635160e4a2a3158c384c249bf7fd4adcc2e22",
     "mergeable": "UNKNOWN",
-    "ci_state": "success",
+    "ci_state": "pending",
     "review_decision": null,
-    "snapshot_at": "2026-10-22T06:46:05.243Z",
+    "snapshot_at": "2026-10-22T06:55:36.979Z",
     "ci_seen_sha": null,
-    "merge_state": "UNKNOWN"
+    "merge_state": "DIRTY"
    },
    {
     "issue_id": 14,
@@ -635,7 +635,7 @@
     "kind": "rebase",
     "message": "Rebase onto main @ 571df77bbe: the agent re-applied it: I've re-applied the change on top of the current main. `formatDate` and `parseAmount` now coerce non-string input (null, undefined, numbers) via `String(input ?? '')`, so they return INVALID_DATE / INVALID_AMOUNT instead of throwing. The regression tests are re-added unchanged in `tests/vn-number-format.test.ts`, which was the file the patch failed to apply to. That test file passes, and prettier and eslint are clean on the changed files.",
     "patch": "diff --git a/packages/core/src/numfmt/index.ts b/packages/core/src/numfmt/index.ts\nindex ee03cd5..79191ef 100644\n--- a/packages/core/src/numfmt/index.ts\n+++ b/packages/core/src/numfmt/index.ts\n@@ -59,7 +59,8 @@ export function formatCompactVnd(n: number): TextResult {\n \n /** yyyy-mm-dd or dd/mm/yyyy -> dd/MM/yyyy */\n export function formatDate(input: string): TextResult {\n-  const s = input.trim();\n+  const raw = String(input ?? '');\n+  const s = raw.trim();\n   const iso = /^(\\d{4})-(\\d{1,2})-(\\d{1,2})$/.exec(s);\n   const vn = /^(\\d{1,2})\\/(\\d{1,2})\\/(\\d{4})$/.exec(s);\n   const m = iso\n@@ -67,11 +68,10 @@ export function formatDate(input: string): TextResult {\n     : vn\n       ? { y: +vn[3]!, mo: +vn[2]!, d: +vn[1]! }\n       : null;\n-  if (!m)\n-    return fail('INVALID_DATE', `Unrecognised date \"${input}\"`, 'Use yyyy-mm-dd or dd/mm/yyyy');\n+  if (!m) return fail('INVALID_DATE', `Unrecognised date \"${raw}\"`, 'Use yyyy-mm-dd or dd/mm/yyyy');\n   const dt = new Date(Date.UTC(m.y, m.mo - 1, m.d));\n   if (dt.getUTCFullYear() !== m.y || dt.getUTCMonth() !== m.mo - 1 || dt.getUTCDate() !== m.d) {\n-    return fail('INVALID_DATE', `\"${input}\" is not a real calendar date`);\n+    return fail('INVALID_DATE', `\"${raw}\" is not a real calendar date`);\n   }\n   const p = (x: number, w: number) => String(x).padStart(w, '0');\n   return { ok: true, text: `${p(m.d, 2)}/${p(m.mo, 2)}/${p(m.y, 4)}` };\n@@ -122,13 +122,14 @@ function plainNumber(s: string): number | null {\n  * After a unit, trailing digits are the fraction: \"1tr2\" = 1,2 triệu.\n  */\n export function parseAmount(input: string): AmountResult {\n+  const raw = String(input ?? '');\n   const bad = () =>\n     fail<{ value: number }>(\n       'INVALID_AMOUNT',\n-      `Cannot parse amount \"${input}\"`,\n+      `Cannot parse amount \"${raw}\"`,\n       'Try \"1tr2\", \"500k\", \"1.200.000\"',\n     );\n-  let s = input\n+  let s = raw\n     .toLowerCase()\n     .normalize('NFC')\n     .replace(/\\s+/g, '')\ndiff --git a/tests/vn-number-format.test.ts b/tests/vn-number-format.test.ts\nindex 9407f99..f9a5166 100644\n--- a/tests/vn-number-format.test.ts\n+++ b/tests/vn-number-format.test.ts\n@@ -1,3 +1,4 @@\n+/* eslint-disable @typescript-eslint/no-explicit-any -- deliberately passing untyped input */\n import { describe, expect, it } from 'vitest';\n import {\n   formatCompactVnd,\n@@ -174,3 +175,21 @@ describe('formatNumber robustness (no throw, no exponent)', () => {\n     expect(formatVnd(1e21)).toEqual({ ok: true, text: '1.000.000.000.000.000.000.000 ₫' });\n   });\n });\n+\n+describe('non-string input (untyped callers)', () => {\n+  it('parseAmount coerces numbers', () => {\n+    expect(parseAmount(5 as any)).toEqual({ ok: true, value: 5 });\n+  });\n+\n+  it.each([null, undefined])('parseAmount(%s) returns INVALID_AMOUNT', (v) => {\n+    const r = parseAmount(v as any);\n+    expect(r.ok).toBe(false);\n+    if (!r.ok) expect(r.error.code).toBe('INVALID_AMOUNT');\n+  });\n+\n+  it.each([null, undefined, 20250101])('formatDate(%s) returns INVALID_DATE', (v) => {\n+    const r = formatDate(v as any);\n+    expect(r.ok).toBe(false);\n+    if (!r.ok) expect(r.error.code).toBe('INVALID_DATE');\n+  });\n+});\n",
-    "status": "pending",
+    "status": "done",
     "created_at": "2026-10-21T15:21:25.690Z",
     "base_sha": "571df77bbe933d4a28be34787b952593a4ecf749"
    },
@@ -2365,10 +2365,6 @@
    {
     "key": "item:beiryu/maintainer-desk:beiryu/vn-skills:a4",
     "value": "6319632184"
-   },
-   {
-    "key": "item:beiryu/maintainer-desk:beiryu/vn-skills:a5",
-    "value": "6319632674"
    }
   ]
  }
