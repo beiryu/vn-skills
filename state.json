@@ -1,6 +1,6 @@
 {
  "version": 1,
- "exported_at": "2026-10-22T11:43:26.705Z",
+ "exported_at": "2026-10-22T11:45:39.271Z",
  "tables": {
   "repos": [
    {
@@ -10,7 +10,7 @@
     "policy_status": null,
     "policy_excerpts": null,
     "block_reason": null,
-    "last_scanned": "2026-10-22T11:43:04.055Z"
+    "last_scanned": "2026-10-22T11:45:11.306Z"
    }
   ],
   "issues": [
@@ -369,7 +369,7 @@
     "title": "vn-number-format: parseAmount and formatDate throw on non-string input instead of returning an error",
     "body": "## Problem\nIn `packages/core/src/numfmt/index.ts`, `parseAmount` calls `input.toLowerCase()` and `formatDate` calls `input.trim()` without coercing the input. Untyped callers (plain JS, JSON from other tools) get exceptions:\n- `parseAmount(5)` → `TypeError: input.toLowerCase is not a function`\n- `formatDate(null)` → `TypeError: Cannot read properties of null (reading 'trim')`\n\nOther modules already guard with `String(input ?? '')` (`parsePhone`, `validateTaxId`, `parseCitizenId`), and the README promises no exceptions for bad input.\n\n## Fix\nStart both functions with `const raw = String(input ?? '')` (keep the `string` parameter type). Numbers then parse naturally (`parseAmount(5)` → `{ ok: true, value: 5 }`), and `null`/`undefined` return `INVALID_AMOUNT`/`INVALID_DATE`.\n\n## Acceptance\n- [ ] `parseAmount(5 as any)` → `{ ok: true, value: 5 }`; `parseAmount(null as any)` → `ok: false`, code `INVALID_AMOUNT`\n- [ ] `formatDate(null as any)` and `formatDate(20250101 as any)` → `ok: false`, code `INVALID_DATE`, no throw\n- [ ] Tests in `tests/vn-number-format.test.ts` cover these cases",
     "url": "https://github.com/beiryu/vn-skills/issues/95",
-    "state": "pr_open",
+    "state": "done",
     "score": 1,
     "triage_reason": "The numfmt functions are the only ones in the library that throw on bad input types. Aligning them with the other modules is trivial.",
     "attempts": 1,
@@ -385,7 +385,7 @@
     "pr_body": "## What & why\n\nCloses #95\n\n`parseAmount` and `formatDate` threw a `TypeError` on non-string input (`parseAmount(5)`, `formatDate(null)`). Both now start with `const raw = String(input ?? '')`, as `parsePhone`, `validateTaxId` and `parseCitizenId` already do. The `string` parameter type is unchanged. Numbers parse normally, and `null`/`undefined` return `INVALID_AMOUNT` / `INVALID_DATE`. Error messages use `raw`.\n\nAcceptance:\n\n- [x] `parseAmount(5 as any)` → `{ ok: true, value: 5 }`; `parseAmount(null as any)` → `ok: false`, code `INVALID_AMOUNT`\n- [x] `formatDate(null as any)` and `formatDate(20250101 as any)` → `ok: false`, code `INVALID_DATE`, no throw\n- [x] Tests in `tests/vn-number-format.test.ts` cover these cases\n\nTests: added a `non-string input (untyped callers)` block in `tests/vn-number-format.test.ts`. It covers `parseAmount` with a number, `null` and `undefined`, and `formatDate` with `null`, `undefined` and `20250101`. The test file has an `eslint-disable` comment for `no-explicit-any`, because the tests pass untyped input on purpose. Lint and tests pass.\n\n## Checklist\n\n- [ ] Title follows Conventional Commits (`feat|fix|docs|data|test|refactor|perf|build|ci|chore(scope): …`)\n- [x] Tests added or updated (golden test for every bug fix)\n- [x] `pnpm build && pnpm typecheck && pnpm lint && pnpm test && pnpm format:check` pass locally\n- [x] Core stays offline (no `fetch`/HTTP in `packages/core`)\n- [ ] Data changes go through `scripts/build-data.ts` and `SOURCES.md` (source + license)\n- [ ] SKILL.md / README updated if behaviour changed\n",
     "dry": 0,
     "claimed_at": null,
-    "updated_at": "2026-10-22T06:56:08.184Z",
+    "updated_at": "2026-10-22T11:45:08.378Z",
     "blocked": null,
     "patch": "diff --git a/packages/core/src/numfmt/index.ts b/packages/core/src/numfmt/index.ts\nindex ee03cd5..79191ef 100644\n--- a/packages/core/src/numfmt/index.ts\n+++ b/packages/core/src/numfmt/index.ts\n@@ -59,7 +59,8 @@ export function formatCompactVnd(n: number): TextResult {\n \n /** yyyy-mm-dd or dd/mm/yyyy -> dd/MM/yyyy */\n export function formatDate(input: string): TextResult {\n-  const s = input.trim();\n+  const raw = String(input ?? '');\n+  const s = raw.trim();\n   const iso = /^(\\d{4})-(\\d{1,2})-(\\d{1,2})$/.exec(s);\n   const vn = /^(\\d{1,2})\\/(\\d{1,2})\\/(\\d{4})$/.exec(s);\n   const m = iso\n@@ -67,11 +68,10 @@ export function formatDate(input: string): TextResult {\n     : vn\n       ? { y: +vn[3]!, mo: +vn[2]!, d: +vn[1]! }\n       : null;\n-  if (!m)\n-    return fail('INVALID_DATE', `Unrecognised date \"${input}\"`, 'Use yyyy-mm-dd or dd/mm/yyyy');\n+  if (!m) return fail('INVALID_DATE', `Unrecognised date \"${raw}\"`, 'Use yyyy-mm-dd or dd/mm/yyyy');\n   const dt = new Date(Date.UTC(m.y, m.mo - 1, m.d));\n   if (dt.getUTCFullYear() !== m.y || dt.getUTCMonth() !== m.mo - 1 || dt.getUTCDate() !== m.d) {\n-    return fail('INVALID_DATE', `\"${input}\" is not a real calendar date`);\n+    return fail('INVALID_DATE', `\"${raw}\" is not a real calendar date`);\n   }\n   const p = (x: number, w: number) => String(x).padStart(w, '0');\n   return { ok: true, text: `${p(m.d, 2)}/${p(m.mo, 2)}/${p(m.y, 4)}` };\n@@ -122,13 +122,14 @@ function plainNumber(s: string): number | null {\n  * After a unit, trailing digits are the fraction: \"1tr2\" = 1,2 triệu.\n  */\n export function parseAmount(input: string): AmountResult {\n+  const raw = String(input ?? '');\n   const bad = () =>\n     fail<{ value: number }>(\n       'INVALID_AMOUNT',\n-      `Cannot parse amount \"${input}\"`,\n+      `Cannot parse amount \"${raw}\"`,\n       'Try \"1tr2\", \"500k\", \"1.200.000\"',\n     );\n-  let s = input\n+  let s = raw\n     .toLowerCase()\n     .normalize('NFC')\n     .replace(/\\s+/g, '')\ndiff --git a/tests/vn-number-format.test.ts b/tests/vn-number-format.test.ts\nindex 9407f99..f9a5166 100644\n--- a/tests/vn-number-format.test.ts\n+++ b/tests/vn-number-format.test.ts\n@@ -1,3 +1,4 @@\n+/* eslint-disable @typescript-eslint/no-explicit-any -- deliberately passing untyped input */\n import { describe, expect, it } from 'vitest';\n import {\n   formatCompactVnd,\n@@ -174,3 +175,21 @@ describe('formatNumber robustness (no throw, no exponent)', () => {\n     expect(formatVnd(1e21)).toEqual({ ok: true, text: '1.000.000.000.000.000.000.000 ₫' });\n   });\n });\n+\n+describe('non-string input (untyped callers)', () => {\n+  it('parseAmount coerces numbers', () => {\n+    expect(parseAmount(5 as any)).toEqual({ ok: true, value: 5 });\n+  });\n+\n+  it.each([null, undefined])('parseAmount(%s) returns INVALID_AMOUNT', (v) => {\n+    const r = parseAmount(v as any);\n+    expect(r.ok).toBe(false);\n+    if (!r.ok) expect(r.error.code).toBe('INVALID_AMOUNT');\n+  });\n+\n+  it.each([null, undefined, 20250101])('formatDate(%s) returns INVALID_DATE', (v) => {\n+    const r = formatDate(v as any);\n+    expect(r.ok).toBe(false);\n+    if (!r.ok) expect(r.error.code).toBe('INVALID_DATE');\n+  });\n+});\n",
     "repro_patch": "diff --git a/tests/vn-number-format.test.ts b/tests/vn-number-format.test.ts\nindex fd9159c..99e6b9a 100644\n--- a/tests/vn-number-format.test.ts\n+++ b/tests/vn-number-format.test.ts\n@@ -141,3 +141,21 @@ describe('formatCompactVnd boundaries and extras', () => {\n     expect(parseAmount(s).ok).toBe(false);\n   });\n });\n+\n+describe('non-string input (untyped callers)', () => {\n+  it('parseAmount coerces numbers', () => {\n+    expect(parseAmount(5 as any)).toEqual({ ok: true, value: 5 });\n+  });\n+\n+  it.each([null, undefined])('parseAmount(%s) returns INVALID_AMOUNT', (v) => {\n+    const r = parseAmount(v as any);\n+    expect(r.ok).toBe(false);\n+    if (!r.ok) expect(r.error.code).toBe('INVALID_AMOUNT');\n+  });\n+\n+  it.each([null, undefined, 20250101])('formatDate(%s) returns INVALID_DATE', (v) => {\n+    const r = formatDate(v as any);\n+    expect(r.ok).toBe(false);\n+    if (!r.ok) expect(r.error.code).toBe('INVALID_DATE');\n+  });\n+});\n",
@@ -561,16 +561,16 @@
     "issue_id": 13,
     "url": "https://github.com/beiryu/vn-skills/pull/100",
     "number": 100,
-    "state": "open",
+    "state": "merged",
     "last_seen_at": "2026-10-21T15:41:24Z",
     "opened_at": "2026-10-21T15:17:32.324Z",
     "head_sha": "53a89ec0733456b4969d03671ba695e5daa8ae78",
-    "mergeable": "MERGEABLE",
-    "ci_state": "pending",
+    "mergeable": "UNKNOWN",
+    "ci_state": "success",
     "review_decision": null,
-    "snapshot_at": "2026-10-22T11:42:58.706Z",
+    "snapshot_at": "2026-10-22T11:45:08.378Z",
     "ci_seen_sha": null,
-    "merge_state": "BLOCKED"
+    "merge_state": "UNKNOWN"
    },
    {
     "issue_id": 14,
