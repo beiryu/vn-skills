@@ -77,3 +77,34 @@ describe('CLI id parse', () => {
     expect(JSON.parse(r.stdout)).toMatchObject({ ok: true, kind: 'cccd', provinceCode: '001' });
   });
 });
+
+describe('parseCitizenId: future birth year', () => {
+  const today = new Date('2026-06-15T00:00:00Z');
+  const warningsOf = (r: unknown) => (r as { warnings: string[] }).warnings;
+
+  it('warns when the decoded birth year is after today', () => {
+    const r = parseCitizenId('001900123456', { today });
+    expect(r).toMatchObject({ ok: true, birthYear: 2300 });
+    expect(warningsOf(r).some((w) => w.includes('2300') && /future/i.test(w))).toBe(true);
+  });
+
+  it.each([
+    [2, '10'],
+    [3, '25'],
+  ])('does not warn for digit %i with a past year', (digit, yy) => {
+    const r = parseCitizenId(id('001', digit, yy), { today });
+    expect(r).toMatchObject({ ok: true });
+    expect(warningsOf(r).some((w) => /future/i.test(w))).toBe(false);
+  });
+
+  it('does not warn when the birth year equals the current year', () => {
+    const r = parseCitizenId(id('001', 2, '26'), { today });
+    expect(r).toMatchObject({ ok: true, birthYear: 2026 });
+    expect(warningsOf(r).some((w) => /future/i.test(w))).toBe(false);
+  });
+
+  it('warns for the year after the current year', () => {
+    const r = parseCitizenId(id('001', 2, '27'), { today });
+    expect(warningsOf(r).some((w) => w.includes('2027'))).toBe(true);
+  });
+});
