@@ -1,6 +1,6 @@
 {
  "version": 1,
- "exported_at": "2026-10-21T15:41:20.510Z",
+ "exported_at": "2026-10-22T03:06:59.987Z",
  "tables": {
   "repos": [
    {
@@ -10,7 +10,7 @@
     "policy_status": null,
     "policy_excerpts": null,
     "block_reason": null,
-    "last_scanned": "2026-10-21T15:40:53.932Z"
+    "last_scanned": "2026-10-22T03:06:37.076Z"
    }
   ],
   "issues": [
@@ -536,9 +536,9 @@
     "opened_at": "2026-10-21T15:17:44.649Z",
     "head_sha": "59e18f216af9b865bf20193043bede41286bdaae",
     "mergeable": "MERGEABLE",
-    "ci_state": "pending",
+    "ci_state": "success",
     "review_decision": "REVIEW_REQUIRED",
-    "snapshot_at": "2026-10-21T15:40:46.224Z",
+    "snapshot_at": "2026-10-22T03:06:28.728Z",
     "ci_seen_sha": null,
     "merge_state": "BEHIND"
    },
@@ -551,9 +551,9 @@
     "opened_at": "2026-10-21T15:17:38.965Z",
     "head_sha": "307f0533591f202f9dca69feaf6485690db6b992",
     "mergeable": "CONFLICTING",
-    "ci_state": "pending",
+    "ci_state": "success",
     "review_decision": "REVIEW_REQUIRED",
-    "snapshot_at": "2026-10-21T15:40:48.399Z",
+    "snapshot_at": "2026-10-22T03:06:31.141Z",
     "ci_seen_sha": null,
     "merge_state": "DIRTY"
    },
@@ -566,9 +566,9 @@
     "opened_at": "2026-10-21T15:17:32.324Z",
     "head_sha": "a74d59b9d28b5abae3cc3a4feb87277764ec7015",
     "mergeable": "CONFLICTING",
-    "ci_state": "pending",
-    "review_decision": "REVIEW_REQUIRED",
-    "snapshot_at": "2026-10-21T15:40:49.492Z",
+    "ci_state": "success",
+    "review_decision": null,
+    "snapshot_at": "2026-10-22T03:06:32.555Z",
     "ci_seen_sha": null,
     "merge_state": "DIRTY"
    },
@@ -581,9 +581,9 @@
     "opened_at": "2026-10-21T15:17:25.432Z",
     "head_sha": "1a8f877a953a5b075cc5c4ae439ffde1f23483ce",
     "mergeable": "CONFLICTING",
-    "ci_state": "pending",
+    "ci_state": "success",
     "review_decision": "REVIEW_REQUIRED",
-    "snapshot_at": "2026-10-21T15:40:50.629Z",
+    "snapshot_at": "2026-10-22T03:06:33.826Z",
     "ci_seen_sha": null,
     "merge_state": "DIRTY"
    }
