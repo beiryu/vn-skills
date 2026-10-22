@@ -59,7 +59,8 @@ export function formatCompactVnd(n: number): TextResult {
 
 /** yyyy-mm-dd or dd/mm/yyyy -> dd/MM/yyyy */
 export function formatDate(input: string): TextResult {
-  const s = input.trim();
+  const raw = String(input ?? '');
+  const s = raw.trim();
   const iso = /^(\d{4})-(\d{1,2})-(\d{1,2})$/.exec(s);
   const vn = /^(\d{1,2})\/(\d{1,2})\/(\d{4})$/.exec(s);
   const m = iso
@@ -67,12 +68,11 @@ export function formatDate(input: string): TextResult {
     : vn
       ? { y: +vn[3]!, mo: +vn[2]!, d: +vn[1]! }
       : null;
-  if (!m)
-    return fail('INVALID_DATE', `Unrecognised date "${input}"`, 'Use yyyy-mm-dd or dd/mm/yyyy');
+  if (!m) return fail('INVALID_DATE', `Unrecognised date "${raw}"`, 'Use yyyy-mm-dd or dd/mm/yyyy');
   const dt = new Date(0);
   dt.setUTCFullYear(m.y, m.mo - 1, m.d);
   if (dt.getUTCFullYear() !== m.y || dt.getUTCMonth() !== m.mo - 1 || dt.getUTCDate() !== m.d) {
-    return fail('INVALID_DATE', `"${input}" is not a real calendar date`);
+    return fail('INVALID_DATE', `"${raw}" is not a real calendar date`);
   }
   const p = (x: number, w: number) => String(x).padStart(w, '0');
   return { ok: true, text: `${p(m.d, 2)}/${p(m.mo, 2)}/${p(m.y, 4)}` };
@@ -123,9 +123,10 @@ function plainNumber(s: string): number | null {
  * After a unit, trailing digits are the fraction: "1tr2" = 1,2 triệu.
  */
 export function parseAmount(input: string): AmountResult {
+  const raw = String(input ?? '');
   const bad = (hint = 'Try "1tr2", "500k", "1.200.000"') =>
-    fail<{ value: number }>('INVALID_AMOUNT', `Cannot parse amount "${input}"`, hint);
-  let s = input
+    fail<{ value: number }>('INVALID_AMOUNT', `Cannot parse amount "${raw}"`, hint);
+  let s = raw
     .toLowerCase()
     .normalize('NFC')
     .replace(/\s+/g, '')
