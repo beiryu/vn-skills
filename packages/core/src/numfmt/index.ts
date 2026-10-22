@@ -123,12 +123,8 @@ function plainNumber(s: string): number | null {
  * After a unit, trailing digits are the fraction: "1tr2" = 1,2 triệu.
  */
 export function parseAmount(input: string): AmountResult {
-  const bad = () =>
-    fail<{ value: number }>(
-      'INVALID_AMOUNT',
-      `Cannot parse amount "${input}"`,
-      'Try "1tr2", "500k", "1.200.000"',
-    );
+  const bad = (hint = 'Try "1tr2", "500k", "1.200.000"') =>
+    fail<{ value: number }>('INVALID_AMOUNT', `Cannot parse amount "${input}"`, hint);
   let s = input
     .toLowerCase()
     .normalize('NFC')
@@ -139,7 +135,11 @@ export function parseAmount(input: string): AmountResult {
   const m = /^([\d.,]+)([a-z]+)?(\d+)?$/.exec(s);
   if (!m) return bad();
   const base = plainNumber(m[1]!);
-  if (base === null) return bad();
+  if (base === null) {
+    return m[1]!.includes('.')
+      ? bad('"." groups thousands in Vietnamese (1.500 = 1500); use "," for decimals, e.g. "1,5"')
+      : bad();
+  }
   if (!m[2]) return m[3] ? bad() : { ok: true, value: base };
   const mult = MULTIPLIERS[m[2]];
   if (!mult) return bad();
