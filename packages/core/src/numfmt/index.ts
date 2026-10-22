@@ -69,7 +69,8 @@ export function formatDate(input: string): TextResult {
       : null;
   if (!m)
     return fail('INVALID_DATE', `Unrecognised date "${input}"`, 'Use yyyy-mm-dd or dd/mm/yyyy');
-  const dt = new Date(Date.UTC(m.y, m.mo - 1, m.d));
+  const dt = new Date(0);
+  dt.setUTCFullYear(m.y, m.mo - 1, m.d);
   if (dt.getUTCFullYear() !== m.y || dt.getUTCMonth() !== m.mo - 1 || dt.getUTCDate() !== m.d) {
     return fail('INVALID_DATE', `"${input}" is not a real calendar date`);
   }
