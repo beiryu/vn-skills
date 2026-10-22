@@ -1,6 +1,6 @@
 {
  "version": 1,
- "exported_at": "2026-10-22T13:14:15.477Z",
+ "exported_at": "2026-10-22T13:20:09.586Z",
  "tables": {
   "repos": [
    {
@@ -10,7 +10,7 @@
     "policy_status": null,
     "policy_excerpts": null,
     "block_reason": null,
-    "last_scanned": "2026-10-22T13:04:24.893Z"
+    "last_scanned": "2026-10-22T13:19:44.791Z"
    }
   ],
   "issues": [
