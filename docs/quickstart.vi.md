@@ -83,7 +83,7 @@ Khởi động lại Claude Code rồi hỏi: _"đọc số 1200000 thành chữ
 }
 ```
 
-Với MCP client khác dùng `{ "mcpServers": { "vn-skills": { "command": "npx", "args": ["-y", "@vn-skills/mcp"] } } }`.
+Với Cursor, VS Code, Claude Desktop, Codex và client khác xem [Cài đặt MCP theo client](../README.vi.md#cài-đặt-mcp-theo-client).
 
 ## 3. Thư viện
 
