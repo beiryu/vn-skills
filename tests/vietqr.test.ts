@@ -112,6 +112,24 @@ describe('buildVietQR', () => {
     const p = parseVietQR(r.payload);
     expect(p.ok && p.note).toBe(r.note);
   });
+  it('sanitizeNote tolerates null, undefined and non-string input', () => {
+    expect(sanitizeNote(null as never)).toBe('');
+    expect(sanitizeNote(undefined as never)).toBe('');
+    expect(sanitizeNote(123 as never)).toBe('123');
+  });
+  it('treats a null note like an omitted note', () => {
+    const withNull = buildVietQR({ bank: 'VCB', account: '123', note: null as never });
+    const omitted = buildVietQR({ bank: 'VCB', account: '123' });
+    expect(withNull.ok).toBe(true);
+    expect(withNull).toEqual(omitted);
+    expect(withNull.ok && withNull.note).toBeUndefined();
+  });
+  it('coerces a numeric note to a string', () => {
+    const r = buildVietQR({ bank: 'VCB', account: '123', note: 123 as never });
+    expect(r.ok && r.note).toBe('123');
+    const raw = buildVietQR({ bank: 'VCB', account: '123', note: 123 as never, rawNote: true });
+    expect(raw.ok && raw.note).toBe('123');
+  });
   it('builds card service QR', () => {
     const r = buildVietQR({ bank: 'VCB', account: '9704360123456789', service: 'card' });
     expect(r.ok && r.payload.includes('QRIBFTTC')).toBe(true);
