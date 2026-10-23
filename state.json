@@ -1,6 +1,6 @@
 {
  "version": 1,
- "exported_at": "2026-10-23T05:02:51.532Z",
+ "exported_at": "2026-10-23T05:06:00.193Z",
  "tables": {
   "repos": [
    {
@@ -10,7 +10,7 @@
     "policy_status": null,
     "policy_excerpts": null,
     "block_reason": null,
-    "last_scanned": "2026-10-23T05:02:27.770Z"
+    "last_scanned": "2026-10-23T05:05:38.090Z"
    }
   ],
   "issues": [
@@ -717,7 +717,7 @@
     "title": "docs: add copy-paste MCP setup for Cursor, VS Code, Claude Desktop and Codex",
     "body": "## Problem\n\n`@vn-skills/mcp` is the most downloaded package (827/month), but the README's MCP section (`README.md`, \"MCP server\") shows only `claude mcp add` and one generic `mcpServers` JSON block. Not every client uses that shape. VS Code's `.vscode/mcp.json` uses a top-level `servers` key, and Codex reads TOML from `~/.codex/config.toml`. A user who pastes the generic JSON into one of those clients gets a server that never starts, and the README doesn't say where each file goes. `docs/quickstart.md` has the same gap.\n\nThis is the install-guide half of RM-003. The demo GIF half is tracked in #92.\n\n## Proposal\n\nAdd a short \"MCP client setup\" subsection to `README.md` (and the same in `README.vi.md`) with one block per client:\n\n- **Claude Code:** keep `claude mcp add vn-skills -- npx -y @vn-skills/mcp`\n- **Claude Desktop:** `claude_desktop_config.json`, `{ \"mcpServers\": { \"vn-skills\": { \"command\": \"npx\", \"args\": [\"-y\", \"@vn-skills/mcp\"] } } }`\n- **Cursor:** `.cursor/mcp.json` (project) or `~/.cursor/mcp.json` (global), same `mcpServers` shape\n- **VS Code:** `.vscode/mcp.json`, `{ \"servers\": { \"vn-skills\": { \"type\": \"stdio\", \"command\": \"npx\", \"args\": [\"-y\", \"@vn-skills/mcp\"] } } }`\n- **Codex:** `~/.codex/config.toml`:\n  ```toml\n  [mcp_servers.vn-skills]\n  command = \"npx\"\n  args = [\"-y\", \"@vn-skills/mcp\"]\n  ```\n\nLink each client to its official MCP documentation page so readers can check the file location. Keep the generic block for other clients. Mention that Node.js 22+ is required.\n\n## Acceptance\n\n- [ ] `README.md` has a block for each of the five clients above, each with a link to that client's MCP docs\n- [ ] `README.vi.md` has the same content in Vietnamese\n- [ ] `docs/quickstart.md` and `docs/quickstart.vi.md` link to the new section instead of duplicating it\n- [ ] `tests/readme.test.ts` still passes (extend it if it checks the MCP section)\n- [ ] `pnpm format:check` passes",
     "url": "https://github.com/beiryu/vn-skills/issues/133",
-    "state": "pr_open",
+    "state": "done",
     "score": 1,
     "triage_reason": "MCP is the channel with the most downloads, and getting set up in a client is the step where people drop off. Snippets that work as pasted for each client turn downloads into working installs.",
     "attempts": 0,
@@ -733,7 +733,7 @@
     "pr_body": "## What & why\n\nCloses #133\n\nThe README MCP section showed only `claude mcp add` and one generic `mcpServers` JSON block. VS Code uses a top-level `servers` key and Codex reads TOML, so the generic block does not work there. The README also did not say where each config file goes.\n\nThis PR adds an \"MCP client setup\" section to `README.md` and `README.vi.md`. It has one block per client: Claude Code, Claude Desktop, Cursor, VS Code and Codex. Each block has the file location and a link to the client's MCP docs. The generic block is kept for other clients, and the section says Node.js 22+ is required. `docs/quickstart.md` and `docs/quickstart.vi.md` now link to the section instead of repeating the generic config.\n\nAcceptance:\n\n- [x] `README.md` has a block for each of the five clients, each with a link to that client's MCP docs\n- [x] `README.vi.md` has the same content in Vietnamese\n- [x] `docs/quickstart.md` and `docs/quickstart.vi.md` link to the new section instead of duplicating it\n- [x] `tests/readme.test.ts` still passes (extended for the new section)\n- [x] `pnpm format:check` passes\n\nTests: extended `tests/readme.test.ts` with four cases: the VS Code `servers` shape with `type: stdio`; the generic `mcpServers` block and the Node.js 22 note; links to each client's MCP docs; and the quickstart linking to the README section instead of duplicating it.\n\n## Checklist\n\n- [x] Title follows Conventional Commits (`feat|fix|docs|data|test|refactor|perf|build|ci|chore(scope): …`)\n- [x] Tests added or updated (golden test for every bug fix)\n- [x] `pnpm build && pnpm typecheck && pnpm lint && pnpm test && pnpm format:check` pass locally\n- [x] Core stays offline (no `fetch`/HTTP in `packages/core`)\n- [x] Data changes go through `scripts/build-data.ts` and `SOURCES.md` (source + license)\n- [x] SKILL.md / README updated if behaviour changed\n",
     "dry": 0,
     "claimed_at": null,
-    "updated_at": "2026-10-23T04:58:54.458Z",
+    "updated_at": "2026-10-23T05:05:35.265Z",
     "blocked": null,
     "patch": "diff --git a/README.md b/README.md\nindex 4748bbe..b9a86bc 100644\n--- a/README.md\n+++ b/README.md\n@@ -75,7 +75,7 @@ they call `npx -y @vn-skills/cli`.\n claude mcp add vn-skills -- npx -y @vn-skills/mcp\n ```\n \n-or in any MCP client config:\n+Setup for other clients is in [MCP client setup](#mcp-client-setup). Or in any MCP client config:\n \n ```json\n { \"mcpServers\": { \"vn-skills\": { \"command\": \"npx\", \"args\": [\"-y\", \"@vn-skills/mcp\"] } } }\n@@ -86,6 +86,48 @@ Tools: `vietqr_build`, `vietqr_parse`, `vietqr_decode`, `vietqr_banks`, `vn_addr\n `vn_lunar_tet`, `vn_lunar_canchi`, `vn_tax_id_check_digit`, `vn_address_provinces`, `vn_address_province`,\n `vn_einvoice_validate`, `vn_einvoice_totals`, `vn_einvoice_mock_issue`, `vn_einvoice_example`, `vn_name`, `vn_id_parse`, `vn_phone`, `vn_number_format`, `vn_holidays_year`, `vn_holidays_is_working_day`, `vn_holidays_add_working_days`.\n \n+### MCP client setup\n+\n+Requires Node.js 22+. Each client has its own file and shape; check the linked docs for the exact location.\n+\n+**[Claude Code](https://docs.claude.com/en/docs/claude-code/mcp):**\n+\n+```bash\n+claude mcp add vn-skills -- npx -y @vn-skills/mcp\n+```\n+\n+**[Claude Desktop](https://modelcontextprotocol.io/quickstart/user)** — `claude_desktop_config.json`:\n+\n+```json\n+{ \"mcpServers\": { \"vn-skills\": { \"command\": \"npx\", \"args\": [\"-y\", \"@vn-skills/mcp\"] } } }\n+```\n+\n+**[Cursor](https://docs.cursor.com/context/model-context-protocol)** — `.cursor/mcp.json` (project) or `~/.cursor/mcp.json` (global), same `mcpServers` shape:\n+\n+```json\n+{ \"mcpServers\": { \"vn-skills\": { \"command\": \"npx\", \"args\": [\"-y\", \"@vn-skills/mcp\"] } } }\n+```\n+\n+**[VS Code](https://code.visualstudio.com/docs/copilot/customization/mcp-servers)** — `.vscode/mcp.json` (top-level `servers`, not `mcpServers`):\n+\n+```json\n+{\n+  \"servers\": {\n+    \"vn-skills\": { \"type\": \"stdio\", \"command\": \"npx\", \"args\": [\"-y\", \"@vn-skills/mcp\"] }\n+  }\n+}\n+```\n+\n+**[Codex](https://developers.openai.com/codex/mcp)** — `~/.codex/config.toml`:\n+\n+```toml\n+[mcp_servers.vn-skills]\n+command = \"npx\"\n+args = [\"-y\", \"@vn-skills/mcp\"]\n+```\n+\n+Other clients: use the generic `mcpServers` block above.\n+\n ## Library\n \n ```ts\ndiff --git a/README.vi.md b/README.vi.md\nindex 2a24eb7..261439c 100644\n--- a/README.vi.md\n+++ b/README.vi.md\n@@ -84,6 +84,48 @@ Tool: `vietqr_build`, `vietqr_parse`, `vietqr_decode`, `vietqr_banks`, `vn_addre\n `vn_lunar_from_solar`, `vn_lunar_to_solar`, `vn_lunar_holidays`, `vn_lunar_tet`, `vn_lunar_canchi`,\n `vn_einvoice_validate`, `vn_einvoice_totals`, `vn_einvoice_mock_issue`, `vn_einvoice_example`, `vn_name`, `vn_id_parse`, `vn_phone`, `vn_number_format`, `vn_holidays_year`, `vn_holidays_is_working_day`, `vn_holidays_add_working_days`.\n \n+### Cài đặt MCP theo client\n+\n+Cần Node.js 22+. Mỗi client dùng file và cấu trúc riêng; xem tài liệu được liên kết để biết đúng vị trí file.\n+\n+**[Claude Code](https://docs.claude.com/en/docs/claude-code/mcp):**\n+\n+```bash\n+claude mcp add vn-skills -- npx -y @vn-skills/mcp\n+```\n+\n+**[Claude Desktop](https://modelcontextprotocol.io/quickstart/user)** — `claude_desktop_config.json`:\n+\n+```json\n+{ \"mcpServers\": { \"vn-skills\": { \"command\": \"npx\", \"args\": [\"-y\", \"@vn-skills/mcp\"] } } }\n+```\n+\n+**[Cursor](https://docs.cursor.com/context/model-context-protocol)** — `.cursor/mcp.json` (dự án) hoặc `~/.cursor/mcp.json` (toàn cục), cùng cấu trúc `mcpServers`:\n+\n+```json\n+{ \"mcpServers\": { \"vn-skills\": { \"command\": \"npx\", \"args\": [\"-y\", \"@vn-skills/mcp\"] } } }\n+```\n+\n+**[VS Code](https://code.visualstudio.com/docs/copilot/customization/mcp-servers)** — `.vscode/mcp.json` (khóa gốc là `servers`, không phải `mcpServers`):\n+\n+```json\n+{\n+  \"servers\": {\n+    \"vn-skills\": { \"type\": \"stdio\", \"command\": \"npx\", \"args\": [\"-y\", \"@vn-skills/mcp\"] }\n+  }\n+}\n+```\n+\n+**[Codex](https://developers.openai.com/codex/mcp)** — `~/.codex/config.toml`:\n+\n+```toml\n+[mcp_servers.vn-skills]\n+command = \"npx\"\n+args = [\"-y\", \"@vn-skills/mcp\"]\n+```\n+\n+Client khác: dùng khối `mcpServers` chung ở trên.\n+\n ## Thư viện\n \n ```ts\ndiff --git a/docs/quickstart.md b/docs/quickstart.md\nindex dfe792b..c6daa90 100644\n--- a/docs/quickstart.md\n+++ b/docs/quickstart.md\n@@ -83,7 +83,7 @@ Restart Claude Code, then ask: _\"đọc số 1200000 thành chữ\"_. The agent c\n }\n ```\n \n-For other MCP clients use `{ \"mcpServers\": { \"vn-skills\": { \"command\": \"npx\", \"args\": [\"-y\", \"@vn-skills/mcp\"] } } }`.\n+For Cursor, VS Code, Claude Desktop, Codex and other clients see [MCP client setup](../README.md#mcp-client-setup).\n \n ## 3. Library\n \ndiff --git a/docs/quickstart.vi.md b/docs/quickstart.vi.md\nindex 8e32bea..edc8b7e 100644\n--- a/docs/quickstart.vi.md\n+++ b/docs/quickstart.vi.md\n@@ -83,7 +83,7 @@ Khởi động lại Claude Code rồi hỏi: _\"đọc số 1200000 thành chữ\n }\n ```\n \n-Với MCP client khác dùng `{ \"mcpServers\": { \"vn-skills\": { \"command\": \"npx\", \"args\": [\"-y\", \"@vn-skills/mcp\"] } } }`.\n+Với Cursor, VS Code, Claude Desktop, Codex và client khác xem [Cài đặt MCP theo client](../README.vi.md#cài-đặt-mcp-theo-client).\n \n ## 3. Thư viện\n \ndiff --git a/tests/readme.test.ts b/tests/readme.test.ts\nindex eb62274..3736743 100644\n--- a/tests/readme.test.ts\n+++ b/tests/readme.test.ts\n@@ -142,3 +142,49 @@ describe('offline toolkit, not a payment gateway', () => {\n     },\n   );\n });\n+\n+describe.each([\n+  ['README.md', 'docs/quickstart.md'],\n+  ['README.vi.md', 'docs/quickstart.vi.md'],\n+])('%s MCP client setup', (readme, quickstart) => {\n+  const text = read(readme);\n+\n+  it.each([\n+    '.cursor/mcp.json',\n+    '.vscode/mcp.json',\n+    'claude_desktop_config.json',\n+    '~/.codex/config.toml',\n+    '[mcp_servers.vn-skills]',\n+    'claude mcp add vn-skills -- npx -y @vn-skills/mcp',\n+  ])('shows %s', (needle) => {\n+    expect(text).toContain(needle);\n+  });\n+\n+  it('uses the VS Code \"servers\" shape with type stdio', () => {\n+    expect(text).toMatch(/\"servers\":\\s*\\{\\s*\"vn-skills\":\\s*\\{\\s*\"type\":\\s*\"stdio\"/);\n+  });\n+\n+  it('keeps the generic mcpServers block and mentions Node.js 22', () => {\n+    expect(text).toContain('\"mcpServers\"');\n+    expect(text).toMatch(/Node(\\.js)? 22/);\n+  });\n+\n+  it('links to each client’s MCP docs', () => {\n+    const section =\n+      /^#{2,3} (?:MCP client setup|Cài đặt MCP theo client)[^\\n]*\\n([\\s\\S]*?)(?=^## |(?![\\s\\S]))/m.exec(\n+        text,\n+      );\n+    expect(section).not.toBeNull();\n+    const body = section![1]!;\n+    for (const c of ['Claude Code', 'Claude Desktop', 'Cursor', 'VS Code', 'Codex']) {\n+      expect(body).toMatch(new RegExp(`\\\\[[^\\\\]]*${c}[^\\\\]]*\\\\]\\\\(https://[^)]+\\\\)`));\n+    }\n+  });\n+\n+  it('quickstart links to the README section instead of duplicating it', () => {\n+    const q = read(quickstart);\n+    expect(q).toMatch(new RegExp(`${readme.replace('.', '\\\\.')}#`));\n+    expect(q).not.toContain('[mcp_servers.vn-skills]');\n+    expect(q).not.toContain('.vscode/mcp.json');\n+  });\n+});\n",
     "repro_patch": "diff --git a/tests/readme.test.ts b/tests/readme.test.ts\nindex eb62274..3736743 100644\n--- a/tests/readme.test.ts\n+++ b/tests/readme.test.ts\n@@ -142,3 +142,49 @@ describe('offline toolkit, not a payment gateway', () => {\n     },\n   );\n });\n+\n+describe.each([\n+  ['README.md', 'docs/quickstart.md'],\n+  ['README.vi.md', 'docs/quickstart.vi.md'],\n+])('%s MCP client setup', (readme, quickstart) => {\n+  const text = read(readme);\n+\n+  it.each([\n+    '.cursor/mcp.json',\n+    '.vscode/mcp.json',\n+    'claude_desktop_config.json',\n+    '~/.codex/config.toml',\n+    '[mcp_servers.vn-skills]',\n+    'claude mcp add vn-skills -- npx -y @vn-skills/mcp',\n+  ])('shows %s', (needle) => {\n+    expect(text).toContain(needle);\n+  });\n+\n+  it('uses the VS Code \"servers\" shape with type stdio', () => {\n+    expect(text).toMatch(/\"servers\":\\s*\\{\\s*\"vn-skills\":\\s*\\{\\s*\"type\":\\s*\"stdio\"/);\n+  });\n+\n+  it('keeps the generic mcpServers block and mentions Node.js 22', () => {\n+    expect(text).toContain('\"mcpServers\"');\n+    expect(text).toMatch(/Node(\\.js)? 22/);\n+  });\n+\n+  it('links to each client’s MCP docs', () => {\n+    const section =\n+      /^#{2,3} (?:MCP client setup|Cài đặt MCP theo client)[^\\n]*\\n([\\s\\S]*?)(?=^## |(?![\\s\\S]))/m.exec(\n+        text,\n+      );\n+    expect(section).not.toBeNull();\n+    const body = section![1]!;\n+    for (const c of ['Claude Code', 'Claude Desktop', 'Cursor', 'VS Code', 'Codex']) {\n+      expect(body).toMatch(new RegExp(`\\\\[[^\\\\]]*${c}[^\\\\]]*\\\\]\\\\(https://[^)]+\\\\)`));\n+    }\n+  });\n+\n+  it('quickstart links to the README section instead of duplicating it', () => {\n+    const q = read(quickstart);\n+    expect(q).toMatch(new RegExp(`${readme.replace('.', '\\\\.')}#`));\n+    expect(q).not.toContain('[mcp_servers.vn-skills]');\n+    expect(q).not.toContain('.vscode/mcp.json');\n+  });\n+});\n",
@@ -1019,12 +1019,12 @@
     "last_seen_at": "2026-10-23T04:59:07.891Z",
     "opened_at": "2026-10-23T04:59:07.891Z",
     "head_sha": "d092538521e14e51781f6f41ab511f93b9a046f1",
-    "mergeable": "MERGEABLE",
+    "mergeable": "UNKNOWN",
     "ci_state": "success",
     "review_decision": "REVIEW_REQUIRED",
-    "snapshot_at": "2026-10-23T05:02:19.588Z",
+    "snapshot_at": "2026-10-23T05:05:30.814Z",
     "ci_seen_sha": null,
-    "merge_state": "BEHIND"
+    "merge_state": "UNKNOWN"
    },
    {
     "issue_id": 24,
@@ -1033,28 +1033,28 @@
     "state": "open",
     "last_seen_at": "2026-10-23T04:59:01.696Z",
     "opened_at": "2026-10-23T04:59:01.696Z",
-    "head_sha": "b3c7ef35a7f078f30aad0c1a5f335b0c216eef78",
+    "head_sha": "fa3b989a92502fa45f1c0a6cc6da8ef847525a2a",
     "mergeable": "MERGEABLE",
-    "ci_state": "success",
+    "ci_state": "pending",
     "review_decision": "REVIEW_REQUIRED",
-    "snapshot_at": "2026-10-23T05:02:22.082Z",
+    "snapshot_at": "2026-10-23T05:05:33.183Z",
     "ci_seen_sha": null,
-    "merge_state": "BEHIND"
+    "merge_state": "BLOCKED"
    },
    {
     "issue_id": 25,
     "url": "https://github.com/beiryu/vn-skills/pull/136",
     "number": 136,
-    "state": "open",
+    "state": "merged",
     "last_seen_at": "2026-10-23T04:58:54.458Z",
     "opened_at": "2026-10-23T04:58:54.458Z",
     "head_sha": "e6e4aac111222f7cb0d34b8d9346e0e30c7a6f3c",
-    "mergeable": "MERGEABLE",
-    "ci_state": "pending",
+    "mergeable": "UNKNOWN",
+    "ci_state": "success",
     "review_decision": "REVIEW_REQUIRED",
-    "snapshot_at": "2026-10-23T05:02:24.061Z",
+    "snapshot_at": "2026-10-23T05:05:35.264Z",
     "ci_seen_sha": null,
-    "merge_state": "BLOCKED"
+    "merge_state": "UNKNOWN"
    }
   ],
   "pending_actions": [
