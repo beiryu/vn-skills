@@ -188,3 +188,41 @@ describe.each([
     expect(q).not.toContain('.vscode/mcp.json');
   });
 });
+
+describe.each(['README.md', 'README.vi.md'])('%s MCP tools grouped by skill', (file) => {
+  const text = read(file);
+  const section = /^## MCP server[^\n]*\n([\s\S]*?)(?=^### |^## )/m.exec(text)![1]!;
+  const skillOf: [string, string][] = [
+    ['vietqr_', 'vietqr'],
+    ['vn_address_', 'vn-address'],
+    ['vn_tax_id_', 'vn-tax-id'],
+    ['vn_id_', 'vn-id'],
+    ['vn_phone', 'vn-phone'],
+    ['vn_holidays_', 'vn-holidays'],
+    ['vn_money_to_words', 'vn-money-words'],
+    ['vn_lunar_', 'vn-lunar'],
+    ['vn_einvoice_', 'vn-einvoice'],
+    ['vn_name', 'vn-name'],
+    ['vn_number_format', 'vn-number-format'],
+  ];
+
+  it('states the total tool count in the MCP server section', () => {
+    expect(section).toContain(String(registered.length));
+  });
+
+  it('lists every registered tool exactly once in the MCP server section', () => {
+    for (const t of registered) {
+      expect(section.split('`' + t + '`').length - 1, t).toBe(1);
+    }
+  });
+
+  it('puts each tool on a line that names its skill', () => {
+    const lines = section.split('\n');
+    for (const t of registered) {
+      const skill = skillOf.find(([prefix]) => t.startsWith(prefix))?.[1];
+      expect(skill, t).toBeDefined();
+      const line = lines.find((l) => l.includes('`' + t + '`'))!;
+      expect(line, t).toContain('`' + skill! + '`');
+    }
+  });
+});

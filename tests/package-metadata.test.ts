@@ -63,3 +63,29 @@ describe.each(Object.keys(expected))('packages/%s metadata', (name) => {
     expect(pkg.keywords ?? []).toEqual(expect.arrayContaining(expected[name]!));
   });
 });
+
+describe('packages/mcp/server.json (MCP Registry)', () => {
+  /* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-return */
+  const read = (p: string): Record<string, any> =>
+    JSON.parse(readFileSync(resolve(__dirname, '..', 'packages', 'mcp', p), 'utf8'));
+  /* eslint-enable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-return */
+  const server = read('server.json');
+  const pkg = read('package.json');
+
+  it('description fits the registry limit of 100 characters', () => {
+    expect(server.description.length).toBeLessThanOrEqual(100);
+  });
+
+  it.each([
+    ['phone numbers', /phone/i],
+    ['names', /names?\b/i],
+    ['number formatting', /format/i],
+  ])('description mentions %s', (_label, re) => {
+    expect(server.description).toMatch(re);
+  });
+
+  it('versions match packages/mcp/package.json', () => {
+    expect(server.version).toBe(pkg.version);
+    expect(server.packages[0].version).toBe(pkg.version);
+  });
+});

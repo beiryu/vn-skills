@@ -159,3 +159,38 @@ describe('parseVietQR', () => {
     expect(p?.ok && p.dynamic).toBe(false);
   });
 });
+
+describe('parseVietQR lower-cased payloads', () => {
+  const build = (note?: string) => {
+    const r = buildVietQR({ bank: 'VCB', account: '0011001234567', amount: 50000, note });
+    if (!r.ok) throw new Error('build failed');
+    return r.payload;
+  };
+
+  it('says the payload was lower-cased and not that the GUID is not NAPAS', () => {
+    for (const payload of [build(), build('TEST')]) {
+      const p = parseVietQR(payload.toLowerCase());
+      expect(p.ok && p.crcValid).toBe(false);
+      const warnings = p.ok ? p.warnings : [];
+      expect(warnings.some((w) => /lower-?cased/i.test(w) && /original/i.test(w))).toBe(true);
+      expect(warnings.some((w) => w.startsWith('CRC mismatch'))).toBe(false);
+      expect(warnings.some((w) => w.includes('not NAPAS'))).toBe(false);
+      expect(warnings.some((w) => /GUID/.test(w) && /lower-?cased/i.test(w))).toBe(true);
+    }
+  });
+
+  it('keeps the plain CRC mismatch warning for a genuinely wrong CRC', () => {
+    const p = parseVietQR(build().slice(0, -4) + '0000');
+    const warnings = p.ok ? p.warnings : [];
+    expect(warnings.some((w) => w.startsWith('CRC mismatch'))).toBe(true);
+    expect(warnings.some((w) => /lower-?cased/i.test(w))).toBe(false);
+  });
+
+  it('gives no false hint when the original had a mixed-case note', () => {
+    const p = parseVietQR(build('test').toLowerCase());
+    expect(p.ok && p.crcValid).toBe(false);
+    const warnings = p.ok ? p.warnings : [];
+    expect(warnings.some((w) => w.startsWith('CRC mismatch'))).toBe(true);
+    expect(warnings.some((w) => /lower-?cased in transit/i.test(w))).toBe(false);
+  });
+});

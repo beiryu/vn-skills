@@ -128,6 +128,18 @@
         "expected": { "ok": true, "crcValid": false }
       },
       {
+        "name": "reports a lower-cased payload instead of a bare CRC mismatch",
+        "input": "00020101021238570010a00000072701270006970436011300110012345670208qribftta53037045405500005802vn62080804test6304cb7c",
+        "expected": {
+          "ok": true,
+          "crcValid": false,
+          "warnings": [
+            "Payload appears to have been lower-cased in transit: the CRC cb7c matches the upper-cased payload. Use the original payload.",
+            "Tag 38 GUID \"a000000727\" is lower-cased; NAPAS GUID is A000000727."
+          ]
+        }
+      },
+      {
         "name": "fails on truncated payload",
         "input": "00020101021238530010A0000007270123000697",
         "expected": { "ok": false }
