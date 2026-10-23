@@ -1,6 +1,6 @@
 {
  "version": 1,
- "exported_at": "2026-10-23T13:44:50.476Z",
+ "exported_at": "2026-10-23T13:46:01.231Z",
  "tables": {
   "repos": [
    {
@@ -10,7 +10,7 @@
     "policy_status": null,
     "policy_excerpts": null,
     "block_reason": null,
-    "last_scanned": "2026-10-23T13:28:37.278Z"
+    "last_scanned": "2026-10-23T13:45:31.956Z"
    }
   ],
   "issues": [
@@ -1428,13 +1428,13 @@
     "state": "open",
     "last_seen_at": "2026-10-23T13:44:47.396Z",
     "opened_at": "2026-10-23T13:44:47.396Z",
-    "head_sha": null,
-    "mergeable": null,
-    "ci_state": null,
-    "review_decision": null,
-    "snapshot_at": null,
+    "head_sha": "f84fe6687e760160b1fcc370ae57d01b6760a7b8",
+    "mergeable": "MERGEABLE",
+    "ci_state": "pending",
+    "review_decision": "REVIEW_REQUIRED",
+    "snapshot_at": "2026-10-23T13:45:22.365Z",
     "ci_seen_sha": null,
-    "merge_state": null
+    "merge_state": "BLOCKED"
    },
    {
     "issue_id": 34,
@@ -1443,13 +1443,13 @@
     "state": "open",
     "last_seen_at": "2026-10-23T13:44:39.758Z",
     "opened_at": "2026-10-23T13:44:39.758Z",
-    "head_sha": null,
-    "mergeable": null,
-    "ci_state": null,
-    "review_decision": null,
-    "snapshot_at": null,
+    "head_sha": "2261256c972809474a339a4d1342681989dafd33",
+    "mergeable": "MERGEABLE",
+    "ci_state": "pending",
+    "review_decision": "REVIEW_REQUIRED",
+    "snapshot_at": "2026-10-23T13:45:24.614Z",
     "ci_seen_sha": null,
-    "merge_state": null
+    "merge_state": "BLOCKED"
    },
    {
     "issue_id": 35,
@@ -1458,13 +1458,13 @@
     "state": "open",
     "last_seen_at": "2026-10-23T13:44:32.055Z",
     "opened_at": "2026-10-23T13:44:32.055Z",
-    "head_sha": null,
-    "mergeable": null,
-    "ci_state": null,
-    "review_decision": null,
-    "snapshot_at": null,
+    "head_sha": "4b7485d95aa82c9798ad47c2454bd3772094e2fe",
+    "mergeable": "MERGEABLE",
+    "ci_state": "pending",
+    "review_decision": "REVIEW_REQUIRED",
+    "snapshot_at": "2026-10-23T13:45:26.918Z",
     "ci_seen_sha": null,
-    "merge_state": null
+    "merge_state": "BLOCKED"
    }
   ],
   "pending_actions": [
