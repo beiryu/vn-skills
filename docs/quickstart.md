@@ -83,7 +83,7 @@ Restart Claude Code, then ask: _"đọc số 1200000 thành chữ"_. The agent c
 }
 ```
 
-For other MCP clients use `{ "mcpServers": { "vn-skills": { "command": "npx", "args": ["-y", "@vn-skills/mcp"] } } }`.
+For Cursor, VS Code, Claude Desktop, Codex and other clients see [MCP client setup](../README.md#mcp-client-setup).
 
 ## 3. Library
 

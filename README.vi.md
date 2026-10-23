@@ -84,6 +84,48 @@ Tool: `vietqr_build`, `vietqr_parse`, `vietqr_decode`, `vietqr_banks`, `vn_addre
 `vn_lunar_from_solar`, `vn_lunar_to_solar`, `vn_lunar_holidays`, `vn_lunar_tet`, `vn_lunar_canchi`,
 `vn_einvoice_validate`, `vn_einvoice_totals`, `vn_einvoice_mock_issue`, `vn_einvoice_example`, `vn_name`, `vn_id_parse`, `vn_phone`, `vn_number_format`, `vn_holidays_year`, `vn_holidays_is_working_day`, `vn_holidays_add_working_days`.
 
+### Cài đặt MCP theo client
+
+Cần Node.js 22+. Mỗi client dùng file và cấu trúc riêng; xem tài liệu được liên kết để biết đúng vị trí file.
+
+**[Claude Code](https://docs.claude.com/en/docs/claude-code/mcp):**
+
+```bash
+claude mcp add vn-skills -- npx -y @vn-skills/mcp
+```
+
+**[Claude Desktop](https://modelcontextprotocol.io/quickstart/user)** — `claude_desktop_config.json`:
+
+```json
+{ "mcpServers": { "vn-skills": { "command": "npx", "args": ["-y", "@vn-skills/mcp"] } } }
+```
+
+**[Cursor](https://docs.cursor.com/context/model-context-protocol)** — `.cursor/mcp.json` (dự án) hoặc `~/.cursor/mcp.json` (toàn cục), cùng cấu trúc `mcpServers`:
+
+```json
+{ "mcpServers": { "vn-skills": { "command": "npx", "args": ["-y", "@vn-skills/mcp"] } } }
+```
+
+**[VS Code](https://code.visualstudio.com/docs/copilot/customization/mcp-servers)** — `.vscode/mcp.json` (khóa gốc là `servers`, không phải `mcpServers`):
+
+```json
+{
+  "servers": {
+    "vn-skills": { "type": "stdio", "command": "npx", "args": ["-y", "@vn-skills/mcp"] }
+  }
+}
+```
+
+**[Codex](https://developers.openai.com/codex/mcp)** — `~/.codex/config.toml`:
+
+```toml
+[mcp_servers.vn-skills]
+command = "npx"
+args = ["-y", "@vn-skills/mcp"]
+```
+
+Client khác: dùng khối `mcpServers` chung ở trên.
+
 ## Thư viện
 
 ```ts

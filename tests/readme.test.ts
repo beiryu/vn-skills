@@ -142,3 +142,49 @@ describe('offline toolkit, not a payment gateway', () => {
     },
   );
 });
+
+describe.each([
+  ['README.md', 'docs/quickstart.md'],
+  ['README.vi.md', 'docs/quickstart.vi.md'],
+])('%s MCP client setup', (readme, quickstart) => {
+  const text = read(readme);
+
+  it.each([
+    '.cursor/mcp.json',
+    '.vscode/mcp.json',
+    'claude_desktop_config.json',
+    '~/.codex/config.toml',
+    '[mcp_servers.vn-skills]',
+    'claude mcp add vn-skills -- npx -y @vn-skills/mcp',
+  ])('shows %s', (needle) => {
+    expect(text).toContain(needle);
+  });
+
+  it('uses the VS Code "servers" shape with type stdio', () => {
+    expect(text).toMatch(/"servers":\s*\{\s*"vn-skills":\s*\{\s*"type":\s*"stdio"/);
+  });
+
+  it('keeps the generic mcpServers block and mentions Node.js 22', () => {
+    expect(text).toContain('"mcpServers"');
+    expect(text).toMatch(/Node(\.js)? 22/);
+  });
+
+  it('links to each client’s MCP docs', () => {
+    const section =
+      /^#{2,3} (?:MCP client setup|Cài đặt MCP theo client)[^\n]*\n([\s\S]*?)(?=^## |(?![\s\S]))/m.exec(
+        text,
+      );
+    expect(section).not.toBeNull();
+    const body = section![1]!;
+    for (const c of ['Claude Code', 'Claude Desktop', 'Cursor', 'VS Code', 'Codex']) {
+      expect(body).toMatch(new RegExp(`\\[[^\\]]*${c}[^\\]]*\\]\\(https://[^)]+\\)`));
+    }
+  });
+
+  it('quickstart links to the README section instead of duplicating it', () => {
+    const q = read(quickstart);
+    expect(q).toMatch(new RegExp(`${readme.replace('.', '\\.')}#`));
+    expect(q).not.toContain('[mcp_servers.vn-skills]');
+    expect(q).not.toContain('.vscode/mcp.json');
+  });
+});
