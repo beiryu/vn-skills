@@ -1,6 +1,6 @@
 ---
 name: vn-address
-description: Parse, normalise and convert Vietnamese addresses using the post-01/07/2025 administrative structure (34 provinces, 3,321 wards, no districts) with fuzzy matching for missing diacritics and abbreviations (TP.HCM, Q.1, P. Bến Nghé). Converts old addresses (63 tỉnh, quận/huyện) to the new 2-level structure via the official old→new ward mapping. Use for "địa chỉ mới sau sáp nhập", "chuyển đổi địa chỉ", "đổi địa chỉ cũ sang mới", "tỉnh nào sau sáp nhập", address validation, shipping/e-commerce forms, or when the user mentions phường/xã/tỉnh.
+description: Parse, normalise and convert Vietnamese addresses using the post-01/07/2025 administrative structure (34 provinces, 3,321 wards, no districts) with fuzzy matching for missing diacritics and abbreviations (TP.HCM, Q.1, P. Bến Nghé). Converts old addresses (63 tỉnh, quận/huyện) to the new 2-level structure via the official old→new ward mapping. Use for "địa chỉ mới sau sáp nhập", "chuyển đổi địa chỉ", "đổi địa chỉ cũ sang mới", "chuyển hàng loạt địa chỉ", "file CSV địa chỉ", "tỉnh nào sau sáp nhập", address validation, shipping/e-commerce forms, or when the user mentions phường/xã/tỉnh.
 license: MIT
 compatibility: Requires Node.js 22+ (runs npx -y @vn-skills/cli). Data is bundled; no network.
 metadata:
@@ -63,7 +63,13 @@ Inside this repo use `pnpm vn-skills` instead of `npx -y @vn-skills/cli`. Output
    Returns `province`, `ward`, `street`, `formatted`, `confidence`, `matches` (how each part matched: exact / alias / fuzzy / abbreviation).
    Add `--legacy` to parse with the pre-2025 catalogue (province/district/ward) or `--new` to force the current one.
 
-3. **Look things up**: `address provinces`, `address province "Gia Lai"`, `address wards "Tân Thành" -p "Tây Ninh"`.
+3. **Bulk convert** ("chuyển hàng loạt địa chỉ", "file CSV"): `address convert-file <file>` (`-` = stdin) reads one address per line and prints NDJSON (`line` is 1-based; failed lines give `{ ok: false, line, input, error }`). With `--csv --column <name>` it reads a CSV with a header and writes CSV with `new_address`, `new_ward_code`, `new_province_code`, `mapping_type`, `confidence`, `warnings` appended. Exit code 2 if any row failed (`converted N, failed M` on stderr).
+
+   ```bash
+   npx -y @vn-skills/cli address convert-file customers.csv --csv --column address > converted.csv
+   ```
+
+4. **Look things up**: `address provinces`, `address province "Gia Lai"`, `address wards "Tân Thành" -p "Tây Ninh"`.
 
 Library: `parseAddress`, `convertAddress`, `findProvince`, `searchWards`, `PROVINCES` from `@vn-skills/core`.
 
