@@ -30,6 +30,11 @@ export class MockProvider implements EInvoiceProvider {
   }
 
   async createInvoice(invoice: Invoice): Promise<IssuedInvoice> {
+    const totals = computeTotals(invoice);
+    if (totals.totalInWordsError)
+      throw Object.assign(new Error(totals.totalInWordsError.message), {
+        error: totals.totalInWordsError,
+      });
     const seq = (this.counters.get(invoice.series) ?? 0) + 1;
     this.counters.set(invoice.series, seq);
     const number = invoice.number ?? String(seq).padStart(8, '0');
@@ -42,7 +47,7 @@ export class MockProvider implements EInvoiceProvider {
       status: 'issued',
       issuedAt: this.clock().toISOString(),
       invoice: { ...invoice, number },
-      totals: computeTotals(invoice),
+      totals,
       lookupUrl: `https://example.invalid/lookup/${id}`,
       provider: this.name,
     };

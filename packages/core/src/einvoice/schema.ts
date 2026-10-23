@@ -206,6 +206,15 @@ export function validateInvoice(input: unknown): InvoiceValidation {
           message: 'unitPrice must be >= 0',
           severity: 'error',
         });
+      if (isNum(raw.quantity) && isNum(raw.unitPrice)) {
+        const gross = raw.quantity * raw.unitPrice;
+        if (!Number.isFinite(gross) || Math.abs(gross) > Number.MAX_SAFE_INTEGER)
+          errors.push({
+            path,
+            message: 'quantity * unitPrice is too large (exceeds Number.MAX_SAFE_INTEGER)',
+            severity: 'error',
+          });
+      }
       if (raw.discount !== undefined && (!isNum(raw.discount) || raw.discount < 0))
         errors.push({
           path: `${path}.discount`,
