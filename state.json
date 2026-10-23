@@ -1,6 +1,6 @@
 {
  "version": 1,
- "exported_at": "2026-10-23T05:07:07.690Z",
+ "exported_at": "2026-10-23T07:13:30.446Z",
  "tables": {
   "repos": [
    {
@@ -10,7 +10,7 @@
     "policy_status": null,
     "policy_excerpts": null,
     "block_reason": null,
-    "last_scanned": "2026-10-23T05:06:39.375Z"
+    "last_scanned": "2026-10-23T07:13:03.168Z"
    }
   ],
   "issues": [
@@ -688,7 +688,7 @@
     "title": "vn-lunar: reject out-of-range day and month in parseDateInput",
     "body": "## Problem\n\n`parseDateInput` (`packages/core/src/lunar/index.ts:87-96`) only checks the shape of the string. `parseDateInput('0/1/2024')` returns `{ ok: true, day: 0, month: 1, year: 2024 }`, and inputs such as `32/1/2024`, `1/13/2024` and `2024-00-10` also pass. Callers re-validate later and return a generic `INVALID_DATE`, so the visible effect is a less precise error. Any caller that skips the second check would accept day 0. Non-padded forms (`2024-2-3`, `1-2-2024`) are intentional and should stay accepted.\n\n## Acceptance\n\n- [ ] `parseDateInput` returns `INVALID_DATE` when the month is outside 1-12 or the day is outside 1 to the number of days in that month (Gregorian, leap years included: `29/2/2024` ok, `29/2/2023` rejected)\n- [ ] The error message names the bad part (e.g. `Day 0 is out of range for 01/2024`) and keeps the existing hint\n- [ ] Non-padded inputs (`2024-2-3`, `1-2-2024`, `3/2/2024`) still parse\n- [ ] Tests added to `tests/lunar.test.ts` for day 0, day 32, month 0, month 13, 31/4, 29/2 in leap and non-leap years, and the non-padded forms\n- [ ] Existing CLI tests (`tests/cli.test.ts`) still pass; update expected messages only where the new message is more precise\n- [ ] `pnpm build && pnpm typecheck && pnpm lint && pnpm exec vitest run && pnpm format:check` pass",
     "url": "https://github.com/beiryu/vn-skills/issues/132",
-    "state": "pr_open",
+    "state": "done",
     "score": 1,
     "triage_reason": "This is a small hardening fix. The helper is shared, so validating once here gives precise errors everywhere and removes the risk of a caller accepting day 0.",
     "attempts": 1,
@@ -704,7 +704,7 @@
     "pr_body": "Closes #132\n\n## What & why\n\n`parseDateInput` only checked the shape of the string, so inputs such as `0/1/2024`, `32/1/2024`, `1/13/2024` and `2024-00-10` returned `ok: true`. Callers re-validated later and returned a generic `INVALID_DATE`.\n\nNow `parseDateInput` returns `INVALID_DATE` with a message that names the bad part (for example `Day 0 is out of range for 01/2024`) and keeps the existing hint. The month must be 1-12. The day must be 1 to the number of days in that month (Gregorian, leap years included). Non-padded forms (`2024-2-3`, `1-2-2024`, `3/2/2024`) still parse.\n\nLunar months can have 30 days, so `parseDateInput` takes an optional `{ lunar: true }`. `lunar to-solar` in the CLI passes it, and in that mode days 1-30 are accepted. Without it, a lunar date like `30/2/2024` would be rejected by the Gregorian check.\n\n### Acceptance\n\n- [x] `parseDateInput` returns `INVALID_DATE` for month outside 1-12 or day outside the month's range (`29/2/2024` ok, `29/2/2023` rejected)\n- [x] Error message names the bad part and keeps the existing hint\n- [x] Non-padded inputs (`2024-2-3`, `1-2-2024`, `3/2/2024`) still parse\n- [x] Tests added to `tests/lunar.test.ts` for day 0, day 32, month 0, month 13, 31/4, 29/2 in leap and non-leap years, and the non-padded forms\n- [x] Existing CLI tests still pass\n- [x] `pnpm build && pnpm typecheck && pnpm lint && pnpm exec vitest run && pnpm format:check` pass\n\n## Tests\n\n- `tests/lunar.test.ts`: new cases for the inputs listed above.\n- `tests/golden/vn-lunar.json`: golden cases for the new rejections and the accepted non-padded forms.\n- `tests/cli.test.ts`: a `lunar to-solar` test with a lunar day 30 in month 2, which must still be accepted.\n\n## Checklist\n\n- [x] Title follows Conventional Commits (`feat|fix|docs|data|test|refactor|perf|build|ci|chore(scope): …`)\n- [x] Tests added or updated (golden test for every bug fix)\n- [x] `pnpm build && pnpm typecheck && pnpm lint && pnpm test && pnpm format:check` pass locally\n- [x] Core stays offline (no `fetch`/HTTP in `packages/core`)\n- [x] Data changes go through `scripts/build-data.ts` and `SOURCES.md` (source + license) (no data changes)\n- [ ] SKILL.md / README updated if behaviour changed (not updated; no docs changed)\n",
     "dry": 0,
     "claimed_at": null,
-    "updated_at": "2026-10-23T04:59:01.697Z",
+    "updated_at": "2026-10-23T07:12:59.366Z",
     "blocked": null,
     "patch": "diff --git a/packages/cli/src/commands/lunar.ts b/packages/cli/src/commands/lunar.ts\nindex 9fcee11..c688c4e 100644\n--- a/packages/cli/src/commands/lunar.ts\n+++ b/packages/cli/src/commands/lunar.ts\n@@ -43,7 +43,7 @@ export function registerLunar(program: Command): void {\n     .description('Lunar dd/mm/yyyy -> solar date')\n     .option('--leap', 'the month is the leap (nhuận) month')\n     .action((date: string, opts, c: Command) => {\n-      const d = parseDateInput(date);\n+      const d = parseDateInput(date, { lunar: true });\n       if (!d.ok) failExit(c, d.error);\n       const r = lunarToSolar(d.day, d.month, d.year, Boolean(opts.leap));\n       if (!r.ok) failExit(c, r.error);\ndiff --git a/packages/core/src/lunar/index.ts b/packages/core/src/lunar/index.ts\nindex 1d8f6b9..fc2ae12 100644\n--- a/packages/core/src/lunar/index.ts\n+++ b/packages/core/src/lunar/index.ts\n@@ -83,16 +83,46 @@ export function lunarInfo(\n   };\n }\n \n-/** Parse \"dd/mm/yyyy\", \"dd-mm-yyyy\" or ISO \"yyyy-mm-dd\" into numbers. */\n+/**\n+ * Parse \"dd/mm/yyyy\", \"dd-mm-yyyy\" or ISO \"yyyy-mm-dd\" into numbers.\n+ * Days are checked against the Gregorian calendar; pass `{ lunar: true }` to allow 1-30 for any month.\n+ */\n export function parseDateInput(\n   input: string,\n+  opts: { lunar?: boolean } = {},\n ): Result<{ day: number; month: number; year: number }> {\n   const s = String(input ?? '').trim();\n+  const hint = 'Use dd/mm/yyyy or yyyy-mm-dd.';\n   let m = /^(\\d{1,2})[/\\-.](\\d{1,2})[/\\-.](\\d{4})$/.exec(s);\n-  if (m) return { ok: true, day: Number(m[1]), month: Number(m[2]), year: Number(m[3]) };\n-  m = /^(\\d{4})-(\\d{1,2})-(\\d{1,2})$/.exec(s);\n-  if (m) return { ok: true, day: Number(m[3]), month: Number(m[2]), year: Number(m[1]) };\n-  return fail('INVALID_DATE', `Cannot parse date \"${input}\"`, 'Use dd/mm/yyyy or yyyy-mm-dd.');\n+  let day: number, month: number, year: number;\n+  if (m) {\n+    [day, month, year] = [Number(m[1]), Number(m[2]), Number(m[3])];\n+  } else {\n+    m = /^(\\d{4})-(\\d{1,2})-(\\d{1,2})$/.exec(s);\n+    if (!m) return fail('INVALID_DATE', `Cannot parse date \"${input}\"`, hint);\n+    [day, month, year] = [Number(m[3]), Number(m[2]), Number(m[1])];\n+  }\n+  if (month < 1 || month > 12) {\n+    return fail('INVALID_DATE', `Month ${month} is out of range (1-12)`, hint);\n+  }\n+  const dim = opts.lunar\n+    ? 30\n+    : month === 2\n+      ? isLeap(year)\n+        ? 29\n+        : 28\n+      : [4, 6, 9, 11].includes(month)\n+        ? 30\n+        : 31;\n+  if (day < 1 || day > dim) {\n+    const mm = `${String(month).padStart(2, '0')}/${year}`;\n+    return fail('INVALID_DATE', `Day ${day} is out of range for ${mm}`, hint);\n+  }\n+  return { ok: true, day, month, year };\n+}\n+\n+function isLeap(y: number): boolean {\n+  return (y % 4 === 0 && y % 100 !== 0) || y % 400 === 0;\n }\n \n /** Solar date of Tết (lunar 1/1) for a given lunar year. */\ndiff --git a/tests/cli.test.ts b/tests/cli.test.ts\nindex e1b10de..0267cfc 100644\n--- a/tests/cli.test.ts\n+++ b/tests/cli.test.ts\n@@ -189,6 +189,10 @@ describe('vn-skills CLI', () => {\n     const r = run(['lunar', 'to-solar', '1/1/2026']);\n     expect((r.json().solar as { date: string }).date).toBe('2026-02-17');\n   });\n+  it('lunar to-solar accepts lunar day 30 of month 2 (Gregorian-invalid)', () => {\n+    const r = run(['lunar', 'to-solar', '30/2/2023']);\n+    expect(r.json().ok).toBe(true);\n+  });\n   it('lunar holidays --public', () => {\n     const r = run(['lunar', 'holidays', '2025', '--public']);\n     expect(\ndiff --git a/tests/golden/vn-lunar.json b/tests/golden/vn-lunar.json\nindex 4d6966b..b88e639 100644\n--- a/tests/golden/vn-lunar.json\n+++ b/tests/golden/vn-lunar.json\n@@ -185,6 +185,9 @@\n         \"expected\": { \"day\": 29, \"month\": 1, \"year\": 2025 }\n       },\n       { \"name\": \"dd-mm-yyyy\", \"input\": \"1-2-2025\", \"expected\": { \"day\": 1, \"month\": 2, \"year\": 2025 } },\n+      { \"name\": \"rejects day 0\", \"input\": \"0/1/2024\", \"expected\": { \"ok\": false, \"error\": { \"code\": \"INVALID_DATE\" } } },\n+      { \"name\": \"rejects 29/2 in a non-leap year\", \"input\": \"29/2/2023\", \"expected\": { \"ok\": false, \"error\": { \"code\": \"INVALID_DATE\" } } },\n+      { \"name\": \"accepts 29/2 in a leap year\", \"input\": \"29/2/2024\", \"expected\": { \"day\": 29, \"month\": 2, \"year\": 2024 } },\n       { \"name\": \"rejects junk\", \"input\": \"tomorrow\", \"expected\": { \"ok\": false } }\n     ]\n   }\ndiff --git a/tests/lunar.test.ts b/tests/lunar.test.ts\nindex 97650a5..248cad3 100644\n--- a/tests/lunar.test.ts\n+++ b/tests/lunar.test.ts\n@@ -100,3 +100,29 @@ describe('holidays', () => {\n     expect([...dates].sort()).toEqual(dates);\n   });\n });\n+\n+describe('parseDateInput range validation', () => {\n+  it.each([\n+    ['0/1/2024', 'Day 0 is out of range for 01/2024'],\n+    ['32/1/2024', 'Day 32'],\n+    ['1/0/2024', 'Month 0'],\n+    ['1/13/2024', 'Month 13'],\n+    ['2024-00-10', 'Month 0'],\n+    ['31/4/2024', 'Day 31 is out of range for 04/2024'],\n+    ['29/2/2023', 'Day 29 is out of range for 02/2023'],\n+  ])('rejects %s', (input, message) => {\n+    const r = parseDateInput(input);\n+    expect(r).toMatchObject({ ok: false, error: { code: 'INVALID_DATE' } });\n+    expect(JSON.stringify(r)).toContain(message);\n+    expect(JSON.stringify(r)).toContain('Use dd/mm/yyyy or yyyy-mm-dd.');\n+  });\n+\n+  it.each([\n+    ['29/2/2024', { day: 29, month: 2, year: 2024 }],\n+    ['2024-2-3', { day: 3, month: 2, year: 2024 }],\n+    ['1-2-2024', { day: 1, month: 2, year: 2024 }],\n+    ['3/2/2024', { day: 3, month: 2, year: 2024 }],\n+  ])('accepts %s', (input, expected) => {\n+    expect(parseDateInput(input)).toMatchObject({ ok: true, ...expected });\n+  });\n+});\n",
     "repro_patch": "diff --git a/tests/lunar.test.ts b/tests/lunar.test.ts\nindex 97650a5..248cad3 100644\n--- a/tests/lunar.test.ts\n+++ b/tests/lunar.test.ts\n@@ -100,3 +100,29 @@ describe('holidays', () => {\n     expect([...dates].sort()).toEqual(dates);\n   });\n });\n+\n+describe('parseDateInput range validation', () => {\n+  it.each([\n+    ['0/1/2024', 'Day 0 is out of range for 01/2024'],\n+    ['32/1/2024', 'Day 32'],\n+    ['1/0/2024', 'Month 0'],\n+    ['1/13/2024', 'Month 13'],\n+    ['2024-00-10', 'Month 0'],\n+    ['31/4/2024', 'Day 31 is out of range for 04/2024'],\n+    ['29/2/2023', 'Day 29 is out of range for 02/2023'],\n+  ])('rejects %s', (input, message) => {\n+    const r = parseDateInput(input);\n+    expect(r).toMatchObject({ ok: false, error: { code: 'INVALID_DATE' } });\n+    expect(JSON.stringify(r)).toContain(message);\n+    expect(JSON.stringify(r)).toContain('Use dd/mm/yyyy or yyyy-mm-dd.');\n+  });\n+\n+  it.each([\n+    ['29/2/2024', { day: 29, month: 2, year: 2024 }],\n+    ['2024-2-3', { day: 3, month: 2, year: 2024 }],\n+    ['1-2-2024', { day: 1, month: 2, year: 2024 }],\n+    ['3/2/2024', { day: 3, month: 2, year: 2024 }],\n+  ])('accepts %s', (input, expected) => {\n+    expect(parseDateInput(input)).toMatchObject({ ok: true, ...expected });\n+  });\n+});\n",
@@ -1018,28 +1018,28 @@
     "state": "open",
     "last_seen_at": "2026-10-23T04:59:07.891Z",
     "opened_at": "2026-10-23T04:59:07.891Z",
-    "head_sha": "d092538521e14e51781f6f41ab511f93b9a046f1",
+    "head_sha": "610d6a391cde3546d6962412a32e7d680df3ce73",
     "mergeable": "MERGEABLE",
-    "ci_state": "success",
+    "ci_state": "pending",
     "review_decision": "REVIEW_REQUIRED",
-    "snapshot_at": "2026-10-23T05:06:31.548Z",
+    "snapshot_at": "2026-10-23T07:12:56.580Z",
     "ci_seen_sha": null,
-    "merge_state": "BEHIND"
+    "merge_state": "BLOCKED"
    },
    {
     "issue_id": 24,
     "url": "https://github.com/beiryu/vn-skills/pull/137",
     "number": 137,
-    "state": "open",
+    "state": "merged",
     "last_seen_at": "2026-10-23T04:59:01.696Z",
     "opened_at": "2026-10-23T04:59:01.696Z",
     "head_sha": "fa3b989a92502fa45f1c0a6cc6da8ef847525a2a",
-    "mergeable": "MERGEABLE",
+    "mergeable": "UNKNOWN",
     "ci_state": "success",
     "review_decision": "REVIEW_REQUIRED",
-    "snapshot_at": "2026-10-23T05:06:34.449Z",
+    "snapshot_at": "2026-10-23T07:12:59.366Z",
     "ci_seen_sha": null,
-    "merge_state": "BLOCKED"
+    "merge_state": "UNKNOWN"
    },
    {
     "issue_id": 25,
