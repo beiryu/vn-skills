@@ -1,6 +1,6 @@
 {
  "version": 1,
- "exported_at": "2026-10-23T08:01:57.602Z",
+ "exported_at": "2026-10-23T09:33:57.910Z",
  "tables": {
   "repos": [
    {
@@ -10,7 +10,7 @@
     "policy_status": null,
     "policy_excerpts": null,
     "block_reason": null,
-    "last_scanned": "2026-10-23T08:01:29.832Z"
+    "last_scanned": "2026-10-23T09:33:36.929Z"
    }
   ],
   "issues": [
@@ -862,7 +862,7 @@
     "title": "docs: group the MCP tool list by skill in README.md and README.vi.md",
     "body": "## Problem\n\nThe README \"MCP server\" section lists 28 tools as one comma-separated line (`vietqr_build`, `vietqr_parse`, …, `vn_holidays_add_working_days`) in no particular order. For example, `vn_tax_id_check_digit` sits between lunar tools. A reader can't quickly see what each skill exposes. Comparable offline MCP servers in directories (e.g. `josemvelez/mcp-latam-business` on Smithery) group tools by module and give a count.\n\n## Acceptance\n\n- [ ] In `README.md`, replace the flat `Tools:` line with a short table or list grouped by skill (vietqr, vn-address, vn-tax-id, vn-id, vn-phone, vn-holidays, vn-money-words, vn-lunar, vn-einvoice, vn-name, vn-number-format), with the total tool count in the heading or first sentence\n- [ ] The tool names and count are taken from `packages/mcp/src/server.ts` (every registered tool listed exactly once, none invented)\n- [ ] Same change in `README.vi.md`, with Vietnamese prose\n- [ ] `tests/readme.test.ts` still passes. If it checks the tool list, keep that check (or extend it so it fails when a tool registered in `server.ts` is missing from the README)\n- [ ] `pnpm format:check` and `pnpm exec vitest run` pass",
     "url": "https://github.com/beiryu/vn-skills/issues/145",
-    "state": "pr_open",
+    "state": "done",
     "score": 1,
     "triage_reason": "The README is the landing page for npm and directory visitors. A grouped tool list shows the breadth of the server at a glance, which is the main argument for adopting it.",
     "attempts": 0,
@@ -878,7 +878,7 @@
     "pr_body": "## What & why\n\nCloses #145\n\nThe \"MCP server\" section in `README.md` and `README.vi.md` listed all 28 tools on one comma-separated line, in no particular order. It now has a table grouped by skill, and the intro states the total of 28 tools. Tool names come from `packages/mcp/src/server.ts`. `README.vi.md` has the same table with Vietnamese prose.\n\nAcceptance:\n\n- [x] `README.md`: flat `Tools:` line replaced by a per-skill table, with the total count in the intro\n- [x] Tool names and count taken from `packages/mcp/src/server.ts`, each tool listed once\n- [x] Same change in `README.vi.md`, in Vietnamese\n- [x] `tests/readme.test.ts` passes and is extended to fail when a registered tool is missing from the README\n- [x] `pnpm format:check` and `pnpm exec vitest run` pass\n\n## Testing\n\nAdded to `tests/readme.test.ts`, run for both `README.md` and `README.vi.md`:\n\n- the MCP server section states the registered tool count\n- every tool registered in `server.ts` appears exactly once in that section\n- each tool is on a line that names its skill\n\n## Checklist\n\n- [x] Title follows Conventional Commits (`feat|fix|docs|data|test|refactor|perf|build|ci|chore(scope): …`)\n- [x] Tests added or updated (golden test for every bug fix)\n- [x] `pnpm build && pnpm typecheck && pnpm lint && pnpm test && pnpm format:check` pass locally\n- [x] Core stays offline (no `fetch`/HTTP in `packages/core`)\n- [x] Data changes go through `scripts/build-data.ts` and `SOURCES.md` (source + license)\n- [x] SKILL.md / README updated if behaviour changed\n",
     "dry": 0,
     "claimed_at": null,
-    "updated_at": "2026-10-23T08:00:22.190Z",
+    "updated_at": "2026-10-23T09:33:34.261Z",
     "blocked": null,
     "patch": "diff --git a/README.md b/README.md\nindex b9a86bc..6be319f 100644\n--- a/README.md\n+++ b/README.md\n@@ -81,10 +81,21 @@ Setup for other clients is in [MCP client setup](#mcp-client-setup). Or in any M\n { \"mcpServers\": { \"vn-skills\": { \"command\": \"npx\", \"args\": [\"-y\", \"@vn-skills/mcp\"] } } }\n ```\n \n-Tools: `vietqr_build`, `vietqr_parse`, `vietqr_decode`, `vietqr_banks`, `vn_address_parse`, `vn_address_convert`, `vn_address_search_wards`,\n-`vn_tax_id_validate`, `vn_money_to_words`, `vn_lunar_from_solar`, `vn_lunar_to_solar`, `vn_lunar_holidays`,\n-`vn_lunar_tet`, `vn_lunar_canchi`, `vn_tax_id_check_digit`, `vn_address_provinces`, `vn_address_province`,\n-`vn_einvoice_validate`, `vn_einvoice_totals`, `vn_einvoice_mock_issue`, `vn_einvoice_example`, `vn_name`, `vn_id_parse`, `vn_phone`, `vn_number_format`, `vn_holidays_year`, `vn_holidays_is_working_day`, `vn_holidays_add_working_days`.\n+The server exposes 28 tools, grouped by skill:\n+\n+| Skill              | Tools                                                                                                              |\n+| ------------------ | ------------------------------------------------------------------------------------------------------------------ |\n+| `vietqr`           | `vietqr_build`, `vietqr_parse`, `vietqr_decode`, `vietqr_banks`                                                    |\n+| `vn-address`       | `vn_address_parse`, `vn_address_convert`, `vn_address_search_wards`, `vn_address_provinces`, `vn_address_province` |\n+| `vn-tax-id`        | `vn_tax_id_validate`, `vn_tax_id_check_digit`                                                                      |\n+| `vn-id`            | `vn_id_parse`                                                                                                      |\n+| `vn-phone`         | `vn_phone`                                                                                                         |\n+| `vn-holidays`      | `vn_holidays_year`, `vn_holidays_is_working_day`, `vn_holidays_add_working_days`                                   |\n+| `vn-money-words`   | `vn_money_to_words`                                                                                                |\n+| `vn-lunar`         | `vn_lunar_from_solar`, `vn_lunar_to_solar`, `vn_lunar_holidays`, `vn_lunar_tet`, `vn_lunar_canchi`                 |\n+| `vn-einvoice`      | `vn_einvoice_validate`, `vn_einvoice_totals`, `vn_einvoice_mock_issue`, `vn_einvoice_example`                      |\n+| `vn-name`          | `vn_name`                                                                                                          |\n+| `vn-number-format` | `vn_number_format`                                                                                                 |\n \n ### MCP client setup\n \ndiff --git a/README.vi.md b/README.vi.md\nindex 261439c..6acdbe2 100644\n--- a/README.vi.md\n+++ b/README.vi.md\n@@ -79,10 +79,21 @@ Hoặc trong cấu hình MCP bất kỳ:\n { \"mcpServers\": { \"vn-skills\": { \"command\": \"npx\", \"args\": [\"-y\", \"@vn-skills/mcp\"] } } }\n ```\n \n-Tool: `vietqr_build`, `vietqr_parse`, `vietqr_decode`, `vietqr_banks`, `vn_address_parse`, `vn_address_convert`, `vn_address_search_wards`,\n-`vn_address_provinces`, `vn_address_province`, `vn_tax_id_validate`, `vn_tax_id_check_digit`, `vn_money_to_words`,\n-`vn_lunar_from_solar`, `vn_lunar_to_solar`, `vn_lunar_holidays`, `vn_lunar_tet`, `vn_lunar_canchi`,\n-`vn_einvoice_validate`, `vn_einvoice_totals`, `vn_einvoice_mock_issue`, `vn_einvoice_example`, `vn_name`, `vn_id_parse`, `vn_phone`, `vn_number_format`, `vn_holidays_year`, `vn_holidays_is_working_day`, `vn_holidays_add_working_days`.\n+Server cung cấp 28 tool, nhóm theo skill:\n+\n+| Skill              | Tool                                                                                                               |\n+| ------------------ | ------------------------------------------------------------------------------------------------------------------ |\n+| `vietqr`           | `vietqr_build`, `vietqr_parse`, `vietqr_decode`, `vietqr_banks`                                                    |\n+| `vn-address`       | `vn_address_parse`, `vn_address_convert`, `vn_address_search_wards`, `vn_address_provinces`, `vn_address_province` |\n+| `vn-tax-id`        | `vn_tax_id_validate`, `vn_tax_id_check_digit`                                                                      |\n+| `vn-id`            | `vn_id_parse`                                                                                                      |\n+| `vn-phone`         | `vn_phone`                                                                                                         |\n+| `vn-holidays`      | `vn_holidays_year`, `vn_holidays_is_working_day`, `vn_holidays_add_working_days`                                   |\n+| `vn-money-words`   | `vn_money_to_words`                                                                                                |\n+| `vn-lunar`         | `vn_lunar_from_solar`, `vn_lunar_to_solar`, `vn_lunar_holidays`, `vn_lunar_tet`, `vn_lunar_canchi`                 |\n+| `vn-einvoice`      | `vn_einvoice_validate`, `vn_einvoice_totals`, `vn_einvoice_mock_issue`, `vn_einvoice_example`                      |\n+| `vn-name`          | `vn_name`                                                                                                          |\n+| `vn-number-format` | `vn_number_format`                                                                                                 |\n \n ### Cài đặt MCP theo client\n \ndiff --git a/tests/readme.test.ts b/tests/readme.test.ts\nindex 3736743..5f8df26 100644\n--- a/tests/readme.test.ts\n+++ b/tests/readme.test.ts\n@@ -188,3 +188,41 @@ describe.each([\n     expect(q).not.toContain('.vscode/mcp.json');\n   });\n });\n+\n+describe.each(['README.md', 'README.vi.md'])('%s MCP tools grouped by skill', (file) => {\n+  const text = read(file);\n+  const section = /^## MCP server[^\\n]*\\n([\\s\\S]*?)(?=^### |^## )/m.exec(text)![1]!;\n+  const skillOf: [string, string][] = [\n+    ['vietqr_', 'vietqr'],\n+    ['vn_address_', 'vn-address'],\n+    ['vn_tax_id_', 'vn-tax-id'],\n+    ['vn_id_', 'vn-id'],\n+    ['vn_phone', 'vn-phone'],\n+    ['vn_holidays_', 'vn-holidays'],\n+    ['vn_money_to_words', 'vn-money-words'],\n+    ['vn_lunar_', 'vn-lunar'],\n+    ['vn_einvoice_', 'vn-einvoice'],\n+    ['vn_name', 'vn-name'],\n+    ['vn_number_format', 'vn-number-format'],\n+  ];\n+\n+  it('states the total tool count in the MCP server section', () => {\n+    expect(section).toContain(String(registered.length));\n+  });\n+\n+  it('lists every registered tool exactly once in the MCP server section', () => {\n+    for (const t of registered) {\n+      expect(section.split('`' + t + '`').length - 1, t).toBe(1);\n+    }\n+  });\n+\n+  it('puts each tool on a line that names its skill', () => {\n+    const lines = section.split('\\n');\n+    for (const t of registered) {\n+      const skill = skillOf.find(([prefix]) => t.startsWith(prefix))?.[1];\n+      expect(skill, t).toBeDefined();\n+      const line = lines.find((l) => l.includes('`' + t + '`'))!;\n+      expect(line, t).toContain('`' + skill! + '`');\n+    }\n+  });\n+});\n",
     "repro_patch": "diff --git a/tests/readme.test.ts b/tests/readme.test.ts\nindex 3736743..5f8df26 100644\n--- a/tests/readme.test.ts\n+++ b/tests/readme.test.ts\n@@ -188,3 +188,41 @@ describe.each([\n     expect(q).not.toContain('.vscode/mcp.json');\n   });\n });\n+\n+describe.each(['README.md', 'README.vi.md'])('%s MCP tools grouped by skill', (file) => {\n+  const text = read(file);\n+  const section = /^## MCP server[^\\n]*\\n([\\s\\S]*?)(?=^### |^## )/m.exec(text)![1]!;\n+  const skillOf: [string, string][] = [\n+    ['vietqr_', 'vietqr'],\n+    ['vn_address_', 'vn-address'],\n+    ['vn_tax_id_', 'vn-tax-id'],\n+    ['vn_id_', 'vn-id'],\n+    ['vn_phone', 'vn-phone'],\n+    ['vn_holidays_', 'vn-holidays'],\n+    ['vn_money_to_words', 'vn-money-words'],\n+    ['vn_lunar_', 'vn-lunar'],\n+    ['vn_einvoice_', 'vn-einvoice'],\n+    ['vn_name', 'vn-name'],\n+    ['vn_number_format', 'vn-number-format'],\n+  ];\n+\n+  it('states the total tool count in the MCP server section', () => {\n+    expect(section).toContain(String(registered.length));\n+  });\n+\n+  it('lists every registered tool exactly once in the MCP server section', () => {\n+    for (const t of registered) {\n+      expect(section.split('`' + t + '`').length - 1, t).toBe(1);\n+    }\n+  });\n+\n+  it('puts each tool on a line that names its skill', () => {\n+    const lines = section.split('\\n');\n+    for (const t of registered) {\n+      const skill = skillOf.find(([prefix]) => t.startsWith(prefix))?.[1];\n+      expect(skill, t).toBeDefined();\n+      const line = lines.find((l) => l.includes('`' + t + '`'))!;\n+      expect(line, t).toContain('`' + skill! + '`');\n+    }\n+  });\n+});\n",
@@ -1238,12 +1238,12 @@
     "last_seen_at": "2026-10-23T08:00:44.949Z",
     "opened_at": "2026-10-23T08:00:44.949Z",
     "head_sha": "6b6fabacd8096118c4e0f6de46f54d5c5c2e3f51",
-    "mergeable": "MERGEABLE",
-    "ci_state": "pending",
+    "mergeable": "UNKNOWN",
+    "ci_state": "success",
     "review_decision": "REVIEW_REQUIRED",
-    "snapshot_at": "2026-10-23T08:01:15.279Z",
+    "snapshot_at": "2026-10-23T09:33:25.602Z",
     "ci_seen_sha": null,
-    "merge_state": "BEHIND"
+    "merge_state": "UNKNOWN"
    },
    {
     "issue_id": 27,
@@ -1253,12 +1253,12 @@
     "last_seen_at": "2026-10-23T08:00:38.803Z",
     "opened_at": "2026-10-23T08:00:38.803Z",
     "head_sha": "43e781bd0801fadcebe7265648e032e5a1175f88",
-    "mergeable": "MERGEABLE",
-    "ci_state": "pending",
+    "mergeable": "UNKNOWN",
+    "ci_state": "success",
     "review_decision": "REVIEW_REQUIRED",
-    "snapshot_at": "2026-10-23T08:01:17.637Z",
+    "snapshot_at": "2026-10-23T09:33:27.688Z",
     "ci_seen_sha": null,
-    "merge_state": "BEHIND"
+    "merge_state": "UNKNOWN"
    },
    {
     "issue_id": 28,
@@ -1268,12 +1268,12 @@
     "last_seen_at": "2026-10-23T08:00:32.949Z",
     "opened_at": "2026-10-23T08:00:32.949Z",
     "head_sha": "a3e79855787a77a0886296c0d9a34b55c0b6d427",
-    "mergeable": "MERGEABLE",
-    "ci_state": "pending",
+    "mergeable": "UNKNOWN",
+    "ci_state": "success",
     "review_decision": "REVIEW_REQUIRED",
-    "snapshot_at": "2026-10-23T08:01:19.973Z",
+    "snapshot_at": "2026-10-23T09:33:30.048Z",
     "ci_seen_sha": null,
-    "merge_state": "BEHIND"
+    "merge_state": "UNKNOWN"
    },
    {
     "issue_id": 29,
@@ -1282,28 +1282,28 @@
     "state": "open",
     "last_seen_at": "2026-10-23T08:00:27.553Z",
     "opened_at": "2026-10-23T08:00:27.553Z",
-    "head_sha": "47c1576428c6a4dc7b7e0079a387bdfa1ef2e5c0",
+    "head_sha": "0ef5b67ff7bdb69ead0938aedb42cb56e7e4fbff",
     "mergeable": "MERGEABLE",
     "ci_state": "pending",
     "review_decision": "REVIEW_REQUIRED",
-    "snapshot_at": "2026-10-23T08:01:22.509Z",
+    "snapshot_at": "2026-10-23T09:33:32.506Z",
     "ci_seen_sha": null,
-    "merge_state": "BEHIND"
+    "merge_state": "BLOCKED"
    },
    {
     "issue_id": 30,
     "url": "https://github.com/beiryu/vn-skills/pull/149",
     "number": 149,
-    "state": "open",
+    "state": "merged",
     "last_seen_at": "2026-10-23T08:00:22.190Z",
     "opened_at": "2026-10-23T08:00:22.190Z",
-    "head_sha": "22b02cf13f3b2ede3d50afd296dd9e622c4d67cc",
-    "mergeable": "MERGEABLE",
+    "head_sha": "ed64a301ee9c9729ce86a6c553ad6f8d81d11a02",
+    "mergeable": "UNKNOWN",
     "ci_state": "pending",
     "review_decision": "REVIEW_REQUIRED",
-    "snapshot_at": "2026-10-23T08:01:24.783Z",
+    "snapshot_at": "2026-10-23T09:33:34.261Z",
     "ci_seen_sha": null,
-    "merge_state": "BEHIND"
+    "merge_state": "UNKNOWN"
    }
   ],
   "pending_actions": [
