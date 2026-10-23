@@ -100,3 +100,29 @@ describe('holidays', () => {
     expect([...dates].sort()).toEqual(dates);
   });
 });
+
+describe('parseDateInput range validation', () => {
+  it.each([
+    ['0/1/2024', 'Day 0 is out of range for 01/2024'],
+    ['32/1/2024', 'Day 32'],
+    ['1/0/2024', 'Month 0'],
+    ['1/13/2024', 'Month 13'],
+    ['2024-00-10', 'Month 0'],
+    ['31/4/2024', 'Day 31 is out of range for 04/2024'],
+    ['29/2/2023', 'Day 29 is out of range for 02/2023'],
+  ])('rejects %s', (input, message) => {
+    const r = parseDateInput(input);
+    expect(r).toMatchObject({ ok: false, error: { code: 'INVALID_DATE' } });
+    expect(JSON.stringify(r)).toContain(message);
+    expect(JSON.stringify(r)).toContain('Use dd/mm/yyyy or yyyy-mm-dd.');
+  });
+
+  it.each([
+    ['29/2/2024', { day: 29, month: 2, year: 2024 }],
+    ['2024-2-3', { day: 3, month: 2, year: 2024 }],
+    ['1-2-2024', { day: 1, month: 2, year: 2024 }],
+    ['3/2/2024', { day: 3, month: 2, year: 2024 }],
+  ])('accepts %s', (input, expected) => {
+    expect(parseDateInput(input)).toMatchObject({ ok: true, ...expected });
+  });
+});

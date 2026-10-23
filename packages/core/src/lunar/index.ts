@@ -83,16 +83,46 @@ export function lunarInfo(
   };
 }
 
-/** Parse "dd/mm/yyyy", "dd-mm-yyyy" or ISO "yyyy-mm-dd" into numbers. */
+/**
+ * Parse "dd/mm/yyyy", "dd-mm-yyyy" or ISO "yyyy-mm-dd" into numbers.
+ * Days are checked against the Gregorian calendar; pass `{ lunar: true }` to allow 1-30 for any month.
+ */
 export function parseDateInput(
   input: string,
+  opts: { lunar?: boolean } = {},
 ): Result<{ day: number; month: number; year: number }> {
   const s = String(input ?? '').trim();
+  const hint = 'Use dd/mm/yyyy or yyyy-mm-dd.';
   let m = /^(\d{1,2})[/\-.](\d{1,2})[/\-.](\d{4})$/.exec(s);
-  if (m) return { ok: true, day: Number(m[1]), month: Number(m[2]), year: Number(m[3]) };
-  m = /^(\d{4})-(\d{1,2})-(\d{1,2})$/.exec(s);
-  if (m) return { ok: true, day: Number(m[3]), month: Number(m[2]), year: Number(m[1]) };
-  return fail('INVALID_DATE', `Cannot parse date "${input}"`, 'Use dd/mm/yyyy or yyyy-mm-dd.');
+  let day: number, month: number, year: number;
+  if (m) {
+    [day, month, year] = [Number(m[1]), Number(m[2]), Number(m[3])];
+  } else {
+    m = /^(\d{4})-(\d{1,2})-(\d{1,2})$/.exec(s);
+    if (!m) return fail('INVALID_DATE', `Cannot parse date "${input}"`, hint);
+    [day, month, year] = [Number(m[3]), Number(m[2]), Number(m[1])];
+  }
+  if (month < 1 || month > 12) {
+    return fail('INVALID_DATE', `Month ${month} is out of range (1-12)`, hint);
+  }
+  const dim = opts.lunar
+    ? 30
+    : month === 2
+      ? isLeap(year)
+        ? 29
+        : 28
+      : [4, 6, 9, 11].includes(month)
+        ? 30
+        : 31;
+  if (day < 1 || day > dim) {
+    const mm = `${String(month).padStart(2, '0')}/${year}`;
+    return fail('INVALID_DATE', `Day ${day} is out of range for ${mm}`, hint);
+  }
+  return { ok: true, day, month, year };
+}
+
+function isLeap(y: number): boolean {
+  return (y % 4 === 0 && y % 100 !== 0) || y % 400 === 0;
 }
 
 /** Solar date of Tết (lunar 1/1) for a given lunar year. */
