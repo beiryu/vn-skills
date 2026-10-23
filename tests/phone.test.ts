@@ -98,3 +98,26 @@ describe('parsePhone: invalid', () => {
     expect(parsePhone(input).ok).toBe(false);
   });
 });
+
+describe('parsePhone: error hints', () => {
+  it.each([
+    ['', 'EMPTY'],
+    ['   ', 'EMPTY'],
+    ['abc', 'INVALID_FORMAT'],
+    ['1234567890', 'INVALID_FORMAT'],
+    ['091234567', 'INVALID_LENGTH'],
+    ['0212345678', 'INVALID_LENGTH'],
+    ['0112345678', 'UNKNOWN_PREFIX'],
+    ['04123456789', 'UNKNOWN_PREFIX'],
+  ])('%j -> %s has a hint', (input, code) => {
+    const r = parsePhone(input);
+    if (r.ok) throw new Error('expected failure');
+    expect(r.error.code).toBe(code);
+    expect(r.error.hint).toEqual(expect.any(String));
+    expect(r.error.hint!.length).toBeGreaterThan(0);
+  });
+  it('null input is EMPTY', () => {
+    const r = parsePhone(null as unknown as string);
+    expect(!r.ok && r.error.message).toBe('Phone number is empty');
+  });
+});
