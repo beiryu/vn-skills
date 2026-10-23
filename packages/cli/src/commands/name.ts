@@ -7,10 +7,10 @@ export function registerName(program: Command): void {
     .command('name')
     .description('Split, sort and slugify Vietnamese full names offline');
   cmd
-    .command('split <fullName>')
-    .description('Split into họ / tên đệm / tên')
-    .action((fullName: string, _o, c: Command) => {
-      const r = splitName(fullName);
+    .command('split <fullName...>')
+    .description('Split into họ / tên đệm / tên (quotes optional)')
+    .action((words: string[], _o, c: Command) => {
+      const r = splitName(words.join(' '));
       if (!r.ok) failExit(c, r.error);
       if (wantsJson(c)) printJson(r);
       else
@@ -23,18 +23,19 @@ export function registerName(program: Command): void {
         );
     });
   cmd
-    .command('slug <fullName>')
-    .description('Unaccented hyphenated slug')
-    .action((fullName: string, _o, c: Command) => {
-      const slug = slugifyName(fullName);
+    .command('slug <fullName...>')
+    .description('Unaccented hyphenated slug (quotes optional)')
+    .action((words: string[], _o, c: Command) => {
+      const slug = slugifyName(words.join(' '));
       if (wantsJson(c)) printJson({ ok: true, slug });
       else process.stdout.write(`${slug}\n`);
     });
   cmd
-    .command('initials <fullName>')
-    .description('Initials of each word')
+    .command('initials <fullName...>')
+    .description('Initials of each word (quotes optional)')
     .option('--ascii', 'strip diacritics')
-    .action((fullName: string, o: { ascii?: boolean }, c: Command) => {
+    .action((words: string[], o: { ascii?: boolean }, c: Command) => {
+      const fullName = words.join(' ');
       const value = initials(fullName, { ascii: o.ascii });
       if (wantsJson(c)) printJson({ ok: true, initials: value });
       else process.stdout.write(`${value}\n`);
