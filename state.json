@@ -1,6 +1,6 @@
 {
  "version": 1,
- "exported_at": "2026-10-23T03:45:39.729Z",
+ "exported_at": "2026-10-23T03:46:37.423Z",
  "tables": {
   "repos": [
    {
@@ -10,7 +10,7 @@
     "policy_status": null,
     "policy_excerpts": null,
     "block_reason": null,
-    "last_scanned": "2026-10-23T03:45:13.499Z"
+    "last_scanned": "2026-10-23T03:46:14.479Z"
    }
   ],
   "issues": [
@@ -827,12 +827,12 @@
     "last_seen_at": "2026-10-23T03:01:57Z",
     "opened_at": "2026-10-22T14:45:20.248Z",
     "head_sha": "b1af632b286cfa95627f526df1fa1cd908c6e081",
-    "mergeable": "UNKNOWN",
+    "mergeable": "MERGEABLE",
     "ci_state": "success",
     "review_decision": null,
-    "snapshot_at": "2026-10-23T03:45:07.400Z",
+    "snapshot_at": "2026-10-23T03:46:08.183Z",
     "ci_seen_sha": null,
-    "merge_state": "UNKNOWN"
+    "merge_state": "BEHIND"
    },
    {
     "issue_id": 17,
@@ -841,13 +841,13 @@
     "state": "open",
     "last_seen_at": "2026-10-22T14:45:13.306Z",
     "opened_at": "2026-10-22T14:45:13.306Z",
-    "head_sha": "96015c5f47e4375f432453813b41071c35210db2",
+    "head_sha": "8fa55451e4bc20c05966779341cf7c0c3c0a72ee",
     "mergeable": "MERGEABLE",
-    "ci_state": "success",
+    "ci_state": "pending",
     "review_decision": "REVIEW_REQUIRED",
-    "snapshot_at": "2026-10-23T03:45:09.823Z",
+    "snapshot_at": "2026-10-23T03:46:10.581Z",
     "ci_seen_sha": null,
-    "merge_state": "BEHIND"
+    "merge_state": "BLOCKED"
    },
    {
     "issue_id": 18,
