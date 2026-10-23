@@ -16,12 +16,12 @@ export function registerAddress(program: Command): void {
     );
 
   cmd
-    .command('parse <text>')
-    .description('Parse free-text address into province / ward / street')
+    .command('parse <text...>')
+    .description('Parse free-text address into province / ward / street (quotes optional)')
     .option('--legacy', 'use the pre-2025 catalogue (63 provinces, districts)')
     .option('--new', 'use only the current catalogue (34 provinces)')
-    .action((text: string, opts, c: Command) => {
-      const r = parseAddress(text, {
+    .action((words: string[], opts, c: Command) => {
+      const r = parseAddress(words.join(' '), {
         mode: opts.legacy ? 'legacy' : opts.new ? 'from2025' : 'auto',
       });
       if (!r.ok) failExit(c, r.error);
@@ -87,10 +87,12 @@ export function registerAddress(program: Command): void {
     });
 
   cmd
-    .command('convert <text>')
-    .description('Convert a pre-2025 address (province/district/ward) to the new 2-level structure')
-    .action((text: string, _o, c: Command) => {
-      const r = convertAddress(text);
+    .command('convert <text...>')
+    .description(
+      'Convert a pre-2025 address (province/district/ward) to the new 2-level structure (quotes optional)',
+    )
+    .action((words: string[], _o, c: Command) => {
+      const r = convertAddress(words.join(' '));
       if (!r.ok) failExit(c, r.error);
       const result = {
         ok: true,
@@ -158,12 +160,12 @@ export function registerAddress(program: Command): void {
     });
 
   cmd
-    .command('wards <query>')
-    .description('Search current wards by name, optionally within a province')
+    .command('wards <query...>')
+    .description('Search current wards by name, optionally within a province (quotes optional)')
     .option('-p, --province <province>', 'restrict to a province')
     .option('-l, --limit <n>', 'max results', '10')
-    .action((query: string, opts, c: Command) => {
-      const list = searchWards(query, opts.province, Number(opts.limit));
+    .action((words: string[], opts, c: Command) => {
+      const list = searchWards(words.join(' '), opts.province, Number(opts.limit));
       const rows = list.map((x) => ({
         code: x.ward.code,
         fullName: x.ward.fullName,
@@ -180,10 +182,10 @@ export function registerAddress(program: Command): void {
     });
 
   cmd
-    .command('province <query>')
-    .description('Look up one current province by name/alias/code')
-    .action((query: string, _o, c: Command) => {
-      const result = lookupProvince(query);
+    .command('province <query...>')
+    .description('Look up one current province by name/alias/code (quotes optional)')
+    .action((words: string[], _o, c: Command) => {
+      const result = lookupProvince(words.join(' '));
       if (!result.ok) failExit(c, result.error);
       if (wantsJson(c)) printJson(result);
       else process.stdout.write(kv(Object.entries(result).filter(([k]) => k !== 'ok')) + '\n');
