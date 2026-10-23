@@ -1,6 +1,6 @@
 {
  "version": 1,
- "exported_at": "2026-10-23T03:49:02.431Z",
+ "exported_at": "2026-10-23T03:50:48.920Z",
  "tables": {
   "repos": [
    {
@@ -10,7 +10,7 @@
     "policy_status": null,
     "policy_excerpts": null,
     "block_reason": null,
-    "last_scanned": "2026-10-23T03:48:41.525Z"
+    "last_scanned": "2026-10-23T03:50:21.239Z"
    }
   ],
   "issues": [
@@ -485,7 +485,7 @@
     "title": "vn-id: warn when a decoded CCCD birth year is in the future",
     "body": "## Problem\n`parseCitizenId` (`packages/core/src/id/index.ts:55-57`) computes `century = 1900 + Math.floor(digit / 2) * 100` for any digit 0–9. `parseCitizenId('001900123456')` returns `ok: true` with `birthYear: 2300` and no warning. The century coding comes from Circular 59/2021/TT-BCA, which the file already cites, so the decoding itself stays. But a birth year after the current year cannot belong to an issued card, and agents should be told.\n\n## Acceptance\n- [ ] Add an optional second argument `opts?: { today?: Date }` (default `new Date()`) so tests are deterministic\n- [ ] When `birthYear` is after `today`'s year, the result keeps `ok: true` and adds a warning naming the decoded year, e.g. `Decoded birth year 2300 is in the future; the ID is probably mistyped.`\n- [ ] No warning for birth years up to and including the current year\n- [ ] Tests in `tests/id.test.ts` with a fixed `today`: digit 9 (future), digit 2/3 with a past year (no warning), and a birth year equal to the current year (no warning)\n- [ ] CLI `id parse` and MCP `vn_id_parse` output includes the new warning (no new flags needed)\n- [ ] `skills/vn-id/SKILL.md` mentions the warning",
     "url": "https://github.com/beiryu/vn-skills/issues/112",
-    "state": "pr_open",
+    "state": "done",
     "score": 1,
     "triage_reason": "A typo in the century digit decodes silently to an impossible person. That is the kind of plausible-looking wrong answer the project exists to prevent.",
     "attempts": 0,
@@ -501,7 +501,7 @@
     "pr_body": "Closes #112\n\n`parseCitizenId` now accepts `opts?: { today?: Date }` (default `new Date()`). If the decoded birth year is after the year of `today`, the result stays `ok: true` and gets a warning, e.g. `Decoded birth year 2300 is in the future; the ID is probably mistyped.` The century decoding from Circular 59/2021/TT-BCA is unchanged. Birth years up to and including the current year get no warning.\n\nThe CLI `id parse` and MCP `vn_id_parse` already pass `warnings` through, so they need no code change.\n\nAcceptance checklist from the issue:\n\n- [x] Add optional second argument `opts?: { today?: Date }` (default `new Date()`)\n- [x] Birth year after `today`'s year keeps `ok: true` and adds a warning naming the decoded year\n- [x] No warning for birth years up to and including the current year\n- [x] Tests in `tests/id.test.ts` with a fixed `today`: digit 9 (future), digits 2/3 with a past year, birth year equal to the current year\n- [x] CLI `id parse` and MCP `vn_id_parse` output includes the new warning (no new flags; warnings are passed through unchanged, no CLI/MCP test added)\n- [x] `skills/vn-id/SKILL.md` mentions the warning\n\n## Testing\n\nNew `parseCitizenId: future birth year` block in `tests/id.test.ts`, with a fixed `today` of 2026-06-15:\n\n- `001900123456` (digit 9) returns `ok: true`, `birthYear: 2300` and a warning naming 2300.\n- Digit 2 with year `10` and digit 3 with year `25` give no future warning.\n- Digit 2 with year `26` (equal to the current year) gives no warning.\n- Digit 2 with year `27` (one year ahead) warns and names 2027.\n\n## Checklist\n\n- [x] Title follows Conventional Commits (`feat|fix|docs|data|test|refactor|perf|build|ci|chore(scope): …`)\n- [x] Tests added or updated (golden test for every bug fix)\n- [x] `pnpm build && pnpm typecheck && pnpm lint && pnpm test && pnpm format:check` pass locally\n- [x] Core stays offline (no `fetch`/HTTP in `packages/core`)\n- [ ] Data changes go through `scripts/build-data.ts` and `SOURCES.md` (source + license)\n- [x] SKILL.md / README updated if behaviour changed\n",
     "dry": 0,
     "claimed_at": null,
-    "updated_at": "2026-10-22T14:45:13.307Z",
+    "updated_at": "2026-10-23T03:50:19.124Z",
     "blocked": null,
     "patch": "diff --git a/packages/core/src/id/index.ts b/packages/core/src/id/index.ts\nindex 48ac52f..03bebd6 100644\n--- a/packages/core/src/id/index.ts\n+++ b/packages/core/src/id/index.ts\n@@ -30,7 +30,7 @@ const NOT_PROOF = 'Format validity does not prove the identity exists.';\n  * Validate and decode a CCCD (12 digits) or check the format of a legacy CMND (9 digits).\n  * Rules: Decree 137/2015/NĐ-CP art. 7, Circular 59/2021/TT-BCA appendices I and III. Offline.\n  */\n-export function parseCitizenId(input: string): Result<CitizenIdParsed> {\n+export function parseCitizenId(input: string, opts?: { today?: Date }): Result<CitizenIdParsed> {\n   const s = String(input ?? '').trim();\n   if (!/^\\d+$/.test(s))\n     return fail(\n@@ -63,6 +63,9 @@ export function parseCitizenId(input: string): Result<CitizenIdParsed> {\n   const warnings = [NOT_PROOF];\n   if (!legacy)\n     warnings.push(`Province code ${provinceCode} is not in the legacy 63-province list.`);\n+  const currentYear = (opts?.today ?? new Date()).getUTCFullYear();\n+  if (birthYear > currentYear)\n+    warnings.push(`Decoded birth year ${birthYear} is in the future; the ID is probably mistyped.`);\n \n   return {\n     ok: true,\ndiff --git a/skills/vn-id/SKILL.md b/skills/vn-id/SKILL.md\nindex 54ee9a4..3a11597 100644\n--- a/skills/vn-id/SKILL.md\n+++ b/skills/vn-id/SKILL.md\n@@ -32,6 +32,8 @@ Sources: Circular 59/2021/TT-BCA (15/05/2021), Appendices I and III; Decree 137/\n - Digit 4: sex + century. Male/female: 1900–1999 `0`/`1`, 2000–2099 `2`/`3`, 2100–2199 `4`/`5`,\n   2200–2299 `6`/`7`, 2300–2399 `8`/`9`.\n - Digits 5–6: last two digits of the birth year. Digits 7–12: random.\n+- A decoded birth year after the current year (e.g. digit `9` gives 23xx) stays `ok: true` but adds a warning that the\n+  ID is probably mistyped.\n - Unknown codes (e.g. `000`, registered abroad) are reported with `province: null`, not rejected.\n - 9 digits: legacy CMND, format only.\n \ndiff --git a/tests/id.test.ts b/tests/id.test.ts\nindex e15f281..0ce975b 100644\n--- a/tests/id.test.ts\n+++ b/tests/id.test.ts\n@@ -77,3 +77,34 @@ describe('CLI id parse', () => {\n     expect(JSON.parse(r.stdout)).toMatchObject({ ok: true, kind: 'cccd', provinceCode: '001' });\n   });\n });\n+\n+describe('parseCitizenId: future birth year', () => {\n+  const today = new Date('2026-06-15T00:00:00Z');\n+  const warningsOf = (r: unknown) => (r as { warnings: string[] }).warnings;\n+\n+  it('warns when the decoded birth year is after today', () => {\n+    const r = parseCitizenId('001900123456', { today });\n+    expect(r).toMatchObject({ ok: true, birthYear: 2300 });\n+    expect(warningsOf(r).some((w) => w.includes('2300') && /future/i.test(w))).toBe(true);\n+  });\n+\n+  it.each([\n+    [2, '10'],\n+    [3, '25'],\n+  ])('does not warn for digit %i with a past year', (digit, yy) => {\n+    const r = parseCitizenId(id('001', digit, yy), { today });\n+    expect(r).toMatchObject({ ok: true });\n+    expect(warningsOf(r).some((w) => /future/i.test(w))).toBe(false);\n+  });\n+\n+  it('does not warn when the birth year equals the current year', () => {\n+    const r = parseCitizenId(id('001', 2, '26'), { today });\n+    expect(r).toMatchObject({ ok: true, birthYear: 2026 });\n+    expect(warningsOf(r).some((w) => /future/i.test(w))).toBe(false);\n+  });\n+\n+  it('warns for the year after the current year', () => {\n+    const r = parseCitizenId(id('001', 2, '27'), { today });\n+    expect(warningsOf(r).some((w) => w.includes('2027'))).toBe(true);\n+  });\n+});\n",
     "repro_patch": "diff --git a/tests/id.test.ts b/tests/id.test.ts\nindex e15f281..0ce975b 100644\n--- a/tests/id.test.ts\n+++ b/tests/id.test.ts\n@@ -77,3 +77,34 @@ describe('CLI id parse', () => {\n     expect(JSON.parse(r.stdout)).toMatchObject({ ok: true, kind: 'cccd', provinceCode: '001' });\n   });\n });\n+\n+describe('parseCitizenId: future birth year', () => {\n+  const today = new Date('2026-06-15T00:00:00Z');\n+  const warningsOf = (r: unknown) => (r as { warnings: string[] }).warnings;\n+\n+  it('warns when the decoded birth year is after today', () => {\n+    const r = parseCitizenId('001900123456', { today });\n+    expect(r).toMatchObject({ ok: true, birthYear: 2300 });\n+    expect(warningsOf(r).some((w) => w.includes('2300') && /future/i.test(w))).toBe(true);\n+  });\n+\n+  it.each([\n+    [2, '10'],\n+    [3, '25'],\n+  ])('does not warn for digit %i with a past year', (digit, yy) => {\n+    const r = parseCitizenId(id('001', digit, yy), { today });\n+    expect(r).toMatchObject({ ok: true });\n+    expect(warningsOf(r).some((w) => /future/i.test(w))).toBe(false);\n+  });\n+\n+  it('does not warn when the birth year equals the current year', () => {\n+    const r = parseCitizenId(id('001', 2, '26'), { today });\n+    expect(r).toMatchObject({ ok: true, birthYear: 2026 });\n+    expect(warningsOf(r).some((w) => /future/i.test(w))).toBe(false);\n+  });\n+\n+  it('warns for the year after the current year', () => {\n+    const r = parseCitizenId(id('001', 2, '27'), { today });\n+    expect(warningsOf(r).some((w) => w.includes('2027'))).toBe(true);\n+  });\n+});\n",
@@ -826,28 +826,28 @@
     "state": "open",
     "last_seen_at": "2026-10-23T03:01:57Z",
     "opened_at": "2026-10-22T14:45:20.248Z",
-    "head_sha": "b1af632b286cfa95627f526df1fa1cd908c6e081",
+    "head_sha": "9fe20c8b49eaeb52d30a822e5333d150e05ca99e",
     "mergeable": "MERGEABLE",
-    "ci_state": "success",
+    "ci_state": "pending",
     "review_decision": null,
-    "snapshot_at": "2026-10-23T03:48:35.708Z",
+    "snapshot_at": "2026-10-23T03:50:16.977Z",
     "ci_seen_sha": null,
-    "merge_state": "BEHIND"
+    "merge_state": "BLOCKED"
    },
    {
     "issue_id": 17,
     "url": "https://github.com/beiryu/vn-skills/pull/125",
     "number": 125,
-    "state": "open",
+    "state": "merged",
     "last_seen_at": "2026-10-22T14:45:13.306Z",
     "opened_at": "2026-10-22T14:45:13.306Z",
     "head_sha": "d79904aa52a17d8ef43b7277db0c402c6e7f53d0",
-    "mergeable": "MERGEABLE",
-    "ci_state": "pending",
+    "mergeable": "UNKNOWN",
+    "ci_state": "success",
     "review_decision": "REVIEW_REQUIRED",
-    "snapshot_at": "2026-10-23T03:48:37.916Z",
+    "snapshot_at": "2026-10-23T03:50:19.123Z",
     "ci_seen_sha": null,
-    "merge_state": "BLOCKED"
+    "merge_state": "UNKNOWN"
    },
    {
     "issue_id": 18,
