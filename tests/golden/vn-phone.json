@@ -193,6 +193,37 @@
         }
       },
       {
+        "name": "+84 followed by trunk 0 (mobile)",
+        "input": "+84 0912345678",
+        "expected": {
+          "ok": true,
+          "national": "0912345678",
+          "e164": "+84912345678",
+          "type": "mobile"
+        }
+      },
+      {
+        "name": "84- followed by trunk 0 (mobile)",
+        "input": "84-0912345678",
+        "expected": {
+          "ok": true,
+          "national": "0912345678",
+          "e164": "+84912345678",
+          "type": "mobile"
+        }
+      },
+      {
+        "name": "+84 followed by trunk 0 (landline)",
+        "input": "+84 02412345678",
+        "expected": {
+          "ok": true,
+          "national": "02412345678",
+          "type": "landline",
+          "areaCode": "024",
+          "province": "Hà Nội"
+        }
+      },
+      {
         "input": "0241234567",
         "expected": {
           "ok": false,

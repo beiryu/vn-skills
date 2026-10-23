@@ -20,6 +20,8 @@ export interface PhoneInfo {
   province2025?: string;
   /** Set when a pre-2018 11-digit mobile number was converted. */
   convertedFrom?: string;
+  /** Notes about input that was silently corrected. */
+  warnings?: string[];
 }
 
 const CARRIER_BY_PREFIX = new Map<string, string>();
@@ -54,7 +56,12 @@ export function parsePhone(input: string): Result<PhoneInfo> {
     );
   }
   let digits = raw.replace(/\D/g, '');
-  if (digits.startsWith('84')) digits = '0' + digits.slice(2);
+  const warnings: string[] = [];
+  if (digits.startsWith('84')) {
+    digits = digits.slice(2);
+    if (digits.startsWith('0')) warnings.push('Removed the extra 0 after the country code 84.');
+    else digits = '0' + digits;
+  }
   if (!digits.startsWith('0')) {
     return fail(
       'INVALID_FORMAT',
@@ -95,6 +102,7 @@ export function parsePhone(input: string): Result<PhoneInfo> {
       e164,
       carrier,
       ...(convertedFrom ? { convertedFrom } : {}),
+      ...(warnings.length ? { warnings } : {}),
     };
   }
   if (digits.length === 11) {
@@ -117,6 +125,7 @@ export function parsePhone(input: string): Result<PhoneInfo> {
       areaCode,
       province,
       province2025: province2025(province),
+      ...(warnings.length ? { warnings } : {}),
     };
   }
   return fail(
