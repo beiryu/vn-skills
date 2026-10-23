@@ -185,6 +185,9 @@
         "expected": { "day": 29, "month": 1, "year": 2025 }
       },
       { "name": "dd-mm-yyyy", "input": "1-2-2025", "expected": { "day": 1, "month": 2, "year": 2025 } },
+      { "name": "rejects day 0", "input": "0/1/2024", "expected": { "ok": false, "error": { "code": "INVALID_DATE" } } },
+      { "name": "rejects 29/2 in a non-leap year", "input": "29/2/2023", "expected": { "ok": false, "error": { "code": "INVALID_DATE" } } },
+      { "name": "accepts 29/2 in a leap year", "input": "29/2/2024", "expected": { "day": 29, "month": 2, "year": 2024 } },
       { "name": "rejects junk", "input": "tomorrow", "expected": { "ok": false } }
     ]
   }

@@ -189,6 +189,10 @@ describe('vn-skills CLI', () => {
     const r = run(['lunar', 'to-solar', '1/1/2026']);
     expect((r.json().solar as { date: string }).date).toBe('2026-02-17');
   });
+  it('lunar to-solar accepts lunar day 30 of month 2 (Gregorian-invalid)', () => {
+    const r = run(['lunar', 'to-solar', '30/2/2023']);
+    expect(r.json().ok).toBe(true);
+  });
   it('lunar holidays --public', () => {
     const r = run(['lunar', 'holidays', '2025', '--public']);
     expect(

@@ -43,7 +43,7 @@ export function registerLunar(program: Command): void {
     .description('Lunar dd/mm/yyyy -> solar date')
     .option('--leap', 'the month is the leap (nhuận) month')
     .action((date: string, opts, c: Command) => {
-      const d = parseDateInput(date);
+      const d = parseDateInput(date, { lunar: true });
       if (!d.ok) failExit(c, d.error);
       const r = lunarToSolar(d.day, d.month, d.year, Boolean(opts.leap));
       if (!r.ok) failExit(c, r.error);
