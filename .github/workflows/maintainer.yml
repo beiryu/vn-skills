@@ -17,8 +17,9 @@ on:
   pull_request_target:
     types: [opened, synchronize] # other people's PRs: reviewed from the diff and CI, never run
   schedule:
-    - cron: '0 2,8 * * *' # research: the list, then the issues to open next (09:00 and 15:00 Vietnam)
-    - cron: '30 2-13 * * *' # audit: issues and PRs, hourly 09:30–20:30 Vietnam
+    - cron: '7 2,8 * * *' # research: the list, then the issues to open next (09:07 and 15:07 Vietnam)
+    - cron: '37 2-13 * * *' # audit: issues and PRs, hourly 09:37–20:37 Vietnam
+    # Odd minutes: GitHub delays or drops scheduled runs at :00 and :30, its busiest minutes.
   workflow_dispatch:
     inputs:
       task:
@@ -44,7 +45,7 @@ jobs:
     with:
       # The research cron runs research; the other one, and every event, runs the audit. Different
       # minutes: a run that waits in the concurrency group is replaced by the next one.
-      task: ${{ github.event.schedule == '0 2,8 * * *' && 'research' || inputs.task || 'audit' }}
+      task: ${{ github.event.schedule == '7 2,8 * * *' && 'research' || inputs.task || 'audit' }}
       draft_prs: false
     # BOT_PAT lives in the environment "bot", which only the called workflow's publish job
     # enters; inherit is the only way an environment secret reaches a called workflow.
