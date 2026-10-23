@@ -15,6 +15,8 @@ pre-2025 provinces and districts, misread amounts in words, or confuse the Chine
 | **MCP server**   | `@vn-skills/mcp` — the same functions as MCP tools                            | `claude mcp add vn-skills -- npx -y @vn-skills/mcp` |
 | **Library**      | `@vn-skills/core` — pure TypeScript, no network, data bundled                 | `npm i @vn-skills/core`                             |
 
+**What it is:** an offline toolkit. No accounts or API keys; it builds, parses and validates VietQR payloads and images. **What it is not:** a payment gateway. It does not collect payments or confirm transfers, and never calls bank or NAPAS APIs; pair it with a payment gateway for that.
+
 <!-- TODO: GIF — agent builds a VietQR and converts an address in 15 seconds -->
 
 ## Skills
