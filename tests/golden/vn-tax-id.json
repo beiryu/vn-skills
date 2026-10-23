@@ -30,6 +30,16 @@
       },
       { "name": "rejects empty", "input": "", "expected": { "ok": false } },
       {
+        "name": "empty input returns EMPTY",
+        "input": "",
+        "expected": { "ok": false, "error": { "code": "EMPTY" } }
+      },
+      {
+        "name": "blank input returns EMPTY",
+        "input": "   ",
+        "expected": { "ok": false, "error": { "code": "EMPTY" } }
+      },
+      {
         "name": "accepts branch 0100233488-001",
         "input": "0100233488-001",
         "expected": {

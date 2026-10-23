@@ -56,6 +56,8 @@ Failure (exit code 1):
 }
 ```
 
+Empty or blank input returns `code: "EMPTY"` with a hint listing the accepted forms.
+
 Compute the check digit for the first 9 digits: `npx -y @vn-skills/cli taxid check-digit 010023348` → `0100233488`.
 
 Library: `import { validateTaxId, isValidTaxId, taxIdCheckDigit } from '@vn-skills/core'`.
