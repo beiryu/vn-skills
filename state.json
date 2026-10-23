@@ -1,6 +1,6 @@
 {
  "version": 1,
- "exported_at": "2026-10-23T09:33:57.910Z",
+ "exported_at": "2026-10-23T09:35:02.525Z",
  "tables": {
   "repos": [
    {
@@ -10,7 +10,7 @@
     "policy_status": null,
     "policy_excerpts": null,
     "block_reason": null,
-    "last_scanned": "2026-10-23T09:33:36.929Z"
+    "last_scanned": "2026-10-23T09:34:37.725Z"
    }
   ],
   "issues": [
@@ -833,7 +833,7 @@
     "title": "mcp: make the MCP Registry description cover all 11 skills",
     "body": "## Problem\n\nvn-skills is live in the official MCP Registry (`io.github.beiryu/vn-skills`, 0.6.0, active). Its description comes from `packages/mcp/server.json`:\n\n> Vietnam tools: VietQR, addresses, tax IDs, CCCD, holidays, money in words, lunar calendar, e-invoice\n\nIt leaves out phone numbers, names and number formatting, and does not say the server is offline. Aggregators that import the registry show this text as-is. The registry rejects descriptions longer than 100 characters.\n\n## Acceptance\n\n- [ ] `packages/mcp/server.json` `description` is at most 100 characters and mentions phone numbers, names and number/date formatting along with the existing areas. Shorter wording such as \"tax ID\", \"CCCD\" or \"lunar\" is fine to make it fit; mention \"offline\" if it still fits\n- [ ] `packages/mcp/package.json` `description` (if shorter or different) stays consistent\n- [ ] A test in `tests/package-metadata.test.ts` asserts `server.json` `description.length <= 100` and that `server.json` `version` and `packages[0].version` equal `packages/mcp/package.json` `version`\n- [ ] No change to `.github/workflows/` or release config. The registry picks up the new text on the next release through the existing publish job\n- [ ] `pnpm build && pnpm typecheck && pnpm lint && pnpm exec vitest run && pnpm format:check` pass",
     "url": "https://github.com/beiryu/vn-skills/issues/144",
-    "state": "pr_open",
+    "state": "done",
     "score": 1,
     "triage_reason": "The registry entry is now live and feeds other directories. With 0 stars and about 800 MCP downloads a month, its one line of text is the main way people find the server, and it leaves out 3 of the 11 skills.",
     "attempts": 1,
@@ -849,7 +849,7 @@
     "pr_body": "Closes #144\n\n## What & why\n\nThe MCP Registry description in `packages/mcp/server.json` left out phone numbers, names and number/date formatting. It is now 99 characters (the registry limit is 100):\n\n`Vietnam: VietQR, address, tax ID, CCCD, phone, holiday, names, number/date format, lunar, e-invoice`\n\nThe words \"offline\" and \"money in words\" did not fit within 100 characters, so they are left out.\n\nAcceptance:\n\n- [x] `server.json` `description` is at most 100 characters and mentions phone numbers, names and number/date formatting along with the existing areas. \"offline\" does not fit, so it is omitted.\n- [x] `packages/mcp/package.json` `description` is unchanged. It was not edited, so no change was needed to keep it consistent.\n- [x] `tests/package-metadata.test.ts` asserts `description.length <= 100`, and that `server.json` `version` and `packages[0].version` equal `packages/mcp/package.json` `version`.\n- [x] No change to `.github/workflows/` or release config. The registry picks up the new text on the next release through the existing publish job.\n- [x] `pnpm build && pnpm typecheck && pnpm lint && pnpm exec vitest run && pnpm format:check` pass.\n\n## Testing\n\nNew tests in `tests/package-metadata.test.ts`, in the `packages/mcp/server.json (MCP Registry)` block:\n\n- description is at most 100 characters\n- description mentions phone, names and format\n- `server.json` versions match `packages/mcp/package.json`\n\n## Checklist\n\n- [ ] Title follows Conventional Commits (`feat|fix|docs|data|test|refactor|perf|build|ci|chore(scope): …`)\n- [x] Tests added or updated (golden test for every bug fix)\n- [x] `pnpm build && pnpm typecheck && pnpm lint && pnpm test && pnpm format:check` pass locally\n- [x] Core stays offline (no `fetch`/HTTP in `packages/core`)\n- [ ] Data changes go through `scripts/build-data.ts` and `SOURCES.md` (source + license)\n- [ ] SKILL.md / README updated if behaviour changed\n",
     "dry": 0,
     "claimed_at": null,
-    "updated_at": "2026-10-23T08:00:27.553Z",
+    "updated_at": "2026-10-23T09:34:34.407Z",
     "blocked": null,
     "patch": "diff --git a/packages/mcp/server.json b/packages/mcp/server.json\nindex 26d581e..2d2b96c 100644\n--- a/packages/mcp/server.json\n+++ b/packages/mcp/server.json\n@@ -2,7 +2,7 @@\n   \"$schema\": \"https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json\",\n   \"name\": \"io.github.beiryu/vn-skills\",\n   \"title\": \"vn-skills\",\n-  \"description\": \"Vietnam tools: VietQR, addresses, tax IDs, CCCD, holidays, money in words, lunar calendar, e-invoice\",\n+  \"description\": \"Vietnam: VietQR, address, tax ID, CCCD, phone, holiday, names, number/date format, lunar, e-invoice\",\n   \"repository\": {\n     \"url\": \"https://github.com/beiryu/vn-skills\",\n     \"source\": \"github\",\ndiff --git a/tests/package-metadata.test.ts b/tests/package-metadata.test.ts\nindex e7ef5d1..e50e2c1 100644\n--- a/tests/package-metadata.test.ts\n+++ b/tests/package-metadata.test.ts\n@@ -63,3 +63,29 @@ describe.each(Object.keys(expected))('packages/%s metadata', (name) => {\n     expect(pkg.keywords ?? []).toEqual(expect.arrayContaining(expected[name]!));\n   });\n });\n+\n+describe('packages/mcp/server.json (MCP Registry)', () => {\n+  /* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-return */\n+  const read = (p: string): Record<string, any> =>\n+    JSON.parse(readFileSync(resolve(__dirname, '..', 'packages', 'mcp', p), 'utf8'));\n+  /* eslint-enable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-return */\n+  const server = read('server.json');\n+  const pkg = read('package.json');\n+\n+  it('description fits the registry limit of 100 characters', () => {\n+    expect(server.description.length).toBeLessThanOrEqual(100);\n+  });\n+\n+  it.each([\n+    ['phone numbers', /phone/i],\n+    ['names', /names?\\b/i],\n+    ['number formatting', /format/i],\n+  ])('description mentions %s', (_label, re) => {\n+    expect(server.description).toMatch(re);\n+  });\n+\n+  it('versions match packages/mcp/package.json', () => {\n+    expect(server.version).toBe(pkg.version);\n+    expect(server.packages[0].version).toBe(pkg.version);\n+  });\n+});\n",
     "repro_patch": "diff --git a/tests/package-metadata.test.ts b/tests/package-metadata.test.ts\nindex e7ef5d1..bd6052b 100644\n--- a/tests/package-metadata.test.ts\n+++ b/tests/package-metadata.test.ts\n@@ -63,3 +63,27 @@ describe.each(Object.keys(expected))('packages/%s metadata', (name) => {\n     expect(pkg.keywords ?? []).toEqual(expect.arrayContaining(expected[name]!));\n   });\n });\n+\n+describe('packages/mcp/server.json (MCP Registry)', () => {\n+  const read = (p: string): Record<string, any> =>\n+    JSON.parse(readFileSync(resolve(__dirname, '..', 'packages', 'mcp', p), 'utf8'));\n+  const server = read('server.json');\n+  const pkg = read('package.json');\n+\n+  it('description fits the registry limit of 100 characters', () => {\n+    expect(server.description.length).toBeLessThanOrEqual(100);\n+  });\n+\n+  it.each([\n+    ['phone numbers', /phone/i],\n+    ['names', /names?\\b/i],\n+    ['number formatting', /format/i],\n+  ])('description mentions %s', (_label, re) => {\n+    expect(server.description).toMatch(re);\n+  });\n+\n+  it('versions match packages/mcp/package.json', () => {\n+    expect(server.version).toBe(pkg.version);\n+    expect(server.packages[0].version).toBe(pkg.version);\n+  });\n+});\n",
@@ -1241,7 +1241,7 @@
     "mergeable": "UNKNOWN",
     "ci_state": "success",
     "review_decision": "REVIEW_REQUIRED",
-    "snapshot_at": "2026-10-23T09:33:25.602Z",
+    "snapshot_at": "2026-10-23T09:34:26.770Z",
     "ci_seen_sha": null,
     "merge_state": "UNKNOWN"
    },
@@ -1256,7 +1256,7 @@
     "mergeable": "UNKNOWN",
     "ci_state": "success",
     "review_decision": "REVIEW_REQUIRED",
-    "snapshot_at": "2026-10-23T09:33:27.688Z",
+    "snapshot_at": "2026-10-23T09:34:29.513Z",
     "ci_seen_sha": null,
     "merge_state": "UNKNOWN"
    },
@@ -1271,7 +1271,7 @@
     "mergeable": "UNKNOWN",
     "ci_state": "success",
     "review_decision": "REVIEW_REQUIRED",
-    "snapshot_at": "2026-10-23T09:33:30.048Z",
+    "snapshot_at": "2026-10-23T09:34:32.226Z",
     "ci_seen_sha": null,
     "merge_state": "UNKNOWN"
    },
@@ -1279,16 +1279,16 @@
     "issue_id": 29,
     "url": "https://github.com/beiryu/vn-skills/pull/150",
     "number": 150,
-    "state": "open",
+    "state": "merged",
     "last_seen_at": "2026-10-23T08:00:27.553Z",
     "opened_at": "2026-10-23T08:00:27.553Z",
     "head_sha": "0ef5b67ff7bdb69ead0938aedb42cb56e7e4fbff",
-    "mergeable": "MERGEABLE",
-    "ci_state": "pending",
+    "mergeable": "UNKNOWN",
+    "ci_state": "success",
     "review_decision": "REVIEW_REQUIRED",
-    "snapshot_at": "2026-10-23T09:33:32.506Z",
+    "snapshot_at": "2026-10-23T09:34:34.407Z",
     "ci_seen_sha": null,
-    "merge_state": "BLOCKED"
+    "merge_state": "UNKNOWN"
    },
    {
     "issue_id": 30,
