@@ -109,3 +109,36 @@ describe('@vn-skills/mcp MCP Registry metadata', () => {
     expect(srv.description.length).toBeLessThanOrEqual(100);
   });
 });
+
+describe('offline toolkit, not a payment gateway', () => {
+  const top = (p: string): string => read(p).split('\n').slice(0, 40).join('\n');
+
+  it('README.md says near the top what it is and is not', () => {
+    const text = top('README.md');
+    expect(text).toMatch(/payment gateway/i);
+    expect(text).toMatch(/offline/i);
+    expect(text).toMatch(/API keys?/i);
+    expect(text).toMatch(/does not collect/i);
+    expect(text).toMatch(/confirm/i);
+  });
+
+  it('README.vi.md says the same in Vietnamese', () => {
+    const text = top('README.vi.md');
+    expect(text).toMatch(/cổng thanh toán/i);
+    expect(text).toMatch(/offline/i);
+    expect(text).toMatch(/API key/i);
+  });
+
+  it('vietqr SKILL.md warns agents not to promise payment confirmation', () => {
+    const text = read('skills/vietqr/SKILL.md');
+    expect(text).toMatch(/cổng thanh toán/i);
+    expect(text).toMatch(/xác nhận/i);
+  });
+
+  it.each(['README.md', 'README.vi.md', 'skills/vietqr/SKILL.md'])(
+    '%s does not name competitors',
+    (file) => {
+      expect(read(file)).not.toMatch(/AgentPay/i);
+    },
+  );
+});

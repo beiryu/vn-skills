@@ -80,3 +80,4 @@ Library use (TypeScript): `import { buildVietQR, parseVietQR, findBank } from '@
 - Using the SWIFT code or the bank's 3-letter code as the BIN. The BIN is 6 digits starting with 9704/5460/4225/4587/9633.
 - Putting the amount in the note instead of tag 54.
 - Trusting a scanned payload without checking `crcValid`.
+- Promising payment confirmation. This skill only builds/validates QR offline; it is not a cổng thanh toán, so it cannot xác nhận (confirm) that a transfer arrived.

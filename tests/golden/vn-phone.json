@@ -152,7 +152,7 @@
         "expected": {
           "ok": false,
           "error": {
-            "code": "INVALID_FORMAT"
+            "code": "EMPTY"
           }
         }
       },
