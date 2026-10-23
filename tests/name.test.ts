@@ -127,6 +127,7 @@ describe('sortNames', () => {
 
 const golden = loadGolden<{
   split: { input: string; expected: { family: string; middle: string; given: string } }[];
+  splitError: { name: string; input: unknown; expected: string }[];
   slug: { input: string; expected: string }[];
   initials: { input: string; expected: string }[];
 }>('vn-name');
@@ -134,6 +135,11 @@ const golden = loadGolden<{
 describe('vn-name (golden)', () => {
   it.each(golden.split.map((c) => [title(c), c] as const))('split %s', (_, c) => {
     expect(split(c.input)).toMatchObject(c.expected);
+  });
+  it.each(golden.splitError.map((c) => [title(c), c] as const))('split error: %s', (_, c) => {
+    const r = splitName(c.input as string);
+    expect(r.ok).toBe(false);
+    if (!r.ok) expect(r.error.code).toBe(c.expected);
   });
   it.each(golden.slug.map((c) => [title(c), c] as const))('slug %s', (_, c) => {
     expect(slugifyName(c.input)).toBe(c.expected);

@@ -83,6 +83,11 @@
         }
       }
     ],
+    "splitError": [
+      { "name": "blank string", "input": "   ", "expected": "EMPTY_NAME" },
+      { "name": "number", "input": 42, "expected": "INVALID_NAME" },
+      { "name": "object", "input": { "name": "An" }, "expected": "INVALID_NAME" }
+    ],
     "slug": [
       {
         "input": "Nguyễn Văn An",
