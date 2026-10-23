@@ -20,3 +20,15 @@ describe('vn-phone area codes', () => {
       expect(r.ok && r.province2025).toBeTruthy();
     });
 });
+
+describe('vn-phone +84 followed by trunk 0', () => {
+  it('keeps the carrier of the national form and warns about the extra 0', () => {
+    const a = parsePhone('+84 0912345678');
+    const b = parsePhone('0912345678');
+    expect(a.ok && b.ok).toBe(true);
+    if (!a.ok || !b.ok) return;
+    expect(a.carrier).toEqual(b.carrier);
+    expect(a.warnings?.length).toBeGreaterThan(0);
+    expect(b.warnings ?? []).toEqual([]);
+  });
+});
