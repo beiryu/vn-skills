@@ -1,5 +1,26 @@
 # Changelog
 
+## [0.6.0](https://github.com/beiryu/vn-skills/compare/v0.5.0...v0.6.0) (2026-10-23)
+
+
+### Features
+
+* **cli:** accept unquoted multi-word text for free-text arguments ([#122](https://github.com/beiryu/vn-skills/issues/122)) ([d93e406](https://github.com/beiryu/vn-skills/commit/d93e406e3af9c3a02ffc97857ff3679f962ad879)), closes [#115](https://github.com/beiryu/vn-skills/issues/115)
+* **vn-id:** warn when decoded CCCD birth year is in the future ([#125](https://github.com/beiryu/vn-skills/issues/125)) ([87233b8](https://github.com/beiryu/vn-skills/commit/87233b8992abc70909544b401fa720bc4b7aaa6a)), closes [#112](https://github.com/beiryu/vn-skills/issues/112)
+
+
+### Bug Fixes
+
+* **vietqr:** truncate raw notes by code point ([#121](https://github.com/beiryu/vn-skills/issues/121)) ([20ac3eb](https://github.com/beiryu/vn-skills/commit/20ac3ebecf59da06be6aa0f125057942734219e6)), closes [#116](https://github.com/beiryu/vn-skills/issues/116)
+* **vn-holidays:** give OUT_OF_RANGE a correct hint and name the date ([#124](https://github.com/beiryu/vn-skills/issues/124)) ([db78e91](https://github.com/beiryu/vn-skills/commit/db78e9123b92e525d0b54857fa177c6b05fea24b)), closes [#113](https://github.com/beiryu/vn-skills/issues/113)
+* **vn-name:** handle null and non-string input without throwing ([#126](https://github.com/beiryu/vn-skills/issues/126)) ([63ce07e](https://github.com/beiryu/vn-skills/commit/63ce07e36e48afd8daf847ce48d63b7f88c6d56a))
+* **vn-phone:** return EMPTY for empty input and add hints to errors ([#123](https://github.com/beiryu/vn-skills/issues/123)) ([8b4115c](https://github.com/beiryu/vn-skills/commit/8b4115c94ef9aa3f33cba52272ad97d14e8ba13c)), closes [#114](https://github.com/beiryu/vn-skills/issues/114)
+
+
+### Documentation
+
+* **vietqr:** state vn-skills is an offline toolkit, not a payment gateway ([#120](https://github.com/beiryu/vn-skills/issues/120)) ([791edd4](https://github.com/beiryu/vn-skills/commit/791edd446680f800ddc1dbb49cc5afb4ca7f9045)), closes [#118](https://github.com/beiryu/vn-skills/issues/118)
+
 ## [0.5.0](https://github.com/beiryu/vn-skills/compare/v0.4.0...v0.5.0) (2026-10-22)
 
 
