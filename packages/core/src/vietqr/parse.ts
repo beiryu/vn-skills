@@ -45,7 +45,17 @@ export function parseVietQR(input: string): Result<ParsedVietQR> {
   const expectedCrc = crcIndex >= 0 ? crc16CcittFalse(payload.slice(0, crcIndex + 4)) : '';
   const crcValid = crc.length === 4 && crc.toUpperCase() === expectedCrc;
   if (!crcNode) warnings.push('Missing CRC (tag 63).');
-  else if (!crcValid) warnings.push(`CRC mismatch: payload has ${crc}, expected ${expectedCrc}.`);
+  else if (!crcValid) {
+    const upperMatches =
+      crcIndex >= 0 &&
+      crc.length === 4 &&
+      crc16CcittFalse(payload.slice(0, crcIndex + 4).toUpperCase()) === crc.toUpperCase();
+    warnings.push(
+      upperMatches
+        ? `Payload appears to have been lower-cased in transit: the CRC ${crc} matches the upper-cased payload. Use the original payload.`
+        : `CRC mismatch: payload has ${crc}, expected ${expectedCrc}.`,
+    );
+  }
   if (fields[fields.length - 1]?.tag !== '63') warnings.push('CRC tag 63 is not the last field.');
 
   const fmt = tlvFind(fields, '00')?.value;
@@ -57,7 +67,9 @@ export function parseVietQR(input: string): Result<ParsedVietQR> {
   const merchant = tlvFind(fields, '38');
   const guid = tlvFind(merchant?.children, '00')?.value;
   const isVietQR = guid === VIETQR_GUID;
-  if (merchant && !isVietQR)
+  if (merchant && !isVietQR && guid !== undefined && guid.toUpperCase() === VIETQR_GUID)
+    warnings.push(`Tag 38 GUID "${guid}" is lower-cased; NAPAS GUID is ${VIETQR_GUID}.`);
+  else if (merchant && !isVietQR)
     warnings.push(`Tag 38 GUID is "${guid ?? ''}", not NAPAS ${VIETQR_GUID}.`);
   if (!merchant) warnings.push('Missing merchant account information (tag 38).');
 
