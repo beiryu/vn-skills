@@ -6,7 +6,7 @@ bot:
   dashboard_repo: beiryu/maintainer-desk # private: only the maintainer sees the dashboard
   runtime: copilot # MODEL_TOKEN = Copilot fine-grained PAT, "Copilot Requests" only
   setup: [node@22, pnpm@12.11.2]
-  hours: '9-21' # works 09:00–21:00 Vietnam only; a run started by hand always works
+  hours: '9-21' # events wait for 09:00–21:00 Vietnam; runs by hand or by cron always work
   timezone: Asia/Ho_Chi_Minh
   models: # stronger model for research and planning; the audit's agents use the default
     researcher: claude-opus-5.5
