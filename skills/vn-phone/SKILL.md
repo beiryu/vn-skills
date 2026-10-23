@@ -46,4 +46,6 @@ Library: `import { parsePhone } from '@vn-skills/core'`. MCP tool: `vn_phone`.
 - Treating `carrier` as the current carrier. Number portability exists since 16/11/2018, so the prefix gives the
   **original** carrier only.
 - Storing phone numbers as numbers; keep them as strings so the leading `0` survives.
+- Writing the country code and keeping the trunk `0` (`+84 0912345678`). The extra `0` is dropped and a note is
+  added to `warnings`.
 - Assuming a valid format means the number is in service.
