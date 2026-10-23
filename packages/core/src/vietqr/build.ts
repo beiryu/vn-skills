@@ -103,8 +103,9 @@ export function buildVietQR(opts: BuildVietQROptions): Result<BuildVietQRData> {
     note = opts.rawNote ? opts.note.trim() : sanitizeNote(opts.note);
     if (!opts.rawNote && note !== opts.note.trim())
       warnings.push('Note was sanitized (diacritics/punctuation removed).');
-    if (note.length > MAX_NOTE_LENGTH) {
-      note = note.slice(0, MAX_NOTE_LENGTH).trim();
+    const noteChars = Array.from(note);
+    if (noteChars.length > MAX_NOTE_LENGTH) {
+      note = noteChars.slice(0, MAX_NOTE_LENGTH).join('').trim();
       warnings.push(`Note truncated to ${MAX_NOTE_LENGTH} characters.`);
     }
     if (note.length === 0) note = undefined;

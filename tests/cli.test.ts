@@ -205,6 +205,18 @@ describe('vn-skills CLI', () => {
     const r = run(['address', 'parse', 'Phường Hoàn Kiếm, Hà Nội']);
     expect((r.json().ward as { fullName: string }).fullName).toBe('Phường Hoàn Kiếm');
   });
+  it('name split accepts unquoted multi-word text', () => {
+    const quoted = run(['name', 'split', 'Tôn Thất Tùng']);
+    const bare = run(['name', 'split', 'Tôn', 'Thất', 'Tùng']);
+    expect(bare.code).toBe(0);
+    expect(bare.json()).toEqual(quoted.json());
+  });
+  it('address convert accepts unquoted multi-word text', () => {
+    const quoted = run(['address', 'convert', 'P. Bến Nghé, Q.1, TP.HCM']);
+    const bare = run(['address', 'convert', 'P.', 'Bến', 'Nghé,', 'Q.1,', 'TP.HCM']);
+    expect(bare.code).toBe(0);
+    expect(bare.json()).toEqual(quoted.json());
+  });
   it('address provinces lists 34', () => {
     expect(run(['address', 'provinces']).json().count).toBe(34);
   });
