@@ -150,8 +150,7 @@
         "expected": {
           "ok": false,
           "error": {
-            "code": "OUT_OF_RANGE",
-            "hint": "The data set starts with the 2023 notices."
+            "code": "OUT_OF_RANGE"
           }
         }
       },

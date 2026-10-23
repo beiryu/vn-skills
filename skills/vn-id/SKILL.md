@@ -32,6 +32,8 @@ Sources: Circular 59/2021/TT-BCA (15/05/2021), Appendices I and III; Decree 137/
 - Digit 4: sex + century. Male/female: 1900–1999 `0`/`1`, 2000–2099 `2`/`3`, 2100–2199 `4`/`5`,
   2200–2299 `6`/`7`, 2300–2399 `8`/`9`.
 - Digits 5–6: last two digits of the birth year. Digits 7–12: random.
+- A decoded birth year after the current year (e.g. digit `9` gives 23xx) stays `ok: true` but adds a warning that the
+  ID is probably mistyped.
 - Unknown codes (e.g. `000`, registered abroad) are reported with `province: null`, not rejected.
 - 9 digits: legacy CMND, format only.
 

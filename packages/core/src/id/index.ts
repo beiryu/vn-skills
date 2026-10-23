@@ -30,7 +30,7 @@ const NOT_PROOF = 'Format validity does not prove the identity exists.';
  * Validate and decode a CCCD (12 digits) or check the format of a legacy CMND (9 digits).
  * Rules: Decree 137/2015/NĐ-CP art. 7, Circular 59/2021/TT-BCA appendices I and III. Offline.
  */
-export function parseCitizenId(input: string): Result<CitizenIdParsed> {
+export function parseCitizenId(input: string, opts?: { today?: Date }): Result<CitizenIdParsed> {
   const s = String(input ?? '').trim();
   if (!/^\d+$/.test(s))
     return fail(
@@ -63,6 +63,9 @@ export function parseCitizenId(input: string): Result<CitizenIdParsed> {
   const warnings = [NOT_PROOF];
   if (!legacy)
     warnings.push(`Province code ${provinceCode} is not in the legacy 63-province list.`);
+  const currentYear = (opts?.today ?? new Date()).getUTCFullYear();
+  if (birthYear > currentYear)
+    warnings.push(`Decoded birth year ${birthYear} is in the future; the ID is probably mistyped.`);
 
   return {
     ok: true,
