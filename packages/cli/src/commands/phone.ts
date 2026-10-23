@@ -23,6 +23,7 @@ export function registerPhone(program: Command): void {
             ['Province', r.province],
             ['Province 2025', r.province2025],
             ['Converted from', r.convertedFrom],
+            ['Warnings', r.warnings],
           ]) + '\n',
         );
     });
