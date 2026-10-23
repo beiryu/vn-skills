@@ -75,7 +75,7 @@ they call `npx -y @vn-skills/cli`.
 claude mcp add vn-skills -- npx -y @vn-skills/mcp
 ```
 
-or in any MCP client config:
+Setup for other clients is in [MCP client setup](#mcp-client-setup). Or in any MCP client config:
 
 ```json
 { "mcpServers": { "vn-skills": { "command": "npx", "args": ["-y", "@vn-skills/mcp"] } } }
@@ -85,6 +85,48 @@ Tools: `vietqr_build`, `vietqr_parse`, `vietqr_decode`, `vietqr_banks`, `vn_addr
 `vn_tax_id_validate`, `vn_money_to_words`, `vn_lunar_from_solar`, `vn_lunar_to_solar`, `vn_lunar_holidays`,
 `vn_lunar_tet`, `vn_lunar_canchi`, `vn_tax_id_check_digit`, `vn_address_provinces`, `vn_address_province`,
 `vn_einvoice_validate`, `vn_einvoice_totals`, `vn_einvoice_mock_issue`, `vn_einvoice_example`, `vn_name`, `vn_id_parse`, `vn_phone`, `vn_number_format`, `vn_holidays_year`, `vn_holidays_is_working_day`, `vn_holidays_add_working_days`.
+
+### MCP client setup
+
+Requires Node.js 22+. Each client has its own file and shape; check the linked docs for the exact location.
+
+**[Claude Code](https://docs.claude.com/en/docs/claude-code/mcp):**
+
+```bash
+claude mcp add vn-skills -- npx -y @vn-skills/mcp
+```
+
+**[Claude Desktop](https://modelcontextprotocol.io/quickstart/user)** — `claude_desktop_config.json`:
+
+```json
+{ "mcpServers": { "vn-skills": { "command": "npx", "args": ["-y", "@vn-skills/mcp"] } } }
+```
+
+**[Cursor](https://docs.cursor.com/context/model-context-protocol)** — `.cursor/mcp.json` (project) or `~/.cursor/mcp.json` (global), same `mcpServers` shape:
+
+```json
+{ "mcpServers": { "vn-skills": { "command": "npx", "args": ["-y", "@vn-skills/mcp"] } } }
+```
+
+**[VS Code](https://code.visualstudio.com/docs/copilot/customization/mcp-servers)** — `.vscode/mcp.json` (top-level `servers`, not `mcpServers`):
+
+```json
+{
+  "servers": {
+    "vn-skills": { "type": "stdio", "command": "npx", "args": ["-y", "@vn-skills/mcp"] }
+  }
+}
+```
+
+**[Codex](https://developers.openai.com/codex/mcp)** — `~/.codex/config.toml`:
+
+```toml
+[mcp_servers.vn-skills]
+command = "npx"
+args = ["-y", "@vn-skills/mcp"]
+```
+
+Other clients: use the generic `mcpServers` block above.
 
 ## Library
 
