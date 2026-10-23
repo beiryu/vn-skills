@@ -4,6 +4,8 @@ name: Release
 #    It bumps the root and all packages/*/package.json versions together and writes CHANGELOG.md.
 # 2. Merging that PR creates the vX.Y.Z tag + GitHub Release, and the publish job pushes
 #    @vn-skills/core, @vn-skills/cli and @vn-skills/mcp to npm with provenance.
+# 3. mcp-registry then publishes packages/mcp/server.json to the official MCP Registry
+#    (GitHub OIDC login, no secret; the registry checks mcpName in the npm package just published).
 # Requires the NPM_TOKEN secret. workflow_dispatch publishes the current versions (recovery path).
 
 on:
@@ -54,3 +56,29 @@ jobs:
         run: pnpm -r --filter './packages/*' publish --access public --no-git-checks --provenance
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+  mcp-registry:
+    needs: publish
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write # mcp-publisher login github-oidc
+    env:
+      MCP_PUBLISHER_VERSION: v1.8.1
+      MCP_PUBLISHER_SHA256: a06c9096dcb9727c13555b6be26c7effa707b01f06a4c561ba7a3635443cf2cc
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Install mcp-publisher
+        run: |
+          curl -fsSLo mcp-publisher.tar.gz "https://github.com/modelcontextprotocol/registry/releases/download/${MCP_PUBLISHER_VERSION}/mcp-publisher_linux_amd64.tar.gz"
+          echo "${MCP_PUBLISHER_SHA256}  mcp-publisher.tar.gz" | sha256sum -c -
+          tar xzf mcp-publisher.tar.gz mcp-publisher
+      - run: ./mcp-publisher login github-oidc
+      - name: Publish
+        # npm can take a moment to serve the new version; the registry reads mcpName from it.
+        run: |
+          for i in 1 2 3 4 5; do
+            ./mcp-publisher publish packages/mcp/server.json && exit 0
+            sleep 30
+          done
+          exit 1
