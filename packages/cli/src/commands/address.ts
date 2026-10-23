@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs';
 import { Command } from 'commander';
 import {
   convertAddress,
@@ -6,6 +7,7 @@ import {
   parseAddress,
   searchWards,
 } from '@vn-skills/core';
+import { parseCsv, toCsv } from '../csv.js';
 import { failExit, kv, printJson, wantsJson } from '../output.js';
 
 export function registerAddress(program: Command): void {
@@ -143,6 +145,115 @@ export function registerAddress(program: Command): void {
               '\n',
           );
         for (const w of r.warnings) process.stderr.write(`warning: ${w}\n`);
+      }
+    });
+
+  cmd
+    .command('convert-file <file>')
+    .description(
+      'Convert many pre-2025 addresses from a file ("-" = stdin): one per line (NDJSON out) or a CSV column',
+    )
+    .option('--csv', 'input is CSV with a header row; output is CSV with result columns appended')
+    .option('--column <name>', 'CSV column holding the address (required with --csv)')
+    .action((file: string, opts: { csv?: boolean; column?: string }) => {
+      const fail = (msg: string): never => {
+        process.stderr.write(`Error: ${msg}\n`);
+        process.exit(1);
+      };
+      if (opts.csv && !opts.column) fail('--csv requires --column <name> (the address column)');
+      let text: string;
+      try {
+        text = file === '-' ? readFileSync(0, 'utf8') : readFileSync(file, 'utf8');
+      } catch (e) {
+        return fail(`cannot read ${file}: ${(e as Error).message}`);
+      }
+      let ok = 0;
+      let failed = 0;
+      if (opts.csv) {
+        const rows = parseCsv(text);
+        const header = rows[0] ?? [];
+        const idx = header.indexOf(opts.column as string);
+        if (idx < 0) fail(`column "${opts.column}" not found in CSV header (${header.join(', ')})`);
+        const out: string[][] = [
+          [
+            ...header,
+            'new_address',
+            'new_ward_code',
+            'new_province_code',
+            'mapping_type',
+            'confidence',
+            'warnings',
+          ],
+        ];
+        for (const row of rows.slice(1)) {
+          const r = convertAddress(row[idx] ?? '');
+          if (r.ok) {
+            ok++;
+            out.push([
+              ...row,
+              r.new.formatted,
+              r.new.ward?.code ?? '',
+              r.new.province.code,
+              r.mappingType,
+              String(r.confidence),
+              r.warnings.join('; '),
+            ]);
+          } else {
+            failed++;
+            out.push([...row, '', '', '', '', '', `error: ${r.error.message}`]);
+          }
+        }
+        process.stdout.write(toCsv(out));
+      } else {
+        text.split(/\r?\n/).forEach((raw, i) => {
+          const input = raw.trim();
+          if (input === '') return;
+          const line = i + 1;
+          const r = convertAddress(input);
+          if (!r.ok) {
+            failed++;
+            process.stdout.write(JSON.stringify({ ok: false, line, input, error: r.error }) + '\n');
+            return;
+          }
+          ok++;
+          process.stdout.write(
+            JSON.stringify({
+              ok: true,
+              line,
+              input: r.input,
+              mappingType: r.mappingType,
+              old: {
+                province: r.old.province?.fullName,
+                district: r.old.district?.fullName,
+                ward: r.old.ward?.fullName,
+                street: r.old.street,
+                formatted: r.old.formatted,
+              },
+              new: {
+                province: { code: r.new.province.code, fullName: r.new.province.fullName },
+                ward: r.new.ward && {
+                  code: r.new.ward.code,
+                  fullName: r.new.ward.fullName,
+                  postalCode: r.new.ward.postalCode,
+                },
+                street: r.new.street,
+                formatted: r.new.formatted,
+              },
+              candidates: r.candidates.map((x) => ({
+                code: x.ward.code,
+                fullName: x.ward.fullName,
+                province: x.province.fullName,
+                isDefault: x.isDefault,
+              })),
+              confidence: r.confidence,
+              warnings: r.warnings,
+            }) + '\n',
+          );
+        });
+      }
+      if (failed > 0) {
+        process.stderr.write(`converted ${ok}, failed ${failed}\n`);
+        process.exitCode = 2;
       }
     });
 

@@ -251,6 +251,141 @@ describe('vn-skills CLI', () => {
     expect(bare.code).toBe(0);
     expect(bare.json()).toEqual(quoted.json());
   });
+  describe('address convert-file', () => {
+    const OLD = 'P. Bến Nghé, Q.1, TP.HCM';
+    const tmpFile = (name: string, content: string) => {
+      const file = join(mkdtempSync(join(tmpdir(), 'vn-skills-')), name);
+      writeFileSync(file, content);
+      return file;
+    };
+    const ndjson = (out: string) =>
+      out
+        .split('\n')
+        .filter((l) => l.trim() !== '')
+        .map((l) => JSON.parse(l) as Record<string, unknown>);
+    // Minimal RFC 4180 reader for asserting on the CSV output.
+    const parseCsv = (text: string) => {
+      const rows: string[][] = [];
+      let row: string[] = [];
+      let cell = '';
+      let quoted = false;
+      for (let i = 0; i < text.length; i++) {
+        const ch = text[i];
+        if (quoted) {
+          if (ch === '"' && text[i + 1] === '"') {
+            cell += '"';
+            i++;
+          } else if (ch === '"') quoted = false;
+          else cell += ch;
+        } else if (ch === '"') quoted = true;
+        else if (ch === ',') {
+          row.push(cell);
+          cell = '';
+        } else if (ch === '\n' || ch === '\r') {
+          if (ch === '\r' && text[i + 1] === '\n') i++;
+          row.push(cell);
+          rows.push(row);
+          row = [];
+          cell = '';
+        } else cell += ch;
+      }
+      if (cell !== '' || row.length > 0) {
+        row.push(cell);
+        rows.push(row);
+      }
+      return rows;
+    };
+
+    it('is listed in address --help', () => {
+      expect(run(['address', '--help']).out).toContain('convert-file');
+    });
+
+    it('converts lines, skips blanks, keeps 1-based line numbers, exits 2 on failures', () => {
+      const file = tmpFile('addr.txt', `${OLD}\n\nasdf qwerty 123\n`);
+      const r = run(['address', 'convert-file', file]);
+      expect(r.code).toBe(2);
+      expect(r.err).toContain('converted 1, failed 1');
+      const rows = ndjson(r.out);
+      expect(rows).toHaveLength(2);
+      const first = rows[0]!;
+      const second = rows[1]!;
+      expect(first.ok).toBe(true);
+      expect(first.line).toBe(1);
+      expect(first.input).toBe(OLD);
+      expect((first.new as { ward: { fullName: string } }).ward.fullName).toBe('Phường Sài Gòn');
+      expect(second.ok).toBe(false);
+      expect(second.line).toBe(3);
+      expect(second.input).toBe('asdf qwerty 123');
+      expect(second.error).toBeDefined();
+    });
+
+    it('exits 0 when every line converts', () => {
+      const file = tmpFile('ok.txt', `${OLD}\n${OLD}\n`);
+      const r = run(['address', 'convert-file', file]);
+      expect(r.code).toBe(0);
+      expect(ndjson(r.out).map((o) => o.line)).toEqual([1, 2]);
+    });
+
+    it('reads stdin with "-"', () => {
+      const r = run(['address', 'convert-file', '-'], `${OLD}\n`);
+      expect(r.code).toBe(0);
+      const rows = ndjson(r.out);
+      expect(rows).toHaveLength(1);
+      expect(rows[0]!.ok).toBe(true);
+      expect(rows[0]!.line).toBe(1);
+    });
+
+    it('--csv --column appends result columns in order and handles quoted commas', () => {
+      const file = tmpFile(
+        'in.csv',
+        `id,name,address\n1,"Nguyễn, Văn A","${OLD}"\n2,B,asdf qwerty 123\n`,
+      );
+      const r = run(['address', 'convert-file', file, '--csv', '--column', 'address']);
+      expect(r.code).toBe(2);
+      expect(r.err).toContain('converted 1, failed 1');
+      const rows = parseCsv(r.out);
+      expect(rows[0]).toEqual([
+        'id',
+        'name',
+        'address',
+        'new_address',
+        'new_ward_code',
+        'new_province_code',
+        'mapping_type',
+        'confidence',
+        'warnings',
+      ]);
+      expect(rows).toHaveLength(3);
+      const ok = rows[1]!;
+      expect(ok.slice(0, 3)).toEqual(['1', 'Nguyễn, Văn A', OLD]);
+      expect(ok[3]).toBe('Phường Sài Gòn, Thành phố Hồ Chí Minh');
+      expect(ok[4]).toBe('26740');
+      expect(ok[5]).toBe('79');
+    });
+
+    it('--csv supports newlines inside quoted fields', () => {
+      const file = tmpFile('nl.csv', `id,address\n1,"${OLD}\nghi chú"\n`);
+      const r = run(['address', 'convert-file', file, '--csv', '--column', 'address']);
+      const rows = parseCsv(r.out);
+      expect(rows).toHaveLength(2);
+      expect(rows[1]!.slice(0, 1)).toEqual(['1']);
+    });
+
+    it('--csv with an unknown column fails with a clear error', () => {
+      const file = tmpFile('bad.csv', `id,address\n1,"${OLD}"\n`);
+      const r = run(['address', 'convert-file', file, '--csv', '--column', 'nope']);
+      expect(r.code).not.toBe(0);
+      expect(r.code).not.toBe(2);
+      expect(`${r.out}${r.err}`).toContain('nope');
+    });
+
+    it('--csv without --column fails', () => {
+      const file = tmpFile('nocol.csv', `id,address\n1,"${OLD}"\n`);
+      const r = run(['address', 'convert-file', file, '--csv']);
+      expect(r.code).not.toBe(0);
+      expect(r.err).toContain('column');
+    });
+  });
   it('address provinces lists 34', () => {
     expect(run(['address', 'provinces']).json().count).toBe(34);
   });

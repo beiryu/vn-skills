@@ -35,6 +35,13 @@ trên cùng một lõi chạy offline:
 | [`vn-name`](skills/vn-name/SKILL.md)                   | Tách họ / tên đệm / tên, họ kép, sắp xếp theo tên (collation tiếng Việt), slug không dấu và chữ cái đầu            | `vn-skills name split "Tôn Thất Tùng"`                                                                    |
 | [`vn-number-format`](skills/vn-number-format/SKILL.md) | Định dạng/đọc số, tiền ₫, ngày dd/MM/yyyy kiểu Việt Nam; đọc "1tr2", "500k", "1,5 tỷ"                              | `vn-skills numfmt parse "1tr2"` → `1200000`                                                               |
 
+Chuyển hàng loạt địa chỉ đã lưu (mỗi dòng một địa chỉ → NDJSON, hoặc một cột trong file CSV; thoát với mã 2 nếu có dòng lỗi):
+
+```bash
+vn-skills address convert-file addresses.txt
+vn-skills address convert-file customers.csv --csv --column address > converted.csv
+```
+
 ## Cài skill
 
 **Plugin Claude Code** (tất cả skill + MCP server, một lệnh):
