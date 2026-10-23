@@ -1,4 +1,5 @@
 import { moneyToWords } from '../money/index.js';
+import type { VnError } from '../shared/result.js';
 import type { Invoice, InvoiceLine, VatRate } from './schema.js';
 
 export interface LineTotals extends InvoiceLine {
@@ -23,6 +24,8 @@ export interface InvoiceTotals {
   byRate: VatBreakdown[];
   /** Grand total in Vietnamese words ("Số tiền bằng chữ"). */
   totalInWords: string;
+  /** Set when a total is not finite or cannot be written in words; `totalInWords` is then ''. */
+  totalInWordsError?: VnError;
 }
 
 /** Round half away from zero to an integer VND (Vietnamese accounting rounding). */
@@ -63,17 +66,29 @@ export function computeTotals(
     byRateMap.set(line.vatRate, b);
   }
   const grandTotal = subtotal + vatTotal;
-  const words = moneyToWords(grandTotal, {
-    thousand: options.thousand,
-    capitalize: options.capitalize ?? true,
-  });
-  return {
+  const base = {
     lines,
     subtotal,
     discountTotal,
     vatTotal,
     grandTotal,
     byRate: [...byRateMap.values()],
-    totalInWords: words.ok ? words.words : '',
   };
+  const all = [subtotal, discountTotal, vatTotal, grandTotal, ...lines.map((l) => l.total)];
+  if (!all.every(Number.isFinite))
+    return {
+      ...base,
+      totalInWords: '',
+      totalInWordsError: {
+        code: 'INVALID_TOTAL',
+        message: 'Invoice totals are not finite numbers (check quantity and unitPrice)',
+        hint: 'Run validateInvoice first; quantity and unitPrice must be finite numbers',
+      },
+    };
+  const words = moneyToWords(grandTotal, {
+    thousand: options.thousand,
+    capitalize: options.capitalize ?? true,
+  });
+  if (!words.ok) return { ...base, totalInWords: '', totalInWordsError: words.error };
+  return { ...base, totalInWords: words.words };
 }

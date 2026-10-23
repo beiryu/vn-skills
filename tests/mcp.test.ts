@@ -194,6 +194,24 @@ describe('vn-skills MCP server', () => {
     );
     expect(issued.status).toBe('issued');
   });
+  it('vn_einvoice_totals reports overflow instead of a blank amount', async () => {
+    const invoice = {
+      series: '1C25TAA',
+      issueDate: '2025-10-15',
+      seller: { name: 'A', taxId: '0100233488', address: 'HN' },
+      buyer: { name: 'B', address: 'HCM' },
+      lines: [{ name: 'X', quantity: 1, unitPrice: 100000, vatRate: 10 }],
+    };
+    const r = await client.callTool({ name: 'vn_einvoice_totals', arguments: { invoice } });
+    expect(text(r).ok).toBe(true);
+    const line = { name: 'X', quantity: 1, unitPrice: 4e15, vatRate: 10 };
+    invoice.lines = [line, line, line];
+    const bad = text(
+      await client.callTool({ name: 'vn_einvoice_totals', arguments: { invoice } }),
+    ) as { ok: boolean; error?: { code: string } };
+    expect(bad.ok).toBe(false);
+    expect(bad.error?.code).toBe('INVALID_AMOUNT');
+  });
   it('vn_lunar_holidays', async () => {
     const j = text(
       await client.callTool({

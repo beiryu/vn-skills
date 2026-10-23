@@ -7,6 +7,7 @@ import {
   createProvider,
   PROVIDER_NAMES,
   type ProviderName,
+  type VnError,
 } from '@vn-skills/core';
 import { failExit, printJson, wantsJson } from '../output.js';
 
@@ -55,6 +56,7 @@ export function registerEinvoice(program: Command): void {
           message: v.errors.map((e) => `${e.path}: ${e.message}`).join('; '),
         });
       const t = computeTotals(v.invoice!, { thousand: opts.thousand });
+      if (t.totalInWordsError) failExit(c, t.totalInWordsError);
       if (wantsJson(c)) printJson({ ok: true, ...t, warnings: v.warnings });
       else {
         for (const l of t.lines)
@@ -87,6 +89,8 @@ export function registerEinvoice(program: Command): void {
             `Issued ${issued.series}-${issued.number} via ${issued.provider}: ${issued.totals.grandTotal.toLocaleString('vi-VN')} VND (${issued.status})\n`,
           );
       } catch (e) {
+        const totalsError = (e as { error?: VnError }).error;
+        if (totalsError) failExit(c, totalsError);
         failExit(c, {
           code: (e as Error).name === 'ConfigError' ? 'CONFIG_ERROR' : 'PROVIDER_ERROR',
           message: (e as Error).message,
