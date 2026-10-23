@@ -147,7 +147,9 @@ function checkYear(year: number): Result<{ year: number }> {
     return fail(
       'OUT_OF_RANGE',
       `Supported years: ${FIRST_HOLIDAY_YEAR}-${LAST_HOLIDAY_YEAR}`,
-      'The data set starts with the 2023 notices.',
+      year < FIRST_HOLIDAY_YEAR
+        ? 'The data set starts with the 2023 notices.'
+        : `Dates after 31/12/${LAST_HOLIDAY_YEAR} are not supported.`,
     );
   return { ok: true, year };
 }
@@ -257,7 +259,14 @@ export function addWorkingDays(
   for (let left = Math.abs(n); left > 0;) {
     jd += step;
     const info = infoFor(jd);
-    if (!info.ok) return info;
+    if (!info.ok) {
+      if (info.error.code !== 'OUT_OF_RANGE') return info;
+      return fail(
+        'OUT_OF_RANGE',
+        `Counting ${Math.abs(n)} working days from ${dd}/${mm}/${yy} would fall outside the supported range ${FIRST_HOLIDAY_YEAR}-${LAST_HOLIDAY_YEAR}`,
+        info.error.hint,
+      );
+    }
     if (!info.certain) certain = false;
     if (info.working) left--;
   }
