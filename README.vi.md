@@ -15,6 +15,8 @@ trên cùng một lõi chạy offline:
 | **MCP server**   | `@vn-skills/mcp` — cùng bộ hàm, dạng MCP tool                              | `claude mcp add vn-skills -- npx -y @vn-skills/mcp` |
 | **Thư viện**     | `@vn-skills/core` — TypeScript thuần, không gọi mạng, dữ liệu đóng gói sẵn | `npm i @vn-skills/core`                             |
 
+**Là gì:** bộ công cụ chạy offline, không cần tài khoản hay API key; tạo, đọc và kiểm tra payload và ảnh VietQR. **Không phải:** cổng thanh toán. vn-skills không thu tiền, không xác nhận giao dịch chuyển khoản và không gọi API của ngân hàng hay NAPAS; hãy dùng kèm một cổng thanh toán cho việc đó.
+
 <!-- TODO: GIF — agent tạo VietQR + đổi địa chỉ trong 15 giây -->
 
 ## Các skill
