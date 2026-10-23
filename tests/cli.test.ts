@@ -167,6 +167,11 @@ describe('vn-skills CLI', () => {
     expect(r.code).toBe(0);
     expect(r.json().kind).toBe('branch');
   });
+  it('taxid validate empty', () => {
+    const r = run(['taxid', 'validate', '']);
+    expect(r.code).toBe(1);
+    expect((r.json().error as { code: string }).code).toBe('EMPTY');
+  });
   it('taxid validate bad', () => {
     const r = run(['taxid', 'validate', '0100233480']);
     expect(r.code).toBe(1);

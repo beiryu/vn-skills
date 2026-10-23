@@ -64,6 +64,13 @@ export function formatTaxId(digits: string): string {
  * No network calls are made; a valid result does not prove the ID is registered with the tax authority.
  */
 export function validateTaxId(input: string): Result<TaxIdInfo> {
+  if (input == null || String(input).trim() === '') {
+    return fail(
+      'EMPTY',
+      'Tax ID is empty',
+      'Provide a 10-digit tax ID, a 13-digit branch tax ID (10-3 with a dash, e.g. 0100233488-001), or a 12-digit personal ID.',
+    );
+  }
   const digits = normalizeTaxId(input);
   if (digits === null) {
     return fail(

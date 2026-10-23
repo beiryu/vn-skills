@@ -59,6 +59,17 @@ describe('taxIdCheckDigit', () => {
 });
 
 describe('validateTaxId', () => {
+  it.each(['', '   ', null, undefined])('returns EMPTY with a hint for %j', (v) => {
+    const r = validateTaxId(v as unknown as string);
+    expect(r).toMatchObject({ ok: false, error: { code: 'EMPTY' } });
+    if (!r.ok) {
+      expect(r.error.message).not.toMatch(/non-digit/);
+      expect(r.error.hint).toMatch(/10 digits|10-digit/);
+    }
+  });
+  it('keeps INVALID_FORMAT for letters', () => {
+    expect(validateTaxId('abc')).toMatchObject({ ok: false, error: { code: 'INVALID_FORMAT' } });
+  });
   it('each single-digit typo in a valid ID is caught', () => {
     const valid = '0100233488';
     let caught = 0;
