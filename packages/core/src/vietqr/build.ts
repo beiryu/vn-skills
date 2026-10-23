@@ -38,7 +38,7 @@ export interface BuildVietQRData {
 }
 
 export function sanitizeNote(note: string): string {
-  return removeDiacritics(note)
+  return removeDiacritics(String(note ?? ''))
     .replace(/[^A-Za-z0-9 ]+/g, ' ')
     .replace(/\s+/g, ' ')
     .trim();
@@ -99,9 +99,10 @@ export function buildVietQR(opts: BuildVietQROptions): Result<BuildVietQRData> {
   }
 
   let note: string | undefined;
-  if (opts.note !== undefined && opts.note.trim() !== '') {
-    note = opts.rawNote ? opts.note.trim() : sanitizeNote(opts.note);
-    if (!opts.rawNote && note !== opts.note.trim())
+  const rawNoteText = String(opts.note ?? '').trim();
+  if (rawNoteText !== '') {
+    note = opts.rawNote ? rawNoteText : sanitizeNote(rawNoteText);
+    if (!opts.rawNote && note !== rawNoteText)
       warnings.push('Note was sanitized (diacritics/punctuation removed).');
     const noteChars = Array.from(note);
     if (noteChars.length > MAX_NOTE_LENGTH) {

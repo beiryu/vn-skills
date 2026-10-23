@@ -102,6 +102,21 @@
         "name": "sanitizes diacritics in note",
         "input": { "bank": "VCB", "account": "123", "note": "Thanh toán đơn hàng #42" },
         "expected": { "ok": true, "note": "Thanh toan don hang 42" }
+      },
+      {
+        "name": "null note is treated as omitted",
+        "input": { "bank": "VCB", "account": "123", "note": null },
+        "expected": { "ok": true, "dynamic": false }
+      },
+      {
+        "name": "numeric note is coerced to string",
+        "input": { "bank": "VCB", "account": "123", "note": 123 },
+        "expected": { "ok": true, "note": "123", "dynamic": true }
+      },
+      {
+        "name": "numeric note is coerced with rawNote",
+        "input": { "bank": "VCB", "account": "123", "note": 123, "rawNote": true },
+        "expected": { "ok": true, "note": "123", "dynamic": true }
       }
     ],
     "parseVietQR": [
@@ -140,6 +155,10 @@
         "expected": { "ok": true, "crcValid": true }
       }
     ],
-    "sanitizeNote": [{ "name": "collapses whitespace", "input": "  a   b  ", "expected": "a b" }]
+    "sanitizeNote": [
+      { "name": "collapses whitespace", "input": "  a   b  ", "expected": "a b" },
+      { "name": "null gives empty string", "input": null, "expected": "" },
+      { "name": "number is coerced", "input": 123, "expected": "123" }
+    ]
   }
 }
