@@ -39,6 +39,7 @@ import {
   computeTotals,
   MockProvider,
   VERSION,
+  type VnError,
 } from '@vn-skills/core';
 
 type ToolResult = {
@@ -531,7 +532,9 @@ export function createServer(): McpServer {
     async ({ invoice, thousand }) => {
       const v = validateInvoice(invoice);
       if (!v.ok) return json({ ok: false, errors: v.errors }, true);
-      return json({ ok: true, ...computeTotals(v.invoice!, { thousand }), warnings: v.warnings });
+      const t = computeTotals(v.invoice!, { thousand });
+      if (t.totalInWordsError) return json({ ok: false, error: t.totalInWordsError }, true);
+      return json({ ok: true, ...t, warnings: v.warnings });
     },
   );
 
@@ -546,8 +549,14 @@ export function createServer(): McpServer {
     async ({ invoice }) => {
       const v = validateInvoice(invoice);
       if (!v.ok) return json({ ok: false, errors: v.errors }, true);
-      const issued = await mock.createInvoice(v.invoice!);
-      return json({ ok: true, ...issued });
+      try {
+        const issued = await mock.createInvoice(v.invoice!);
+        return json({ ok: true, ...issued });
+      } catch (e) {
+        const error = (e as { error?: VnError }).error;
+        if (error) return json({ ok: false, error }, true);
+        throw e;
+      }
     },
   );
 
