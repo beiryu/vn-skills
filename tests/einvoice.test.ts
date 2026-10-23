@@ -1,4 +1,10 @@
-import { describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { spawnSync } from 'node:child_process';
+import { resolve } from 'node:path';
+import { tmpdir } from 'node:os';
+import { rmSync, writeFileSync } from 'node:fs';
+import { Client } from '@modelcontextprotocol/sdk/client/index.js';
+import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js';
 import {
   validateInvoice,
   computeTotals,
@@ -123,4 +129,104 @@ describe('real provider skeletons', () => {
   });
   it('rejects unknown provider', () =>
     expect(() => createProvider('foo' as never)).toThrow(/Unknown provider/));
+});
+
+describe('non-finite and overflowing totals', () => {
+  const big = () =>
+    mergePatch(base(), {
+      lines: [{ name: 'X', quantity: 1e300, unitPrice: 1e300, vatRate: 10 }],
+    });
+  it('computeTotals reports an error for a non-numeric quantity', () => {
+    const inv = validateInvoice(base()).invoice!;
+    inv.lines[0]!.quantity = 'abc' as unknown as number;
+    const t = computeTotals(inv);
+    expect(t.totalInWords).toBe('');
+    expect(t.totalInWordsError?.code).toBeTruthy();
+  });
+  it('validateInvoice flags quantity * unitPrice overflow at the line', () => {
+    const v = validateInvoice(big());
+    expect(v.ok).toBe(false);
+    expect(v.errors.map((e) => e.path)).toContain('lines[0]');
+  });
+  it('computeTotals reports an error for an infinite total', () => {
+    const inv = validateInvoice(base()).invoice!;
+    inv.lines[0] = { ...inv.lines[0]!, quantity: 1e300, unitPrice: 1e300 };
+    expect(computeTotals(inv).totalInWordsError).toBeDefined();
+  });
+  it('normal totals have no error', () =>
+    expect(computeTotals(validateInvoice(base()).invoice!).totalInWordsError).toBeUndefined());
+  it('MockProvider refuses to issue a blank amount in words', async () => {
+    const inv = validateInvoice(base()).invoice!;
+    inv.lines[0] = { ...inv.lines[0]!, quantity: 1e300, unitPrice: 1e300 };
+    const err = await new MockProvider().createInvoice(inv).catch((e: unknown) => e);
+    expect((err as { error: { code: string } }).error.code).toBe('INVALID_TOTAL');
+  });
+  it('computeTotals passes through the moneyToWords error', () => {
+    const inv = validateInvoice(base()).invoice!;
+    inv.lines[0] = { ...inv.lines[0]!, quantity: 1e10, unitPrice: 1e10 };
+    const t = computeTotals(inv);
+    expect(t.totalInWords).toBe('');
+    expect(t.totalInWordsError?.code).toBe('INVALID_AMOUNT');
+  });
+});
+
+describe('overflowing totals through the CLI and MCP', () => {
+  const CLI = resolve(__dirname, '..', 'packages', 'cli', 'dist', 'index.js');
+  const SERVER = resolve(__dirname, '..', 'packages', 'mcp', 'dist', 'index.js');
+  const bad = () => {
+    const inv = validateInvoice(base()).invoice!;
+    const line = { ...inv.lines[0]!, quantity: 1, unitPrice: 4e15 };
+    inv.lines = [line, line, line];
+    return inv;
+  };
+  const text = (r: unknown) =>
+    JSON.parse(
+      (r as { content: Array<{ type: string; text?: string }> }).content.find(
+        (x) => x.type === 'text',
+      )!.text!,
+    ) as { ok: boolean; error?: { code: string } };
+  let client: Client;
+  beforeAll(async () => {
+    client = new Client({ name: 'test', version: '0.0.0' });
+    await client.connect(new StdioClientTransport({ command: process.execPath, args: [SERVER] }));
+  });
+  afterAll(async () => {
+    await client.close();
+  });
+
+  it('CLI einvoice totals returns ok:false with the error code', () => {
+    const r = spawnSync(process.execPath, [CLI, 'einvoice', 'totals', '-', '--json'], {
+      encoding: 'utf8',
+      input: JSON.stringify(bad()),
+    });
+    expect(r.status).toBe(1);
+    const out = JSON.parse(r.stdout || r.stderr) as { ok: boolean; error: { code: string } };
+    expect(out.ok).toBe(false);
+    expect(out.error.code).toBe('INVALID_AMOUNT');
+  });
+  it('CLI einvoice create returns ok:false with the error code', () => {
+    const f = resolve(tmpdir(), `vn-bad-invoice-${process.pid}.json`);
+    writeFileSync(f, JSON.stringify(bad()));
+    const r = spawnSync(process.execPath, [CLI, 'einvoice', 'create', f, '--json'], {
+      encoding: 'utf8',
+    });
+    rmSync(f);
+    expect(r.status).toBe(1);
+    const out = JSON.parse(r.stdout || r.stderr) as { ok: boolean; error: { code: string } };
+    expect(out.error.code).toBe('INVALID_AMOUNT');
+  });
+  it('MCP vn_einvoice_totals returns ok:false with the error', async () => {
+    const j = text(
+      await client.callTool({ name: 'vn_einvoice_totals', arguments: { invoice: bad() } }),
+    );
+    expect(j.ok).toBe(false);
+    expect(j.error?.code).toBe('INVALID_AMOUNT');
+  });
+  it('MCP vn_einvoice_mock_issue returns ok:false with the error', async () => {
+    const j = text(
+      await client.callTool({ name: 'vn_einvoice_mock_issue', arguments: { invoice: bad() } }),
+    );
+    expect(j.ok).toBe(false);
+    expect(j.error?.code).toBe('INVALID_AMOUNT');
+  });
 });
