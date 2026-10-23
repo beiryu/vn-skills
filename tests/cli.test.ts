@@ -186,6 +186,31 @@ describe('vn-skills CLI', () => {
     expect(run(['money', 'words', '15', '--pretty']).out.trim()).toBe('mười lăm đồng');
   });
 
+  it('money words -- -5 works with the separator', () => {
+    const r = run(['--json', 'money', 'words', '--', '-5']);
+    expect(r.code).toBe(0);
+    expect(r.json().words).toBe('âm năm đồng');
+  });
+  it('money words -5 works or tells the user to use --', () => {
+    const r = run(['--json', 'money', 'words', '-5']);
+    if (r.code === 0) expect(r.json().words).toBe('âm năm đồng');
+    else expect(r.out + r.err).toContain('money words -- -5');
+  });
+  it('money words -1200000 --thousand ngàn works or hints at --', () => {
+    const r = run(['--json', 'money', 'words', '-1200000', '--thousand', 'ngàn']);
+    if (r.code === 0) expect(r.json().words).toBe('âm một triệu hai trăm ngàn đồng');
+    else expect(r.out + r.err).toContain('--');
+    expect(r.out + r.err).not.toMatch(/unknown option '-1200000'$/m);
+  });
+  it('money words still rejects a real unknown option', () => {
+    const r = run(['money', 'words', '5', '--foo']);
+    expect(r.code).not.toBe(0);
+    expect(r.out + r.err).toContain('--foo');
+  });
+  it('money words --help explains negative amounts', () => {
+    expect(run(['money', 'words', '--help']).out).toContain('-- -');
+  });
+
   it('lunar from-solar', () => {
     const r = run(['lunar', 'from-solar', '29/01/2025']);
     expect(r.json().text).toBe('Mùng 1 tháng Giêng năm Ất Tỵ');

@@ -15,6 +15,10 @@ export function registerMoney(program: Command): void {
     .option('--no-tu', 'read 4 as "bốn" instead of "tư" in 24, 34, ...')
     .option('-c, --capitalize', 'capitalize the first letter')
     .option('--chan', 'append "chẵn" for round amounts')
+    .addHelpText(
+      'after',
+      '\nNegative amounts: vn-skills money words -5 (or, explicitly, vn-skills money words -- -5)',
+    )
     .action((amount: string, opts, c: Command) => {
       const r = moneyToWords(amount, {
         thousand: opts.thousand,

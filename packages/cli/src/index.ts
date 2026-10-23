@@ -37,7 +37,16 @@ registerPhone(program);
 registerHolidays(program);
 registerInstall(program);
 
-program.parseAsync(process.argv).catch((err) => {
+// Commander reads "-5" as an option; move a negative `money words` amount behind `--`.
+function moveNegativeMoneyAmount(argv: string[]): string[] {
+  const i = argv.findIndex((a, k) => a === 'money' && argv[k + 1] === 'words');
+  if (i < 0 || argv.includes('--', i)) return argv;
+  const j = argv.findIndex((a, k) => k > i + 1 && /^-\d+$/.test(a));
+  if (j < 0) return argv;
+  return [...argv.slice(0, j), ...argv.slice(j + 1), '--', argv[j] as string];
+}
+
+program.parseAsync(moveNegativeMoneyAmount(process.argv)).catch((err) => {
   process.stderr.write(`${err instanceof Error ? err.message : String(err)}\n`);
   process.exit(1);
 });
