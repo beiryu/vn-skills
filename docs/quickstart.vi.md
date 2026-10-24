@@ -111,10 +111,10 @@ Kết quả:
 ## Cài skill vào agent
 
 ```bash
-npx -y @vn-skills/cli install all --agent claude    # hoặc cursor, codex, agents
+npx -y @vn-skills/cli install all --agent claude    # hoặc cursor, codex, agents, copilot
 ```
 
-Binary tên là `vn-skills`, nên khi cài global lệnh tương đương là `vn-skills install all --agent claude` (thay `claude` bằng `cursor`, `codex` hoặc `agents`).
+Binary tên là `vn-skills`, nên khi cài global lệnh tương đương là `vn-skills install all --agent claude` (thay `claude` bằng `cursor`, `codex`, `agents` hoặc `copilot`).
 
 Lệnh này chép toàn bộ skill vào thư mục skill của agent (`.claude/skills/`, `.cursor/skills/`, `.codex/skills/` hoặc `.agents/skills/`
 trong dự án hiện tại). Thêm `--global` để cài vào thư mục home, `--dry-run` để chỉ in các thao tác, `--force` để ghi đè
