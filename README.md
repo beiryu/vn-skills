@@ -67,12 +67,12 @@ npx -y @vn-skills/cli install vietqr --agent claude            # .claude/skills/
 npx -y @vn-skills/cli install all --agent cursor --global      # ~/.cursor/skills/*
 ```
 
-`--agent` is `claude`, `cursor` or `codex`. Existing folders are not overwritten without `--force`; `--dry-run` prints
+`--agent` is `claude`, `cursor`, `codex` or `agents`. Existing folders are not overwritten without `--force`; `--dry-run` prints
 the actions only.
 
 **Cursor / Codex / other agents:** copy the same folders into the agent's skills directory
 (`.cursor/skills/`, `.codex/skills/`, or wherever your agent discovers `SKILL.md`). The skills only need Node.js 22+ because
-they call `npx -y @vn-skills/cli`.
+they call `npx -y @vn-skills/cli`. `.agents/skills/` is read by Codex ([docs](https://learn.chatgpt.com/docs/build-skills)), Cursor ([docs](https://cursor.com/docs/skills)) and Gemini CLI ([docs](https://geminicli.com/docs/cli/skills/)); install there with `--agent agents`.
 
 **Inside this repository** run `node packages/cli/dist/index.js …` instead of `npx -y @vn-skills/cli …` to get clean JSON. `pnpm vn-skills …` also works but adds wrapper output (the echoed command and `[ELIFECYCLE]` on failures).
 

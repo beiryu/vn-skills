@@ -111,11 +111,11 @@ Kết quả:
 ## Cài skill vào agent
 
 ```bash
-npx -y @vn-skills/cli install all --agent claude    # hoặc cursor, codex
+npx -y @vn-skills/cli install all --agent claude    # hoặc cursor, codex, agents
 ```
 
-Binary tên là `vn-skills`, nên khi cài global lệnh tương đương là `vn-skills install all --agent claude` (thay `claude` bằng `cursor` hoặc `codex`).
+Binary tên là `vn-skills`, nên khi cài global lệnh tương đương là `vn-skills install all --agent claude` (thay `claude` bằng `cursor`, `codex` hoặc `agents`).
 
-Lệnh này chép toàn bộ skill vào thư mục skill của agent (`.claude/skills/`, `.cursor/skills/` hoặc `.codex/skills/`
+Lệnh này chép toàn bộ skill vào thư mục skill của agent (`.claude/skills/`, `.cursor/skills/`, `.codex/skills/` hoặc `.agents/skills/`
 trong dự án hiện tại). Thêm `--global` để cài vào thư mục home, `--dry-run` để chỉ in các thao tác, `--force` để ghi đè
-thư mục đã có.
+thư mục đã có. `.agents/skills/` được Codex ([docs](https://learn.chatgpt.com/docs/build-skills)), Cursor ([docs](https://cursor.com/docs/skills)) và Gemini CLI ([docs](https://geminicli.com/docs/cli/skills/)) đọc; cài vào đó bằng `--agent agents`.

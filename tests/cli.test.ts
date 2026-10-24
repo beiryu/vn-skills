@@ -478,6 +478,44 @@ describe('vn-skills install', () => {
     expect(r.out).toContain('vietqr');
     expect(existsSync(join(cwd, '.claude'))).toBe(false);
   });
+  it('--agent agents installs into .agents/skills/<name> (project)', () => {
+    const cwd = tmp();
+    const r = install(['vietqr', '--agent', 'agents'], cwd, tmp());
+    expect(r.code).toBe(0);
+    expect(existsSync(join(cwd, '.agents', 'skills', 'vietqr', 'SKILL.md'))).toBe(true);
+  });
+  it('--agent agents --global installs into ~/.agents/skills/<name>', () => {
+    const cwd = tmp();
+    const home = tmp();
+    const r = install(['vn-lunar', '--agent', 'agents', '--global'], cwd, home);
+    expect(r.code).toBe(0);
+    expect(existsSync(join(home, '.agents', 'skills', 'vn-lunar', 'SKILL.md'))).toBe(true);
+    expect(existsSync(join(cwd, '.agents'))).toBe(false);
+  });
+  it('--agent agents --dry-run prints the .agents target and writes nothing', () => {
+    const cwd = tmp();
+    const r = install(['vietqr', '--agent', 'agents', '--dry-run'], cwd, tmp());
+    expect(r.code).toBe(0);
+    expect(r.out).toContain('[dry-run]');
+    expect(r.out).toContain(join('.agents', 'skills', 'vietqr'));
+    expect(existsSync(join(cwd, '.agents'))).toBe(false);
+  });
+  it('--agent agents refuses to overwrite without --force', () => {
+    const cwd = tmp();
+    const home = tmp();
+    install(['vietqr', '--agent', 'agents'], cwd, home);
+    const file = join(cwd, '.agents', 'skills', 'vietqr', 'SKILL.md');
+    writeFileSync(file, 'local edit');
+    expect(install(['vietqr', '--agent', 'agents'], cwd, home).code).not.toBe(0);
+    expect(readFileSync(file, 'utf8')).toBe('local edit');
+    expect(install(['vietqr', '--agent', 'agents', '--force'], cwd, home).code).toBe(0);
+    expect(readFileSync(file, 'utf8')).not.toBe('local edit');
+  });
+  it('unknown-agent error lists agents', () => {
+    const r = install(['vietqr', '--agent', 'nope'], tmp(), tmp());
+    expect(r.code).not.toBe(0);
+    expect(r.err).toContain('agents');
+  });
   it('rejects unknown skills', () => {
     const cwd = tmp();
     const r = install(['nope', '--agent', 'claude'], cwd, tmp());
