@@ -67,7 +67,7 @@ npx -y @vn-skills/cli install vietqr --agent claude        # .claude/skills/viet
 npx -y @vn-skills/cli install all --agent cursor --global  # ~/.cursor/skills/*
 ```
 
-`--agent` là `claude`, `cursor`, `codex` hoặc `agents`. Không ghi đè thư mục có sẵn nếu thiếu `--force`; `--dry-run` chỉ in các bước.
+`--agent` là `claude`, `cursor`, `codex`, `agents` hoặc `copilot` (`.github/skills/`, hoặc `~/.copilot/skills/` với `--global`). Không ghi đè thư mục có sẵn nếu thiếu `--force`; `--dry-run` chỉ in các bước.
 
 **Cursor / Codex / agent khác:** copy đúng thư mục đó vào nơi agent tìm `SKILL.md` (`.cursor/skills/`, `.codex/skills/`…).
 Skill chỉ cần Node.js 22+ vì gọi `npx -y @vn-skills/cli`. `.agents/skills/` được Codex ([docs](https://learn.chatgpt.com/docs/build-skills)), Cursor ([docs](https://cursor.com/docs/skills)), Gemini CLI ([docs](https://geminicli.com/docs/cli/skills/)) và GitHub Copilot trong VS Code, Copilot CLI và cloud agent ([docs](https://docs.github.com/en/copilot/concepts/customizations/agent-skills)) đọc; cài vào đó bằng `--agent agents`. Với Copilot cloud agent, hãy cài ở phạm vi dự án (`--agent agents`, không dùng `--global`), vì cloud agent không nạp skill cá nhân.

@@ -118,6 +118,20 @@ function labelAt(
   return { month, year, leap };
 }
 
+function isValidTimeZone(timeZone: unknown): boolean {
+  return (
+    typeof timeZone === 'number' && Number.isFinite(timeZone) && timeZone >= -12 && timeZone <= 14
+  );
+}
+
+function invalidTimeZone<T>(timeZone: unknown): Result<T> {
+  return fail<T>(
+    'INVALID_TIMEZONE',
+    `Invalid timeZone ${String(timeZone)}`,
+    'timeZone is a UTC offset in hours between -12 and +14, e.g. 7 for Vietnam.',
+  );
+}
+
 /** Convert a solar (Gregorian) date to the Vietnamese lunar calendar. */
 export function solarToLunar(
   dd: number,
@@ -125,6 +139,7 @@ export function solarToLunar(
   yy: number,
   timeZone = VN_TIMEZONE,
 ): Result<LunarDate> {
+  if (!isValidTimeZone(timeZone)) return invalidTimeZone(timeZone);
   if (!isValidSolarDate(dd, mm, yy))
     return fail('INVALID_DATE', `Invalid solar date ${dd}/${mm}/${yy}`);
   if (yy < MIN_YEAR || yy > MAX_YEAR) return fail('OUT_OF_RANGE', 'Supported years: 1800-2199');
@@ -147,6 +162,7 @@ export function solarToLunar(
 
 /** The month (1..12) repeated as leap month in `lunarYear`, or null when the year has none. */
 export function leapMonthOf(lunarYear: number, timeZone = VN_TIMEZONE): number | null {
+  if (!isValidTimeZone(timeZone)) return null;
   // A leap month numbered 1..10 sits in the span that starts in the previous Gregorian year;
   // a leap 11 or 12 sits in the span starting in `lunarYear` itself.
   for (const span of [solsticeSpan(lunarYear - 1, timeZone), solsticeSpan(lunarYear, timeZone)]) {
@@ -185,6 +201,7 @@ export function lunarToSolar(
   lunarLeap = false,
   timeZone = VN_TIMEZONE,
 ): Result<SolarDate> {
+  if (!isValidTimeZone(timeZone)) return invalidTimeZone(timeZone);
   if (![lunarDay, lunarMonth, lunarYear].every(Number.isInteger)) {
     return fail('INVALID_DATE', 'Lunar day/month/year must be integers');
   }
@@ -222,6 +239,7 @@ export function lunarMonthLength(
   leap = false,
   timeZone = VN_TIMEZONE,
 ): number | null {
+  if (!isValidTimeZone(timeZone)) return null;
   if (!Number.isInteger(lunarMonth) || !Number.isInteger(lunarYear)) return null;
   if (lunarMonth < 1 || lunarMonth > 12) return null;
   if (lunarYear < MIN_YEAR || lunarYear > MAX_YEAR) return null;

@@ -511,6 +511,29 @@ describe('vn-skills install', () => {
     expect(install(['vietqr', '--agent', 'agents', '--force'], cwd, home).code).toBe(0);
     expect(readFileSync(file, 'utf8')).not.toBe('local edit');
   });
+  it('--agent copilot installs into .github/skills/<name> (project)', () => {
+    const cwd = tmp();
+    const r = install(['vietqr', '--agent', 'copilot'], cwd, tmp());
+    expect(r.code).toBe(0);
+    expect(existsSync(join(cwd, '.github', 'skills', 'vietqr', 'SKILL.md'))).toBe(true);
+    expect(existsSync(join(cwd, '.copilot'))).toBe(false);
+  });
+  it('--agent copilot --global installs into ~/.copilot/skills/<name>', () => {
+    const cwd = tmp();
+    const home = tmp();
+    const r = install(['vn-lunar', '--agent', 'copilot', '--global'], cwd, home);
+    expect(r.code).toBe(0);
+    expect(existsSync(join(home, '.copilot', 'skills', 'vn-lunar', 'SKILL.md'))).toBe(true);
+    expect(existsSync(join(cwd, '.github'))).toBe(false);
+  });
+  it('--agent copilot --dry-run prints the .github target and writes nothing', () => {
+    const cwd = tmp();
+    const r = install(['vietqr', '--agent', 'copilot', '--dry-run'], cwd, tmp());
+    expect(r.code).toBe(0);
+    expect(r.out).toContain('[dry-run]');
+    expect(r.out).toContain(join('.github', 'skills', 'vietqr'));
+    expect(existsSync(join(cwd, '.github'))).toBe(false);
+  });
   it('unknown-agent error lists agents', () => {
     const r = install(['vietqr', '--agent', 'nope'], tmp(), tmp());
     expect(r.code).not.toBe(0);

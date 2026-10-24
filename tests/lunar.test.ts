@@ -1,3 +1,5 @@
+import { spawnSync } from 'node:child_process';
+import { pathToFileURL } from 'node:url';
 import { describe, expect, it } from 'vitest';
 import {
   solarToLunar,
@@ -124,5 +126,63 @@ describe('parseDateInput range validation', () => {
     ['3/2/2024', { day: 3, month: 2, year: 2024 }],
   ])('accepts %s', (input, expected) => {
     expect(parseDateInput(input)).toMatchObject({ ok: true, ...expected });
+  });
+});
+
+describe('timeZone validation', () => {
+  const bad: [string, unknown][] = [
+    ['string', 'Asia/Ho_Chi_Minh'],
+    ['NaN', Number.NaN],
+    ['-13', -13],
+    ['15', 15],
+  ];
+
+  it.each(bad)('solarToLunar rejects %s', (_n, tz) => {
+    const r = solarToLunar(10, 2, 2024, tz as number);
+    expect(r).toMatchObject({ ok: false, error: { code: 'INVALID_TIMEZONE' } });
+    if (!r.ok) expect(r.error.hint).toMatch(/UTC offset/i);
+  });
+
+  it.each(bad)('lunarInfo rejects %s', (_n, tz) => {
+    expect(lunarInfo(10, 2, 2024, tz as number)).toMatchObject({
+      ok: false,
+      error: { code: 'INVALID_TIMEZONE' },
+    });
+  });
+
+  it.each(bad)('lunarToSolar rejects %s', (_n, tz) => {
+    expect(lunarToSolar(1, 1, 2024, false, tz as number)).toMatchObject({
+      ok: false,
+      error: { code: 'INVALID_TIMEZONE' },
+    });
+  });
+
+  it.each(bad)('leapMonthOf and lunarMonthLength return null for %s', (_n, tz) => {
+    expect(leapMonthOf(2023, tz as number)).toBeNull();
+    expect(lunarMonthLength(1, 2024, false, tz as number)).toBeNull();
+  });
+
+  it('accepts a valid non-VN offset and the VN default', () => {
+    expect(solarToLunar(10, 2, 2024, 8)).toMatchObject({ ok: true });
+    expect(solarToLunar(10, 2, 2024, 7)).toEqual(solarToLunar(10, 2, 2024));
+  });
+
+  // Infinity loops forever on unvalidated input, so probe it in a child process with a timeout.
+  it.each([
+    'solarToLunar(10, 2, 2024, tz)',
+    'lunarInfo(10, 2, 2024, tz)',
+    'lunarToSolar(1, 1, 2024, false, tz)',
+  ])('%s rejects Infinity', (call) => {
+    const entry = pathToFileURL(
+      new URL('../packages/core/dist/index.js', import.meta.url).pathname,
+    );
+    const script = `import * as c from ${JSON.stringify(entry.href)};
+const { solarToLunar, lunarInfo, lunarToSolar } = c; const tz = Infinity;
+const r = ${call}; console.log(r.ok === false ? r.error.code : 'ok');`;
+    const out = spawnSync(process.execPath, ['--input-type=module', '-e', script], {
+      timeout: 5000,
+      encoding: 'utf8',
+    });
+    expect(out.stdout.trim()).toBe('INVALID_TIMEZONE');
   });
 });

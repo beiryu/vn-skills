@@ -111,10 +111,10 @@ Output:
 ## Install the skills into your agent
 
 ```bash
-npx -y @vn-skills/cli install all --agent claude    # or cursor, codex, agents
+npx -y @vn-skills/cli install all --agent claude    # or cursor, codex, agents, copilot
 ```
 
-The binary is named `vn-skills`, so with a global install the same command is `vn-skills install all --agent claude` (replace `claude` with `cursor`, `codex` or `agents`).
+The binary is named `vn-skills`, so with a global install the same command is `vn-skills install all --agent claude` (replace `claude` with `cursor`, `codex`, `agents` or `copilot`).
 
 This copies every skill into the agent's skills directory (`.claude/skills/`, `.cursor/skills/`, `.codex/skills/` or `.agents/skills/`
 in the current project). Add `--global` for your home directory, `--dry-run` to only print the actions and `--force`
