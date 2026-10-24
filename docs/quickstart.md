@@ -111,11 +111,11 @@ Output:
 ## Install the skills into your agent
 
 ```bash
-npx -y @vn-skills/cli install all --agent claude    # or cursor, codex
+npx -y @vn-skills/cli install all --agent claude    # or cursor, codex, agents
 ```
 
-The binary is named `vn-skills`, so with a global install the same command is `vn-skills install all --agent claude` (replace `claude` with `cursor` or `codex`).
+The binary is named `vn-skills`, so with a global install the same command is `vn-skills install all --agent claude` (replace `claude` with `cursor`, `codex` or `agents`).
 
-This copies every skill into the agent's skills directory (`.claude/skills/`, `.cursor/skills/` or `.codex/skills/`
+This copies every skill into the agent's skills directory (`.claude/skills/`, `.cursor/skills/`, `.codex/skills/` or `.agents/skills/`
 in the current project). Add `--global` for your home directory, `--dry-run` to only print the actions and `--force`
-to overwrite existing folders.
+to overwrite existing folders. `.agents/skills/` is read by Codex ([docs](https://learn.chatgpt.com/docs/build-skills)), Cursor ([docs](https://cursor.com/docs/skills)) and Gemini CLI ([docs](https://geminicli.com/docs/cli/skills/)); install there with `--agent agents`.

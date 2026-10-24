@@ -8,6 +8,7 @@ const AGENT_DIRS: Record<string, string> = {
   claude: '.claude',
   cursor: '.cursor',
   codex: '.codex',
+  agents: '.agents',
 };
 
 /** Skills are bundled at <pkg>/skills (published) or <repo>/skills (workspace checkout). */
@@ -23,7 +24,7 @@ export function registerInstall(program: Command): void {
   program
     .command('install <skill>')
     .description('Copy a bundled skill (or "all") into an agent skills directory')
-    .requiredOption('--agent <agent>', 'claude | cursor | codex')
+    .requiredOption('--agent <agent>', 'claude | cursor | codex | agents')
     .option('--global', 'install into the home directory instead of the current project')
     .option('--force', 'overwrite existing skill folders')
     .option('--dry-run', 'print actions without writing anything')
