@@ -43,7 +43,7 @@ export function taxIdCheckDigitResult(
   return { ok: true, first9, checkDigit, taxId: checkDigit === null ? null : first9 + checkDigit };
 }
 
-/** Strip spaces, dots and dashes. Keeps digits only. Returns null when other characters are present. */
+/** Strip spaces, dots, dashes and underscores. Keeps digits only. Returns null when other characters are present. */
 export function normalizeTaxId(input: string): string | null {
   const stripped = String(input ?? '')
     .trim()
@@ -76,12 +76,12 @@ export function validateTaxId(input: string): Result<TaxIdInfo> {
     return fail(
       'INVALID_FORMAT',
       `Tax ID "${input}" contains non-digit characters`,
-      'Only digits, spaces, dots and dashes are accepted.',
+      'Only digits, spaces, dots, dashes and underscores are accepted.',
     );
   }
   const warnings: string[] = [];
   // A dash means "root-branch": enforce the 10-3 split so "0100233488-01" is not mistaken for a 12-digit personal ID.
-  const dashed = /^\s*(\d[\d\s.]*)[-–]\s*(\d+)\s*$/.exec(String(input ?? ''));
+  const dashed = /^\s*(\d[\d\s.]*)[-–_]\s*(\d+)\s*$/.exec(String(input ?? ''));
   if (dashed) {
     const root = dashed[1]!.replace(/[\s.]/g, '');
     const suffix = dashed[2]!;
