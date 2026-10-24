@@ -51,6 +51,7 @@ Library: `moneyToWords(1200000, { capitalize: true })` and `numberToWords(2024)`
 
 See [references/reading-rules.md](references/reading-rules.md). Summary:
 
+- Maximum 1000 digits (`MAX_MONEY_DIGITS`, sign and separators excluded); longer amounts return `INVALID_AMOUNT`.
 - Groups of three digits with scale words `nghìn`, `triệu`, `tỷ`; above 10¹² the scale repeats: `nghìn tỷ`, `triệu tỷ`, `tỷ tỷ`.
 - `mười` for 10–19, `mươi` for 20–90; `mốt` for x1 (x ≥ 2), `lăm` for x5 (x ≥ 1), `tư` for x4 (x ≥ 2, optional).
 - `lẻ`/`linh` when tens = 0 and units > 0 inside a group that has hundreds (or is not the leading group).

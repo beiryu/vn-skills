@@ -61,6 +61,16 @@ function scaleWord(i: number, thousand: string): string {
   return [base[rem], ...Array<string>(tyCount).fill('tỷ')].filter(Boolean).join(' ');
 }
 
+/** Maximum number of digits accepted by moneyToWords (output grows quadratically with length). */
+export const MAX_MONEY_DIGITS = 1000;
+
+const tooLong = (): Result<MoneyWords> =>
+  fail(
+    'INVALID_AMOUNT',
+    `Amount has more than ${MAX_MONEY_DIGITS} digits`,
+    `Amounts are limited to ${MAX_MONEY_DIGITS} digits.`,
+  );
+
 /**
  * Convert an integer VND amount to Vietnamese words, e.g. 1200000 -> "một triệu hai trăm nghìn đồng".
  * Accepts number, bigint, or a numeric string (digits with optional thousands separators). Non-integers are rejected.
@@ -110,8 +120,12 @@ export function moneyToWords(
         'Use digits only, e.g. 1200000 or 1.200.000.',
       );
     }
+    if (cleaned.replace('-', '').length > MAX_MONEY_DIGITS) return tooLong();
     big = BigInt(cleaned);
   }
+
+  if (typeof amount === 'bigint' && (big < 0n ? -big : big).toString().length > MAX_MONEY_DIGITS)
+    return tooLong();
 
   const negative = big < 0n;
   if (negative) big = -big;
