@@ -72,7 +72,7 @@ the actions only.
 
 **Cursor / Codex / other agents:** copy the same folders into the agent's skills directory
 (`.cursor/skills/`, `.codex/skills/`, or wherever your agent discovers `SKILL.md`). The skills only need Node.js 22+ because
-they call `npx -y @vn-skills/cli`. `.agents/skills/` is read by Codex ([docs](https://learn.chatgpt.com/docs/build-skills)), Cursor ([docs](https://cursor.com/docs/skills)) and Gemini CLI ([docs](https://geminicli.com/docs/cli/skills/)); install there with `--agent agents`.
+they call `npx -y @vn-skills/cli`. `.agents/skills/` is read by Codex ([docs](https://learn.chatgpt.com/docs/build-skills)), Cursor ([docs](https://cursor.com/docs/skills)), Gemini CLI ([docs](https://geminicli.com/docs/cli/skills/)) and GitHub Copilot in VS Code, Copilot CLI and the cloud agent ([docs](https://docs.github.com/en/copilot/concepts/customizations/agent-skills)); install there with `--agent agents`. For the Copilot cloud agent, install in project scope (`--agent agents` without `--global`), because the cloud agent does not load personal skills.
 
 **Inside this repository** run `node packages/cli/dist/index.js …` instead of `npx -y @vn-skills/cli …` to get clean JSON. `pnpm vn-skills …` also works but adds wrapper output (the echoed command and `[ELIFECYCLE]` on failures).
 

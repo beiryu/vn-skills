@@ -118,4 +118,4 @@ Binary tên là `vn-skills`, nên khi cài global lệnh tương đương là `v
 
 Lệnh này chép toàn bộ skill vào thư mục skill của agent (`.claude/skills/`, `.cursor/skills/`, `.codex/skills/` hoặc `.agents/skills/`
 trong dự án hiện tại). Thêm `--global` để cài vào thư mục home, `--dry-run` để chỉ in các thao tác, `--force` để ghi đè
-thư mục đã có. `.agents/skills/` được Codex ([docs](https://learn.chatgpt.com/docs/build-skills)), Cursor ([docs](https://cursor.com/docs/skills)) và Gemini CLI ([docs](https://geminicli.com/docs/cli/skills/)) đọc; cài vào đó bằng `--agent agents`.
+thư mục đã có. `.agents/skills/` được Codex ([docs](https://learn.chatgpt.com/docs/build-skills)), Cursor ([docs](https://cursor.com/docs/skills)), Gemini CLI ([docs](https://geminicli.com/docs/cli/skills/)) và GitHub Copilot trong VS Code, Copilot CLI và cloud agent ([docs](https://docs.github.com/en/copilot/concepts/customizations/agent-skills)) đọc; cài vào đó bằng `--agent agents`. Với Copilot cloud agent, hãy cài ở phạm vi dự án (`--agent agents`, không dùng `--global`), vì cloud agent không nạp skill cá nhân.

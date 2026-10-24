@@ -226,3 +226,23 @@ describe.each(['README.md', 'README.vi.md'])('%s MCP tools grouped by skill', (f
     }
   });
 });
+
+describe.each(['README.md', 'README.vi.md', 'docs/quickstart.md', 'docs/quickstart.vi.md'])(
+  '%s GitHub Copilot',
+  (file) => {
+    const text = read(file);
+
+    it('lists Copilot as a reader of .agents/skills with a docs link', () => {
+      expect(text).toContain('GitHub Copilot');
+      expect(text).toContain(
+        'https://docs.github.com/en/copilot/concepts/customizations/agent-skills',
+      );
+    });
+
+    it('tells cloud agent users to install in project scope', () => {
+      expect(text).toMatch(/cloud agent/i);
+      expect(text).toContain('--agent agents');
+      expect(text).toContain('--global');
+    });
+  },
+);
