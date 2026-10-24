@@ -72,5 +72,5 @@ Library: `import { validateTaxId, isValidTaxId, taxIdCheckDigit } from '@vn-skil
 ## Common mistakes to avoid
 
 - Treating a valid checksum as proof the company exists. Say "structurally valid" in your answer.
-- Dropping the dash and then mis-reading `0100233488-01` as a 12-digit personal ID. The tool rejects dashed forms that are not 10-3.
+- Dropping the dash (or underscore) and then mis-reading `0100233488-01` as a 12-digit personal ID. The tool rejects dashed or underscored forms that are not 10-3.
 - Stripping leading zeros (`0100233488` must keep its `0`). Store tax IDs as strings, never numbers.

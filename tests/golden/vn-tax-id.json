@@ -56,6 +56,29 @@
         "input": "0100233488002",
         "expected": { "ok": true }
       },
+      {
+        "name": "rejects underscore 10-2 like the dash form",
+        "input": "0100233488_01",
+        "expected": {
+          "ok": false,
+          "error": {
+            "code": "INVALID_LENGTH",
+            "message": "Branch tax IDs must be 10 digits, a dash, then 3 digits (got 10-2)"
+          }
+        }
+      },
+      {
+        "name": "accepts underscore branch separator",
+        "input": "0100233488_001",
+        "expected": {
+          "ok": true,
+          "kind": "branch",
+          "root": "0100233488",
+          "branch": "001",
+          "formatted": "0100233488-001",
+          "normalized": "0100233488001"
+        }
+      },
       { "name": "accepts en-dash separator", "input": "0100233488–003", "expected": { "ok": true } },
       {
         "name": "rejects branch 000",
