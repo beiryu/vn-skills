@@ -118,4 +118,4 @@ The binary is named `vn-skills`, so with a global install the same command is `v
 
 This copies every skill into the agent's skills directory (`.claude/skills/`, `.cursor/skills/`, `.codex/skills/` or `.agents/skills/`
 in the current project). Add `--global` for your home directory, `--dry-run` to only print the actions and `--force`
-to overwrite existing folders. `.agents/skills/` is read by Codex ([docs](https://learn.chatgpt.com/docs/build-skills)), Cursor ([docs](https://cursor.com/docs/skills)) and Gemini CLI ([docs](https://geminicli.com/docs/cli/skills/)); install there with `--agent agents`.
+to overwrite existing folders. `.agents/skills/` is read by Codex ([docs](https://learn.chatgpt.com/docs/build-skills)), Cursor ([docs](https://cursor.com/docs/skills)), Gemini CLI ([docs](https://geminicli.com/docs/cli/skills/)) and GitHub Copilot in VS Code, Copilot CLI and the cloud agent ([docs](https://docs.github.com/en/copilot/concepts/customizations/agent-skills)); install there with `--agent agents`. For the Copilot cloud agent, install in project scope (`--agent agents` without `--global`), because the cloud agent does not load personal skills.
