@@ -11,6 +11,10 @@ import { loadGolden, title } from './golden.js';
 
 const golden = loadGolden<{
   formatNumberLarge: { input: number; expected: string }[];
+  formatNumberRounding: {
+    input: { value: number; maxFractionDigits?: number };
+    expected: string;
+  }[];
 }>('vn-number-format');
 
 const parsed = (s: string) => {
@@ -127,7 +131,7 @@ describe('formatCompactVnd boundaries and extras', () => {
     expect(formatCompactVnd(n)).toEqual({ ok: true, text: expected });
   });
   it('avoids -0 and rounds to 2 fraction digits', () => {
-    expect(formatNumber(1.005)).toMatchObject({ text: '1' });
+    expect(formatNumber(1.005)).toMatchObject({ text: '1,01' });
     expect(formatNumber(-0.001)).toEqual({ ok: true, text: '0' });
   });
   it('formats d/m/yyyy and leap days', () => {
@@ -145,6 +149,13 @@ describe('formatCompactVnd boundaries and extras', () => {
   });
   it.each(['1.5.00', '1,2,3', '12x', '1k2k'])('rejects %s', (s) => {
     expect(parseAmount(s).ok).toBe(false);
+  });
+});
+
+describe('formatNumber rounds the written decimal half away from zero', () => {
+  it.each(golden.formatNumberRounding.map((c) => [title(c), c] as const))('golden %s', (_, c) => {
+    const { value, ...opts } = c.input;
+    expect(formatNumber(value, opts)).toEqual({ ok: true, text: c.expected });
   });
 });
 
