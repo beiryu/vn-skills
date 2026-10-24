@@ -100,7 +100,9 @@
     "moneyToWordsInvalid": [
       { "name": "rejects decimals", "input": 12.5 },
       { "name": "rejects decimal string", "input": "12.5" },
-      { "name": "rejects text", "input": "abc" }
+      { "name": "rejects text", "input": "abc" },
+      { "name": "rejects 1001 digits", "input": "9", "repeat": 1001 },
+      { "name": "rejects negative 1001 digits", "input": "9", "prefix": "-", "repeat": 1001 }
     ],
     "numberToWords": [{ "input": 2024, "expected": "hai nghìn không trăm hai mươi tư" }]
   }
