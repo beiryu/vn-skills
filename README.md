@@ -67,7 +67,7 @@ npx -y @vn-skills/cli install vietqr --agent claude            # .claude/skills/
 npx -y @vn-skills/cli install all --agent cursor --global      # ~/.cursor/skills/*
 ```
 
-`--agent` is `claude`, `cursor`, `codex` or `agents`. Existing folders are not overwritten without `--force`; `--dry-run` prints
+`--agent` is `claude`, `cursor`, `codex`, `agents` or `copilot` (`.github/skills/`, or `~/.copilot/skills/` with `--global`). Existing folders are not overwritten without `--force`; `--dry-run` prints
 the actions only.
 
 **Cursor / Codex / other agents:** copy the same folders into the agent's skills directory

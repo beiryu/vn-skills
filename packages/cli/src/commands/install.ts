@@ -9,6 +9,7 @@ const AGENT_DIRS: Record<string, string> = {
   cursor: '.cursor',
   codex: '.codex',
   agents: '.agents',
+  copilot: '.copilot',
 };
 
 /** Skills are bundled at <pkg>/skills (published) or <repo>/skills (workspace checkout). */
@@ -24,7 +25,7 @@ export function registerInstall(program: Command): void {
   program
     .command('install <skill>')
     .description('Copy a bundled skill (or "all") into an agent skills directory')
-    .requiredOption('--agent <agent>', 'claude | cursor | codex | agents')
+    .requiredOption('--agent <agent>', 'claude | cursor | codex | agents | copilot')
     .option('--global', 'install into the home directory instead of the current project')
     .option('--force', 'overwrite existing skill folders')
     .option('--dry-run', 'print actions without writing anything')
@@ -46,7 +47,10 @@ export function registerInstall(program: Command): void {
         for (const n of names)
           if (!available.includes(n))
             throw new Error(`Unknown skill "${n}". Available: ${available.join(', ')}, all`);
-        const dest = join(o.global ? homedir() : process.cwd(), agentDir, 'skills');
+        const dest =
+          o.agent === 'copilot' && !o.global
+            ? join(process.cwd(), '.github', 'skills')
+            : join(o.global ? homedir() : process.cwd(), agentDir, 'skills');
         const existing = names.filter((n) => existsSync(join(dest, n)));
         if (existing.length > 0 && !o.force)
           throw new Error(
