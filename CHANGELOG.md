@@ -1,5 +1,37 @@
 # Changelog
 
+## [0.7.0](https://github.com/beiryu/vn-skills/compare/v0.6.0...v0.7.0) (2026-10-24)
+
+
+### Features
+
+* **cli:** add address convert-file for bulk address conversion ([#161](https://github.com/beiryu/vn-skills/issues/161)) ([7098012](https://github.com/beiryu/vn-skills/commit/7098012880a6e7592865ce5f4b18a6d01266b11b)), closes [#156](https://github.com/beiryu/vn-skills/issues/156)
+* **cli:** add install --agent agents for .agents/skills ([#167](https://github.com/beiryu/vn-skills/issues/167)) ([70049ba](https://github.com/beiryu/vn-skills/commit/70049ba03acbcb3d24509edef7bc2edb3464a8d5)), closes [#163](https://github.com/beiryu/vn-skills/issues/163)
+* **cli:** add install --agent copilot ([#181](https://github.com/beiryu/vn-skills/issues/181)) ([47b2656](https://github.com/beiryu/vn-skills/commit/47b265608d773f1403a86c6c401dea9ebb03ad00)), closes [#176](https://github.com/beiryu/vn-skills/issues/176)
+
+
+### Bug Fixes
+
+* **cli:** accept negative amounts in money words ([#160](https://github.com/beiryu/vn-skills/issues/160)) ([0f56eb8](https://github.com/beiryu/vn-skills/commit/0f56eb821534961791b1ecea83fc1d0beb7f11a2)), closes [#157](https://github.com/beiryu/vn-skills/issues/157)
+* **mcp:** cover all skills in MCP Registry description ([#150](https://github.com/beiryu/vn-skills/issues/150)) ([b794f61](https://github.com/beiryu/vn-skills/commit/b794f6102abf499b218adef400c62fbf8505f48f)), closes [#144](https://github.com/beiryu/vn-skills/issues/144)
+* **vietqr:** handle null and non-string notes without throwing ([#152](https://github.com/beiryu/vn-skills/issues/152)) ([485b9f4](https://github.com/beiryu/vn-skills/commit/485b9f42034eb8c29462e10a013def15c84d3331)), closes [#142](https://github.com/beiryu/vn-skills/issues/142)
+* **vietqr:** warn when a parsed payload was lower-cased in transit ([#138](https://github.com/beiryu/vn-skills/issues/138)) ([69b4b46](https://github.com/beiryu/vn-skills/commit/69b4b463615a289f9a822e9c7400c8ecb470d216)), closes [#131](https://github.com/beiryu/vn-skills/issues/131)
+* **vn-einvoice:** report an error when totals are not finite or too large ([#151](https://github.com/beiryu/vn-skills/issues/151)) ([641a632](https://github.com/beiryu/vn-skills/commit/641a6325c28cb2f69f18ef9ca5f75be231f639e1)), closes [#143](https://github.com/beiryu/vn-skills/issues/143)
+* **vn-lunar:** reject out-of-range day and month in parseDateInput ([#137](https://github.com/beiryu/vn-skills/issues/137)) ([9d9ffc7](https://github.com/beiryu/vn-skills/commit/9d9ffc7710941a5dcc94a0e51d624de28ea207c3)), closes [#132](https://github.com/beiryu/vn-skills/issues/132)
+* **vn-lunar:** return INVALID_TIMEZONE for a bad timeZone ([#180](https://github.com/beiryu/vn-skills/issues/180)) ([719b5e1](https://github.com/beiryu/vn-skills/commit/719b5e18a4059cfa03bd1897d916f6ddea298081)), closes [#179](https://github.com/beiryu/vn-skills/issues/179)
+* **vn-money-words:** cap digit count in moneyToWords ([#168](https://github.com/beiryu/vn-skills/issues/168)) ([066ab1d](https://github.com/beiryu/vn-skills/commit/066ab1ddfd428ea43d63f039b17b015dd33e847d)), closes [#162](https://github.com/beiryu/vn-skills/issues/162)
+* **vn-number-format:** round the written decimal half away from zero ([#173](https://github.com/beiryu/vn-skills/issues/173)) ([da11a52](https://github.com/beiryu/vn-skills/commit/da11a5296cc55cfeee4845b5e83cd492b805599a)), closes [#170](https://github.com/beiryu/vn-skills/issues/170)
+* **vn-phone:** drop the trunk 0 written after +84 ([#159](https://github.com/beiryu/vn-skills/issues/159)) ([606b07c](https://github.com/beiryu/vn-skills/commit/606b07c4bcb3582917437f8426e3a40a4be74a4c)), closes [#158](https://github.com/beiryu/vn-skills/issues/158)
+* **vn-tax-id:** return EMPTY error for empty or blank input ([#153](https://github.com/beiryu/vn-skills/issues/153)) ([6fa602f](https://github.com/beiryu/vn-skills/commit/6fa602f18ff7646ff3ae6777a3d1b32d4c656fbb)), closes [#141](https://github.com/beiryu/vn-skills/issues/141)
+* **vn-tax-id:** treat underscore as branch separator ([#174](https://github.com/beiryu/vn-skills/issues/174)) ([8f115a7](https://github.com/beiryu/vn-skills/commit/8f115a70679fb047d333537ae4a6e9e512693be0)), closes [#169](https://github.com/beiryu/vn-skills/issues/169)
+
+
+### Documentation
+
+* **mcp:** group README MCP tool list by skill ([#149](https://github.com/beiryu/vn-skills/issues/149)) ([37db769](https://github.com/beiryu/vn-skills/commit/37db769981a7087efb5d041921023b25014d6112)), closes [#145](https://github.com/beiryu/vn-skills/issues/145)
+* **repo:** add MCP client setup for Cursor, VS Code, Claude Desktop, Codex ([#136](https://github.com/beiryu/vn-skills/issues/136)) ([ab515bc](https://github.com/beiryu/vn-skills/commit/ab515bc8d1af338f721b87e143f04c1e824b190b)), closes [#133](https://github.com/beiryu/vn-skills/issues/133)
+* **repo:** say Copilot loads skills from .agents/skills ([#182](https://github.com/beiryu/vn-skills/issues/182)) ([2180577](https://github.com/beiryu/vn-skills/commit/2180577c68193e28b77ffc16fe3f05d6b4c50b0b)), closes [#175](https://github.com/beiryu/vn-skills/issues/175)
+
 ## [0.6.0](https://github.com/beiryu/vn-skills/compare/v0.5.0...v0.6.0) (2026-10-23)
 
 
