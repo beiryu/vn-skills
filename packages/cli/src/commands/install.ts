@@ -34,7 +34,7 @@ export function registerInstall(program: Command): void {
         skill: string,
         o: { agent: string; global?: boolean; force?: boolean; dryRun?: boolean },
       ) => {
-        const agentDir = AGENT_DIRS[o.agent];
+        const agentDir = Object.hasOwn(AGENT_DIRS, o.agent) ? AGENT_DIRS[o.agent] : undefined;
         if (!agentDir)
           throw new Error(
             `Unknown agent "${o.agent}". Use one of: ${Object.keys(AGENT_DIRS).join(', ')}`,
