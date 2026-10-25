@@ -569,6 +569,18 @@ describe('vn-skills install', () => {
     expect(r.code).not.toBe(0);
     expect(r.err).toContain('agents');
   });
+  it.each(['constructor', 'toString', 'valueOf', 'hasOwnProperty', '__proto__'])(
+    'rejects Object.prototype key %s as an unknown agent',
+    (name) => {
+      const cwd = tmp();
+      const r = install(['vietqr', '--agent', name, '--dry-run'], cwd, tmp());
+      expect(r.code).not.toBe(0);
+      expect(r.err).toContain(
+        `Unknown agent "${name}". Use one of: claude, cursor, codex, agents, copilot`,
+      );
+      expect(readdirSync(cwd)).toEqual([]);
+    },
+  );
   it('rejects unknown skills', () => {
     const cwd = tmp();
     const r = install(['nope', '--agent', 'claude'], cwd, tmp());
