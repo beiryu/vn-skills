@@ -155,17 +155,22 @@ export function registerAddress(program: Command): void {
     )
     .option('--csv', 'input is CSV with a header row; output is CSV with result columns appended')
     .option('--column <name>', 'CSV column holding the address (required with --csv)')
-    .action((file: string, opts: { csv?: boolean; column?: string }) => {
-      const fail = (msg: string): never => {
-        process.stderr.write(`Error: ${msg}\n`);
-        process.exit(1);
-      };
-      if (opts.csv && !opts.column) fail('--csv requires --column <name> (the address column)');
+    .action((file: string, opts: { csv?: boolean; column?: string }, c: Command) => {
+      if (opts.csv && !opts.column)
+        failExit(c, {
+          code: 'MISSING_COLUMN',
+          message: '--csv requires --column <name> (the address column)',
+          hint: 'Pass --column <name> with the CSV header of the address column.',
+        });
       let text: string;
       try {
         text = file === '-' ? readFileSync(0, 'utf8') : readFileSync(file, 'utf8');
       } catch (e) {
-        return fail(`cannot read ${file}: ${(e as Error).message}`);
+        return failExit(c, {
+          code: 'READ_ERROR',
+          message: `cannot read ${file}: ${(e as Error).message}`,
+          hint: 'Check the path and permissions, or pass "-" to read stdin.',
+        });
       }
       let ok = 0;
       let failed = 0;
@@ -173,7 +178,12 @@ export function registerAddress(program: Command): void {
         const rows = parseCsv(text);
         const header = rows[0] ?? [];
         const idx = header.indexOf(opts.column as string);
-        if (idx < 0) fail(`column "${opts.column}" not found in CSV header (${header.join(', ')})`);
+        if (idx < 0)
+          failExit(c, {
+            code: 'COLUMN_NOT_FOUND',
+            message: `column "${opts.column}" not found in CSV header`,
+            hint: `Available columns: ${header.join(', ')}`,
+          });
         const out: string[][] = [
           [
             ...header,
