@@ -162,7 +162,7 @@ Then point your client at it (it runs `docker run -i --rm vn-skills-mcp`):
 }
 ```
 
-Other clients: use the generic `mcpServers` block above.
+Other clients: use the generic `mcpServers` block above. AI agents (e.g. Cline) can follow [llms-install.md](llms-install.md).
 
 ## Library
 
