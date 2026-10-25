@@ -383,7 +383,37 @@ describe('vn-skills CLI', () => {
       const file = tmpFile('nocol.csv', `id,address\n1,"${OLD}"\n`);
       const r = run(['address', 'convert-file', file, '--csv']);
       expect(r.code).not.toBe(0);
-      expect(r.err).toContain('column');
+      expect(`${r.out}${r.err}`).toContain('column');
+    });
+
+    it('--json: --csv without --column prints MISSING_COLUMN JSON and exits 1', () => {
+      const file = tmpFile('nocol-json.csv', `id,address\n1,"${OLD}"\n`);
+      const r = run(['--json', 'address', 'convert-file', file, '--csv']);
+      expect(r.code).toBe(1);
+      const j = r.json() as { ok: boolean; error: { code: string; message: string } };
+      expect(j.ok).toBe(false);
+      expect(j.error.code).toBe('MISSING_COLUMN');
+      expect(j.error.message).toContain('column');
+    });
+
+    it('--json: unreadable file prints READ_ERROR JSON and exits 1', () => {
+      const missing = join(mkdtempSync(join(tmpdir(), 'vn-skills-')), 'nofile');
+      const r = run(['--json', 'address', 'convert-file', missing]);
+      expect(r.code).toBe(1);
+      const j = r.json() as { ok: boolean; error: { code: string } };
+      expect(j.ok).toBe(false);
+      expect(j.error.code).toBe('READ_ERROR');
+    });
+
+    it('--json: unknown column prints COLUMN_NOT_FOUND JSON with a hint listing columns', () => {
+      const file = tmpFile('bad-json.csv', `name,address\n1,"${OLD}"\n`);
+      const r = run(['--json', 'address', 'convert-file', file, '--csv', '--column', 'nope']);
+      expect(r.code).toBe(1);
+      const j = r.json() as { ok: boolean; error: { code: string; hint: string } };
+      expect(j.ok).toBe(false);
+      expect(j.error.code).toBe('COLUMN_NOT_FOUND');
+      expect(j.error.hint).toContain('name');
+      expect(j.error.hint).toContain('address');
     });
   });
   it('address provinces lists 34', () => {
