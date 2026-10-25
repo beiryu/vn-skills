@@ -1,6 +1,6 @@
 {
  "version": 1,
- "exported_at": "2026-10-25T12:23:23.033Z",
+ "exported_at": "2026-10-25T12:24:25.655Z",
  "tables": {
   "repos": [
    {
@@ -10,7 +10,7 @@
     "policy_status": null,
     "policy_excerpts": null,
     "block_reason": null,
-    "last_scanned": "2026-10-25T12:22:57.460Z"
+    "last_scanned": "2026-10-25T12:24:02.683Z"
    }
   ],
   "issues": [
@@ -1326,7 +1326,7 @@
     "title": "cli: make `address convert-file` errors honour --json with READ_ERROR / COLUMN_NOT_FOUND codes",
     "body": "## Problem\n`vn-skills address convert-file` uses a local `fail()` helper (`packages/cli/src/commands/address.ts:156-159`) that always writes `Error: ...` to stderr as plain text, even with `--json`. Every other command returns `{ok:false,error:{code,message,hint}}` through `failExit` (`packages/cli/src/output.ts:23`). Examples are `vietqr decode` (`READ_ERROR` in `packages/cli/src/decode.ts`) and `einvoice validate` (`READ_ERROR` in `packages/cli/src/commands/einvoice.ts`). Agents that parse stdout get nothing.\n\n```\n$ node packages/cli/dist/index.js --json address convert-file nofile\nError: cannot read nofile: ENOENT: no such file or directory, open 'nofile'   (exit 1)\n$ node packages/cli/dist/index.js --json address convert-file tmp.csv --csv --column nope\nError: column \"nope\" not found in CSV header (name, address)   (exit 1)\n```\n\nThree paths are affected: `--csv` without `--column` (line 160), an unreadable file (line 168) and an unknown column (line 176).\n\n## Fix\nReplace the local `fail` with `failExit(c, {code, message, hint})`. Add the `Command` argument to the `.action` callback, as the other subcommands do. Suggested codes: `MISSING_COLUMN` (`--csv` without `--column`), `READ_ERROR` (file cannot be read), `COLUMN_NOT_FOUND` (header lacks the column; the hint lists the available columns). Keep exit code 1 for these, and exit code 2 for \"some rows failed\".\n\n## Acceptance\n- [ ] With `--json`, all three cases print the `{ok:false,error:{code,message,hint}}` JSON on stdout and exit 1\n- [ ] Without `--json` on a TTY, they print `Error [CODE]: ...` and `Hint: ...` like other commands\n- [ ] Tests in `tests/cli.test.ts` for each of the three cases (use a temp dir for the CSV)\n- [ ] Exit code 2 for partial row failures is unchanged\n- [ ] `pnpm format` and `pnpm lint` clean",
     "url": "https://github.com/beiryu/vn-skills/issues/184",
-    "state": "pr_open",
+    "state": "done",
     "score": 1,
     "triage_reason": "`convert-file` is the newest command and covers the main address job: bulk-migrating old addresses. Agents depend on the JSON error shape, and this command is the only one that breaks it.",
     "attempts": 1,
@@ -1342,7 +1342,7 @@
     "pr_body": "Closes #184\n\n## What & why\n\n`address convert-file` used a local `fail()` that always wrote `Error: ...` to stderr as plain text, even with `--json`. Agents that parse stdout got nothing. It now uses `failExit`, like the other commands, and the action callback takes the `Command` argument.\n\nError codes:\n\n- `MISSING_COLUMN`: `--csv` without `--column`.\n- `READ_ERROR`: the file cannot be read.\n- `COLUMN_NOT_FOUND`: the header lacks the column. The hint lists the available columns.\n\nExit code stays 1 for these errors. Exit code 2 for partial row failures is not changed.\n\nAcceptance from the issue:\n\n- [x] With `--json`, all three cases print `{ok:false,error:{code,message,hint}}` on stdout and exit 1\n- [x] Without `--json` on a TTY, they print `Error [CODE]: ...` and `Hint: ...` like other commands (handled by `failExit`; no separate test)\n- [x] Tests in `tests/cli.test.ts` for each of the three cases (temp dir for the CSV)\n- [x] Exit code 2 for partial row failures is unchanged (code path not touched)\n- [ ] `pnpm format` and `pnpm lint` clean: not run in this session\n\nTests, in `tests/cli.test.ts`:\n\n- `--json: --csv without --column prints MISSING_COLUMN JSON and exits 1`\n- `--json: unreadable file prints READ_ERROR JSON and exits 1`\n- `--json: unknown column prints COLUMN_NOT_FOUND JSON with a hint listing columns`\n- The existing no-column test now checks stdout and stderr together, because the error moves to stdout in JSON mode.\n\n## Checklist\n\n- [x] Title follows Conventional Commits (`feat|fix|docs|data|test|refactor|perf|build|ci|chore(scope): …`)\n- [x] Tests added or updated (golden test for every bug fix)\n- [ ] `pnpm build && pnpm typecheck && pnpm lint && pnpm test && pnpm format:check` pass locally\n- [x] Core stays offline (no `fetch`/HTTP in `packages/core`)\n- [x] Data changes go through `scripts/build-data.ts` and `SOURCES.md` (source + license) (no data changes)\n- [ ] SKILL.md / README updated if behaviour changed\n",
     "dry": 0,
     "claimed_at": null,
-    "updated_at": "2026-10-25T07:52:43.092Z",
+    "updated_at": "2026-10-25T12:23:57.765Z",
     "blocked": null,
     "patch": "diff --git a/packages/cli/src/commands/address.ts b/packages/cli/src/commands/address.ts\nindex 50e461e..79cea73 100644\n--- a/packages/cli/src/commands/address.ts\n+++ b/packages/cli/src/commands/address.ts\n@@ -155,17 +155,22 @@ export function registerAddress(program: Command): void {\n     )\n     .option('--csv', 'input is CSV with a header row; output is CSV with result columns appended')\n     .option('--column <name>', 'CSV column holding the address (required with --csv)')\n-    .action((file: string, opts: { csv?: boolean; column?: string }) => {\n-      const fail = (msg: string): never => {\n-        process.stderr.write(`Error: ${msg}\\n`);\n-        process.exit(1);\n-      };\n-      if (opts.csv && !opts.column) fail('--csv requires --column <name> (the address column)');\n+    .action((file: string, opts: { csv?: boolean; column?: string }, c: Command) => {\n+      if (opts.csv && !opts.column)\n+        failExit(c, {\n+          code: 'MISSING_COLUMN',\n+          message: '--csv requires --column <name> (the address column)',\n+          hint: 'Pass --column <name> with the CSV header of the address column.',\n+        });\n       let text: string;\n       try {\n         text = file === '-' ? readFileSync(0, 'utf8') : readFileSync(file, 'utf8');\n       } catch (e) {\n-        return fail(`cannot read ${file}: ${(e as Error).message}`);\n+        return failExit(c, {\n+          code: 'READ_ERROR',\n+          message: `cannot read ${file}: ${(e as Error).message}`,\n+          hint: 'Check the path and permissions, or pass \"-\" to read stdin.',\n+        });\n       }\n       let ok = 0;\n       let failed = 0;\n@@ -173,7 +178,12 @@ export function registerAddress(program: Command): void {\n         const rows = parseCsv(text);\n         const header = rows[0] ?? [];\n         const idx = header.indexOf(opts.column as string);\n-        if (idx < 0) fail(`column \"${opts.column}\" not found in CSV header (${header.join(', ')})`);\n+        if (idx < 0)\n+          failExit(c, {\n+            code: 'COLUMN_NOT_FOUND',\n+            message: `column \"${opts.column}\" not found in CSV header`,\n+            hint: `Available columns: ${header.join(', ')}`,\n+          });\n         const out: string[][] = [\n           [\n             ...header,\ndiff --git a/tests/cli.test.ts b/tests/cli.test.ts\nindex 7506a5a..2ff4975 100644\n--- a/tests/cli.test.ts\n+++ b/tests/cli.test.ts\n@@ -383,7 +383,37 @@ describe('vn-skills CLI', () => {\n       const file = tmpFile('nocol.csv', `id,address\\n1,\"${OLD}\"\\n`);\n       const r = run(['address', 'convert-file', file, '--csv']);\n       expect(r.code).not.toBe(0);\n-      expect(r.err).toContain('column');\n+      expect(`${r.out}${r.err}`).toContain('column');\n+    });\n+\n+    it('--json: --csv without --column prints MISSING_COLUMN JSON and exits 1', () => {\n+      const file = tmpFile('nocol-json.csv', `id,address\\n1,\"${OLD}\"\\n`);\n+      const r = run(['--json', 'address', 'convert-file', file, '--csv']);\n+      expect(r.code).toBe(1);\n+      const j = r.json() as { ok: boolean; error: { code: string; message: string } };\n+      expect(j.ok).toBe(false);\n+      expect(j.error.code).toBe('MISSING_COLUMN');\n+      expect(j.error.message).toContain('column');\n+    });\n+\n+    it('--json: unreadable file prints READ_ERROR JSON and exits 1', () => {\n+      const missing = join(mkdtempSync(join(tmpdir(), 'vn-skills-')), 'nofile');\n+      const r = run(['--json', 'address', 'convert-file', missing]);\n+      expect(r.code).toBe(1);\n+      const j = r.json() as { ok: boolean; error: { code: string } };\n+      expect(j.ok).toBe(false);\n+      expect(j.error.code).toBe('READ_ERROR');\n+    });\n+\n+    it('--json: unknown column prints COLUMN_NOT_FOUND JSON with a hint listing columns', () => {\n+      const file = tmpFile('bad-json.csv', `name,address\\n1,\"${OLD}\"\\n`);\n+      const r = run(['--json', 'address', 'convert-file', file, '--csv', '--column', 'nope']);\n+      expect(r.code).toBe(1);\n+      const j = r.json() as { ok: boolean; error: { code: string; hint: string } };\n+      expect(j.ok).toBe(false);\n+      expect(j.error.code).toBe('COLUMN_NOT_FOUND');\n+      expect(j.error.hint).toContain('name');\n+      expect(j.error.hint).toContain('address');\n     });\n   });\n   it('address provinces lists 34', () => {\n",
     "repro_patch": "diff --git a/tests/cli.test.ts b/tests/cli.test.ts\nindex 7506a5a..2ff4975 100644\n--- a/tests/cli.test.ts\n+++ b/tests/cli.test.ts\n@@ -383,7 +383,37 @@ describe('vn-skills CLI', () => {\n       const file = tmpFile('nocol.csv', `id,address\\n1,\"${OLD}\"\\n`);\n       const r = run(['address', 'convert-file', file, '--csv']);\n       expect(r.code).not.toBe(0);\n-      expect(r.err).toContain('column');\n+      expect(`${r.out}${r.err}`).toContain('column');\n+    });\n+\n+    it('--json: --csv without --column prints MISSING_COLUMN JSON and exits 1', () => {\n+      const file = tmpFile('nocol-json.csv', `id,address\\n1,\"${OLD}\"\\n`);\n+      const r = run(['--json', 'address', 'convert-file', file, '--csv']);\n+      expect(r.code).toBe(1);\n+      const j = r.json() as { ok: boolean; error: { code: string; message: string } };\n+      expect(j.ok).toBe(false);\n+      expect(j.error.code).toBe('MISSING_COLUMN');\n+      expect(j.error.message).toContain('column');\n+    });\n+\n+    it('--json: unreadable file prints READ_ERROR JSON and exits 1', () => {\n+      const missing = join(mkdtempSync(join(tmpdir(), 'vn-skills-')), 'nofile');\n+      const r = run(['--json', 'address', 'convert-file', missing]);\n+      expect(r.code).toBe(1);\n+      const j = r.json() as { ok: boolean; error: { code: string } };\n+      expect(j.ok).toBe(false);\n+      expect(j.error.code).toBe('READ_ERROR');\n+    });\n+\n+    it('--json: unknown column prints COLUMN_NOT_FOUND JSON with a hint listing columns', () => {\n+      const file = tmpFile('bad-json.csv', `name,address\\n1,\"${OLD}\"\\n`);\n+      const r = run(['--json', 'address', 'convert-file', file, '--csv', '--column', 'nope']);\n+      expect(r.code).toBe(1);\n+      const j = r.json() as { ok: boolean; error: { code: string; hint: string } };\n+      expect(j.ok).toBe(false);\n+      expect(j.error.code).toBe('COLUMN_NOT_FOUND');\n+      expect(j.error.hint).toContain('name');\n+      expect(j.error.hint).toContain('address');\n     });\n   });\n   it('address provinces lists 34', () => {\n",
@@ -1955,26 +1955,26 @@
     "state": "open",
     "last_seen_at": "2026-10-25T07:52:48.323Z",
     "opened_at": "2026-10-25T07:52:48.323Z",
-    "head_sha": "9598f6e44f205a5f5c8a9acd3fc16b8892e059e6",
-    "mergeable": "UNKNOWN",
-    "ci_state": "success",
+    "head_sha": "4ac04cea506a1679763a38c811295298cf10bb7a",
+    "mergeable": "MERGEABLE",
+    "ci_state": "pending",
     "review_decision": "REVIEW_REQUIRED",
-    "snapshot_at": "2026-10-25T12:22:49.045Z",
+    "snapshot_at": "2026-10-25T12:23:55.586Z",
     "ci_seen_sha": null,
-    "merge_state": "UNKNOWN"
+    "merge_state": "BLOCKED"
    },
    {
     "issue_id": 46,
     "url": "https://github.com/beiryu/vn-skills/pull/191",
     "number": 191,
-    "state": "open",
+    "state": "merged",
     "last_seen_at": "2026-10-25T07:52:43.092Z",
     "opened_at": "2026-10-25T07:52:43.092Z",
-    "head_sha": "2ef5e352b7caeef74cf5256c8e9756bfc525e9e9",
+    "head_sha": "4943ac05c273b371eabdffc13bbbce4a4f009620",
     "mergeable": "UNKNOWN",
-    "ci_state": "success",
+    "ci_state": "pending",
     "review_decision": "REVIEW_REQUIRED",
-    "snapshot_at": "2026-10-25T12:22:51.556Z",
+    "snapshot_at": "2026-10-25T12:23:57.765Z",
     "ci_seen_sha": null,
     "merge_state": "UNKNOWN"
    },
