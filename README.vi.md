@@ -142,6 +142,24 @@ command = "npx"
 args = ["-y", "@vn-skills/mcp"]
 ```
 
+#### Docker
+
+Build image từ repo này (server chạy offline, không cần biến môi trường):
+
+```bash
+docker build -t vn-skills-mcp .
+```
+
+Sau đó trỏ client tới image (chạy `docker run -i --rm vn-skills-mcp`):
+
+```json
+{
+  "mcpServers": {
+    "vn-skills": { "command": "docker", "args": ["run", "-i", "--rm", "vn-skills-mcp"] }
+  }
+}
+```
+
 Client khác: dùng khối `mcpServers` chung ở trên.
 
 ## Thư viện

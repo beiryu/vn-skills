@@ -144,6 +144,24 @@ command = "npx"
 args = ["-y", "@vn-skills/mcp"]
 ```
 
+#### Docker
+
+Build the image from this repository (the server is offline and needs no env vars):
+
+```bash
+docker build -t vn-skills-mcp .
+```
+
+Then point your client at it (it runs `docker run -i --rm vn-skills-mcp`):
+
+```json
+{
+  "mcpServers": {
+    "vn-skills": { "command": "docker", "args": ["run", "-i", "--rm", "vn-skills-mcp"] }
+  }
+}
+```
+
 Other clients: use the generic `mcpServers` block above.
 
 ## Library

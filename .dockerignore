@@ -1,0 +1,11 @@
+node_modules
+**/node_modules
+.git
+dist
+**/dist
+coverage
+tests
+docs
+.github
+*.md
+!packages/*/README.md
