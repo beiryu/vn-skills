@@ -41,7 +41,11 @@ export function parseVietQR(input: string): Result<ParsedVietQR> {
 
   const crcNode = tlvFind(fields, '63');
   const crc = crcNode?.value ?? '';
-  const crcIndex = payload.lastIndexOf('6304');
+  // A CRC value of "6304" would fool a substring search, so use the position when tag 63 is last.
+  const crcIndex =
+    fields[fields.length - 1]?.tag === '63' && payload.slice(-8, -4) === '6304'
+      ? payload.length - 8
+      : payload.lastIndexOf('6304');
   const expectedCrc = crcIndex >= 0 ? crc16CcittFalse(payload.slice(0, crcIndex + 4)) : '';
   const crcValid = crc.length === 4 && crc.toUpperCase() === expectedCrc;
   if (!crcNode) warnings.push('Missing CRC (tag 63).');

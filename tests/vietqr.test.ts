@@ -178,6 +178,30 @@ describe('parseVietQR', () => {
   });
 });
 
+describe('parseVietQR when the CRC value is 6304', () => {
+  const build = () => {
+    const r = buildVietQR({ bank: 'VCB', account: '123', amount: 148444 });
+    if (!r.ok) throw new Error('build failed');
+    return r;
+  };
+
+  it('round-trips build -> parse', () => {
+    const r = build();
+    expect(r.crc).toBe('6304');
+    const p = parseVietQR(r.payload);
+    expect(p.ok && p.crcValid).toBe(true);
+    expect(p.ok && p.warnings.some((w) => w.includes('CRC'))).toBe(false);
+  });
+
+  it('still gives the lower-cased hint for a lower-cased payload', () => {
+    const p = parseVietQR(build().payload.toLowerCase());
+    const warnings = p.ok ? p.warnings : [];
+    expect(p.ok && p.crcValid).toBe(false);
+    expect(warnings.some((w) => /lower-?cased/i.test(w) && /original/i.test(w))).toBe(true);
+    expect(warnings.some((w) => w.startsWith('CRC mismatch'))).toBe(false);
+  });
+});
+
 describe('parseVietQR lower-cased payloads', () => {
   const build = (note?: string) => {
     const r = buildVietQR({ bank: 'VCB', account: '0011001234567', amount: 50000, note });

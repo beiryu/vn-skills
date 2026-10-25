@@ -121,6 +121,11 @@
     ],
     "parseVietQR": [
       {
+        "name": "CRC value 6304 is not mistaken for the CRC tag header",
+        "input": "00020101021238470010A0000007270117000697043601031230208QRIBFTTA530370454061484445802VN63046304",
+        "expected": { "ok": true, "crcValid": true, "warnings": [] }
+      },
+      {
         "name": "parses the golden payload",
         "input": "00020101021238530010A000000727012300069704230109mynamebvh0208QRIBFTTA53037045405500005802VN62080804test6304AB76",
         "expected": {
