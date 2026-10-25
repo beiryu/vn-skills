@@ -1,6 +1,6 @@
 {
  "version": 1,
- "exported_at": "2026-10-25T07:54:01.923Z",
+ "exported_at": "2026-10-25T12:23:23.033Z",
  "tables": {
   "repos": [
    {
@@ -10,7 +10,7 @@
     "policy_status": null,
     "policy_excerpts": null,
     "block_reason": null,
-    "last_scanned": "2026-10-25T07:53:36.128Z"
+    "last_scanned": "2026-10-25T12:22:57.460Z"
    }
   ],
   "issues": [
@@ -1355,7 +1355,7 @@
     "title": "mcp: add a Dockerfile that runs the stdio MCP server, as needed for the Docker MCP Catalog",
     "body": "## Problem\nDocker's MCP registry (`docker/mcp-registry`) feeds hub.docker.com/mcp and Docker Desktop's MCP Toolkit. Its CONTRIBUTING.md (read 2026-10-24) says local (stdio) servers need a Dockerfile in the source repo. The submission tooling builds that image, runs it and checks that it lists tools. vn-skills has no `Dockerfile` or `.dockerignore`, so it cannot be submitted. The server is offline and needs no secrets or env config, which keeps the image simple.\n\n## What to build\n- A root `Dockerfile` that builds `@vn-skills/mcp` from this workspace, so the version always matches the commit Docker pins and no release-sync step is needed:\n  - Node 22 base image (an `-alpine` or `-slim` variant is fine)\n  - `corepack enable`, `pnpm install --frozen-lockfile`, `pnpm build`, then a slim runtime stage with only what `packages/mcp/dist/index.js` needs at runtime (core `dist` + `data`, prod deps)\n  - Run as a non-root user\n  - `ENTRYPOINT [\"node\", \"packages/mcp/dist/index.js\"]` (or the equivalent path in the runtime stage), stdio transport, no exposed ports\n- A root `.dockerignore` that excludes `node_modules`, `.git`, `dist` build outputs, tests and docs not needed for the build\n- A short \"Docker\" subsection under \"MCP client setup\" in `README.md` and `README.vi.md`: `docker build -t vn-skills-mcp .` plus a client config using `docker run -i --rm vn-skills-mcp`\n\nDo not change `.github/workflows/` or release config in this issue.\n\n## Acceptance\n- [ ] `docker build -t vn-skills-mcp .` succeeds from a clean checkout\n- [ ] Sending `initialize` then `tools/list` JSON-RPC lines to `docker run -i --rm vn-skills-mcp` returns the 28 tools (state in the PR if Docker was not available to run this)\n- [ ] The container makes no network calls at runtime and needs no env vars\n- [ ] README.md and README.vi.md updated in both languages; files end with a newline\n- [ ] `pnpm format:check` and `pnpm lint` clean",
     "url": "https://github.com/beiryu/vn-skills/issues/185",
-    "state": "pr_open",
+    "state": "done",
     "score": 1,
     "triage_reason": "npm downloads (858/month for the MCP server) are the only traction signal, and they come from MCP users. Docker Desktop's MCP Toolkit is a large MCP channel where vn-skills is absent, and a Dockerfile is the only missing prerequisite.",
     "attempts": 0,
@@ -1371,7 +1371,7 @@
     "pr_body": "Closes #185\n\n## What & why\n\nDocker's MCP registry needs a Dockerfile in the source repo for local (stdio) servers. This adds one that builds `@vn-skills/mcp` from the workspace, so the image version always matches the commit.\n\n- `Dockerfile`: multi-stage, Node 22. Build stage uses `corepack enable`, `pnpm install --frozen-lockfile` and `pnpm build`. Runtime stage has only what `packages/mcp/dist/index.js` needs (core `dist` + `data`, prod deps). Runs as a non-root user, stdio entrypoint, no exposed ports.\n- `.dockerignore`: excludes `node_modules`, `.git`, `dist` outputs, and tests/docs not needed for the build.\n- `README.md` and `README.vi.md`: new \"Docker\" subsection under MCP client setup with `docker build -t vn-skills-mcp .` and a client config using `docker run -i --rm vn-skills-mcp`.\n\nNo changes to `.github/workflows/` or release config.\n\n## Acceptance\n\n- [x] `docker build -t vn-skills-mcp .` succeeds (reported by the author; I did not re-run it)\n- [x] `initialize` then `tools/list` against `docker run -i --rm vn-skills-mcp` returns the 28 tools (run with network disabled)\n- [x] The container makes no network calls at runtime and needs no env vars\n- [x] README.md and README.vi.md updated in both languages; files end with a newline\n- [ ] `pnpm format:check` and `pnpm lint` clean: not confirmed in this description\n\n## Testing\n\nAdded `tests/docker.test.ts`. It checks that the Dockerfile exists and ends with a newline, uses a Node 22 base, builds with corepack, a frozen lockfile and `pnpm build`, has a separate runtime stage, runs as non-root, has the stdio entrypoint and exposes no ports. It also checks that `.dockerignore` excludes `node_modules`, `.git` and `dist`, and that the READMEs document `docker build` and `docker run`.\n\n## Checklist\n\n- [x] Title follows Conventional Commits (`feat|fix|docs|data|test|refactor|perf|build|ci|chore(scope): …`)\n- [x] Tests added or updated (golden test for every bug fix)\n- [ ] `pnpm build && pnpm typecheck && pnpm lint && pnpm test && pnpm format:check` pass locally\n- [x] Core stays offline (no `fetch`/HTTP in `packages/core`)\n- [x] Data changes go through `scripts/build-data.ts` and `SOURCES.md` (source + license): no data changes\n- [x] SKILL.md / README updated if behaviour changed\n",
     "dry": 0,
     "claimed_at": null,
-    "updated_at": "2026-10-25T07:52:36.635Z",
+    "updated_at": "2026-10-25T12:22:53.276Z",
     "blocked": null,
     "patch": "diff --git a/.dockerignore b/.dockerignore\nnew file mode 100644\nindex 0000000..b8cef78\n--- /dev/null\n+++ b/.dockerignore\n@@ -0,0 +1,11 @@\n+node_modules\n+**/node_modules\n+.git\n+dist\n+**/dist\n+coverage\n+tests\n+docs\n+.github\n+*.md\n+!packages/*/README.md\ndiff --git a/Dockerfile b/Dockerfile\nnew file mode 100644\nindex 0000000..6ca80f6\n--- /dev/null\n+++ b/Dockerfile\n@@ -0,0 +1,20 @@\n+FROM node:22-alpine AS build\n+RUN corepack enable\n+WORKDIR /app\n+COPY . .\n+RUN pnpm install --frozen-lockfile --ignore-scripts && pnpm build\n+\n+FROM node:22-alpine AS runtime\n+RUN corepack enable\n+ENV NODE_ENV=production\n+WORKDIR /app\n+COPY --from=build /app/package.json /app/pnpm-lock.yaml /app/pnpm-workspace.yaml /app/.npmrc ./\n+COPY --from=build /app/packages/core/package.json packages/core/package.json\n+COPY --from=build /app/packages/core/dist packages/core/dist\n+COPY --from=build /app/packages/cli/package.json packages/cli/package.json\n+COPY --from=build /app/packages/cli/dist packages/cli/dist\n+COPY --from=build /app/packages/mcp/package.json packages/mcp/package.json\n+COPY --from=build /app/packages/mcp/dist packages/mcp/dist\n+RUN pnpm install --frozen-lockfile --prod --ignore-scripts --filter @vn-skills/mcp...\n+USER node\n+ENTRYPOINT [\"node\", \"packages/mcp/dist/index.js\"]\ndiff --git a/README.md b/README.md\nindex 5b86288..90745c9 100644\n--- a/README.md\n+++ b/README.md\n@@ -144,6 +144,24 @@ command = \"npx\"\n args = [\"-y\", \"@vn-skills/mcp\"]\n ```\n \n+#### Docker\n+\n+Build the image from this repository (the server is offline and needs no env vars):\n+\n+```bash\n+docker build -t vn-skills-mcp .\n+```\n+\n+Then point your client at it (it runs `docker run -i --rm vn-skills-mcp`):\n+\n+```json\n+{\n+  \"mcpServers\": {\n+    \"vn-skills\": { \"command\": \"docker\", \"args\": [\"run\", \"-i\", \"--rm\", \"vn-skills-mcp\"] }\n+  }\n+}\n+```\n+\n Other clients: use the generic `mcpServers` block above.\n \n ## Library\ndiff --git a/README.vi.md b/README.vi.md\nindex 0ef28d9..4d3cd81 100644\n--- a/README.vi.md\n+++ b/README.vi.md\n@@ -142,6 +142,24 @@ command = \"npx\"\n args = [\"-y\", \"@vn-skills/mcp\"]\n ```\n \n+#### Docker\n+\n+Build image từ repo này (server chạy offline, không cần biến môi trường):\n+\n+```bash\n+docker build -t vn-skills-mcp .\n+```\n+\n+Sau đó trỏ client tới image (chạy `docker run -i --rm vn-skills-mcp`):\n+\n+```json\n+{\n+  \"mcpServers\": {\n+    \"vn-skills\": { \"command\": \"docker\", \"args\": [\"run\", \"-i\", \"--rm\", \"vn-skills-mcp\"] }\n+  }\n+}\n+```\n+\n Client khác: dùng khối `mcpServers` chung ở trên.\n \n ## Thư viện\ndiff --git a/tests/docker.test.ts b/tests/docker.test.ts\nnew file mode 100644\nindex 0000000..474edcb\n--- /dev/null\n+++ b/tests/docker.test.ts\n@@ -0,0 +1,63 @@\n+import { describe, expect, it } from 'vitest';\n+import { existsSync, readFileSync } from 'node:fs';\n+import { resolve } from 'node:path';\n+\n+const ROOT = resolve(__dirname, '..');\n+const read = (p: string): string => readFileSync(resolve(ROOT, p), 'utf8');\n+\n+describe('Dockerfile', () => {\n+  it('exists at the repo root and ends with a newline', () => {\n+    expect(existsSync(resolve(ROOT, 'Dockerfile'))).toBe(true);\n+    expect(read('Dockerfile').endsWith('\\n')).toBe(true);\n+  });\n+\n+  it('uses a Node 22 base image', () => {\n+    expect(read('Dockerfile')).toMatch(/^FROM node:22/m);\n+  });\n+\n+  it('builds the workspace with corepack, a frozen lockfile and pnpm build', () => {\n+    const text = read('Dockerfile');\n+    expect(text).toContain('corepack enable');\n+    expect(text).toContain('pnpm install --frozen-lockfile');\n+    expect(text).toMatch(/pnpm (run )?build/);\n+  });\n+\n+  it('has a separate runtime stage', () => {\n+    const froms = read('Dockerfile').match(/^FROM /gm) ?? [];\n+    expect(froms.length).toBeGreaterThanOrEqual(2);\n+  });\n+\n+  it('runs as a non-root user', () => {\n+    const users = [...read('Dockerfile').matchAll(/^USER\\s+(\\S+)/gm)].map((m) => m[1]);\n+    expect(users.length).toBeGreaterThan(0);\n+    expect(['root', '0']).not.toContain(users[users.length - 1]);\n+  });\n+\n+  it('has the stdio MCP server as entrypoint and exposes no ports', () => {\n+    const text = read('Dockerfile');\n+    expect(text).toMatch(/^ENTRYPOINT \\[\"node\", \"packages\\/mcp\\/dist\\/index\\.js\"\\]/m);\n+    expect(text).not.toMatch(/^EXPOSE/m);\n+  });\n+});\n+\n+describe('.dockerignore', () => {\n+  it('exists, excludes node_modules, .git and dist, and ends with a newline', () => {\n+    expect(existsSync(resolve(ROOT, '.dockerignore'))).toBe(true);\n+    const text = read('.dockerignore');\n+    expect(text.endsWith('\\n')).toBe(true);\n+    const lines = text.split('\\n').map((l) => l.trim());\n+    expect(lines.some((l) => /^\\**\\/?node_modules\\/?$/.test(l))).toBe(true);\n+    expect(lines.some((l) => /^\\.git\\/?$/.test(l))).toBe(true);\n+    expect(lines.some((l) => /^\\**\\/?dist\\/?$/.test(l))).toBe(true);\n+  });\n+});\n+\n+describe.each(['README.md', 'README.vi.md'])('%s Docker section', (file) => {\n+  const text = read(file);\n+\n+  it('documents docker build and docker run under MCP client setup', () => {\n+    expect(text).toContain('docker build -t vn-skills-mcp .');\n+    expect(text).toContain('docker run -i --rm vn-skills-mcp');\n+    expect(text).toMatch(/^#{3,4} Docker\\s*$/m);\n+  });\n+});\n",
     "repro_patch": "diff --git a/tests/docker.test.ts b/tests/docker.test.ts\nnew file mode 100644\nindex 0000000..474edcb\n--- /dev/null\n+++ b/tests/docker.test.ts\n@@ -0,0 +1,63 @@\n+import { describe, expect, it } from 'vitest';\n+import { existsSync, readFileSync } from 'node:fs';\n+import { resolve } from 'node:path';\n+\n+const ROOT = resolve(__dirname, '..');\n+const read = (p: string): string => readFileSync(resolve(ROOT, p), 'utf8');\n+\n+describe('Dockerfile', () => {\n+  it('exists at the repo root and ends with a newline', () => {\n+    expect(existsSync(resolve(ROOT, 'Dockerfile'))).toBe(true);\n+    expect(read('Dockerfile').endsWith('\\n')).toBe(true);\n+  });\n+\n+  it('uses a Node 22 base image', () => {\n+    expect(read('Dockerfile')).toMatch(/^FROM node:22/m);\n+  });\n+\n+  it('builds the workspace with corepack, a frozen lockfile and pnpm build', () => {\n+    const text = read('Dockerfile');\n+    expect(text).toContain('corepack enable');\n+    expect(text).toContain('pnpm install --frozen-lockfile');\n+    expect(text).toMatch(/pnpm (run )?build/);\n+  });\n+\n+  it('has a separate runtime stage', () => {\n+    const froms = read('Dockerfile').match(/^FROM /gm) ?? [];\n+    expect(froms.length).toBeGreaterThanOrEqual(2);\n+  });\n+\n+  it('runs as a non-root user', () => {\n+    const users = [...read('Dockerfile').matchAll(/^USER\\s+(\\S+)/gm)].map((m) => m[1]);\n+    expect(users.length).toBeGreaterThan(0);\n+    expect(['root', '0']).not.toContain(users[users.length - 1]);\n+  });\n+\n+  it('has the stdio MCP server as entrypoint and exposes no ports', () => {\n+    const text = read('Dockerfile');\n+    expect(text).toMatch(/^ENTRYPOINT \\[\"node\", \"packages\\/mcp\\/dist\\/index\\.js\"\\]/m);\n+    expect(text).not.toMatch(/^EXPOSE/m);\n+  });\n+});\n+\n+describe('.dockerignore', () => {\n+  it('exists, excludes node_modules, .git and dist, and ends with a newline', () => {\n+    expect(existsSync(resolve(ROOT, '.dockerignore'))).toBe(true);\n+    const text = read('.dockerignore');\n+    expect(text.endsWith('\\n')).toBe(true);\n+    const lines = text.split('\\n').map((l) => l.trim());\n+    expect(lines.some((l) => /^\\**\\/?node_modules\\/?$/.test(l))).toBe(true);\n+    expect(lines.some((l) => /^\\.git\\/?$/.test(l))).toBe(true);\n+    expect(lines.some((l) => /^\\**\\/?dist\\/?$/.test(l))).toBe(true);\n+  });\n+});\n+\n+describe.each(['README.md', 'README.vi.md'])('%s Docker section', (file) => {\n+  const text = read(file);\n+\n+  it('documents docker build and docker run under MCP client setup', () => {\n+    expect(text).toContain('docker build -t vn-skills-mcp .');\n+    expect(text).toContain('docker run -i --rm vn-skills-mcp');\n+    expect(text).toMatch(/^#{3,4} Docker\\s*$/m);\n+  });\n+});\n",
@@ -1384,7 +1384,7 @@
     "title": "cli: reject install --agent values that are Object.prototype keys with the Unknown agent error",
     "body": "## Problem\n\n`packages/cli/src/commands/install.ts` stores the agent folders in an ordinary object literal (`const AGENT_DIRS: Record<string, string> = { claude: '.claude', ... }`, lines 7-13). The `install` action looks up `AGENT_DIRS[o.agent]` and only checks that the result is truthy (`if (!agentDir) throw new Error('Unknown agent ...')`).\n\nFor agent names that are inherited `Object.prototype` keys (`constructor`, `toString`, `valueOf`, `hasOwnProperty`, `__proto__`, ...), the lookup returns a function or `Object.prototype`, which is truthy. The check is skipped, and the command then fails inside `path.join` with an error that never mentions the agent:\n\n```text\n$ cd /tmp && node <repo>/packages/cli/dist/index.js install all --agent constructor --dry-run\nThe \"path\" argument must be of type string. Received function Object\n```\n\nThe intended message, `Unknown agent \"constructor\". Use one of: claude, cursor, codex, agents, copilot`, is never shown. `tests/cli.test.ts` only covers an invalid agent named `nope` (around line 538).\n\n## Fix\n\nLook the agent up only among its own keys, for example `Object.hasOwn(AGENT_DIRS, o.agent) ? AGENT_DIRS[o.agent] : undefined`, or turn `AGENT_DIRS` into a `Map`. Do the same for any other lookup in this file that indexes `AGENT_DIRS` with user input, including the special case that maps `copilot` to `.github` in project scope. The list of valid agents and their target folders stays the same.\n\n## Acceptance\n\n- [ ] `install vietqr --agent constructor`, `--agent toString`, `--agent hasOwnProperty` and `--agent __proto__` exit non-zero and print `Unknown agent \"<name>\". Use one of: claude, cursor, codex, agents, copilot` on stderr. With `--dry-run` they also write nothing.\n- [ ] New cases in `tests/cli.test.ts` next to the existing unknown-agent test cover these names. They fail on the current code.\n- [ ] The existing install tests for claude, cursor, codex, agents and copilot still pass.\n- [ ] `pnpm build && pnpm typecheck && pnpm lint && pnpm exec vitest run && pnpm format:check` pass.",
     "url": "https://github.com/beiryu/vn-skills/issues/187",
-    "state": "pr_open",
+    "state": "done",
     "score": 1,
     "triage_reason": "`install` is the main way people adopt the skills. A crash that doesn't name the bad agent is a confusing first experience, and the fix is a single line.",
     "attempts": 0,
@@ -1400,7 +1400,7 @@
     "pr_body": "## What & why\n\nCloses #187\n\n`install --agent constructor` (and `toString`, `valueOf`, `hasOwnProperty`, `__proto__`) found an inherited `Object.prototype` member in `AGENT_DIRS`. The value was truthy, so the unknown-agent check was skipped and the command failed in `path.join` with an error that did not mention the agent.\n\nThe lookup in `packages/cli/src/commands/install.ts` now uses `Object.hasOwn(AGENT_DIRS, o.agent) ? AGENT_DIRS[o.agent] : undefined`. These names now get `Unknown agent \"<name>\". Use one of: claude, cursor, codex, agents, copilot`. The list of valid agents and their folders is unchanged.\n\nAcceptance:\n\n- [x] `--agent constructor`, `toString`, `hasOwnProperty` and `__proto__` exit non-zero and print the Unknown agent error on stderr (`valueOf` is covered too).\n- [x] New cases in `tests/cli.test.ts` next to the existing unknown-agent test cover these names.\n- [x] Existing install tests for claude, cursor, codex, agents and copilot still pass.\n- [x] `pnpm build && pnpm typecheck && pnpm lint && pnpm exec vitest run && pnpm format:check` pass.\n\n## Testing\n\nAdded an `it.each` in `tests/cli.test.ts` over `constructor`, `toString`, `valueOf`, `hasOwnProperty` and `__proto__`. It asserts a non-zero exit and the Unknown agent message. These cases fail on the old code.\n\n## Checklist\n\n- [x] Title follows Conventional Commits (`feat|fix|docs|data|test|refactor|perf|build|ci|chore(scope): …`)\n- [x] Tests added or updated (golden test for every bug fix)\n- [x] `pnpm build && pnpm typecheck && pnpm lint && pnpm test && pnpm format:check` pass locally\n- [ ] Core stays offline (no `fetch`/HTTP in `packages/core`)\n- [ ] Data changes go through `scripts/build-data.ts` and `SOURCES.md` (source + license)\n- [ ] SKILL.md / README updated if behaviour changed\n",
     "dry": 0,
     "claimed_at": null,
-    "updated_at": "2026-10-25T07:52:31.021Z",
+    "updated_at": "2026-10-25T12:22:53.860Z",
     "blocked": null,
     "patch": "diff --git a/packages/cli/src/commands/install.ts b/packages/cli/src/commands/install.ts\nindex 6b30d57..723ea98 100644\n--- a/packages/cli/src/commands/install.ts\n+++ b/packages/cli/src/commands/install.ts\n@@ -34,7 +34,7 @@ export function registerInstall(program: Command): void {\n         skill: string,\n         o: { agent: string; global?: boolean; force?: boolean; dryRun?: boolean },\n       ) => {\n-        const agentDir = AGENT_DIRS[o.agent];\n+        const agentDir = Object.hasOwn(AGENT_DIRS, o.agent) ? AGENT_DIRS[o.agent] : undefined;\n         if (!agentDir)\n           throw new Error(\n             `Unknown agent \"${o.agent}\". Use one of: ${Object.keys(AGENT_DIRS).join(', ')}`,\ndiff --git a/tests/cli.test.ts b/tests/cli.test.ts\nindex 7506a5a..5940d55 100644\n--- a/tests/cli.test.ts\n+++ b/tests/cli.test.ts\n@@ -539,6 +539,18 @@ describe('vn-skills install', () => {\n     expect(r.code).not.toBe(0);\n     expect(r.err).toContain('agents');\n   });\n+  it.each(['constructor', 'toString', 'valueOf', 'hasOwnProperty', '__proto__'])(\n+    'rejects Object.prototype key %s as an unknown agent',\n+    (name) => {\n+      const cwd = tmp();\n+      const r = install(['vietqr', '--agent', name, '--dry-run'], cwd, tmp());\n+      expect(r.code).not.toBe(0);\n+      expect(r.err).toContain(\n+        `Unknown agent \"${name}\". Use one of: claude, cursor, codex, agents, copilot`,\n+      );\n+      expect(readdirSync(cwd)).toEqual([]);\n+    },\n+  );\n   it('rejects unknown skills', () => {\n     const cwd = tmp();\n     const r = install(['nope', '--agent', 'claude'], cwd, tmp());\n",
     "repro_patch": "diff --git a/tests/cli.test.ts b/tests/cli.test.ts\nindex 7506a5a..5940d55 100644\n--- a/tests/cli.test.ts\n+++ b/tests/cli.test.ts\n@@ -539,6 +539,18 @@ describe('vn-skills install', () => {\n     expect(r.code).not.toBe(0);\n     expect(r.err).toContain('agents');\n   });\n+  it.each(['constructor', 'toString', 'valueOf', 'hasOwnProperty', '__proto__'])(\n+    'rejects Object.prototype key %s as an unknown agent',\n+    (name) => {\n+      const cwd = tmp();\n+      const r = install(['vietqr', '--agent', name, '--dry-run'], cwd, tmp());\n+      expect(r.code).not.toBe(0);\n+      expect(r.err).toContain(\n+        `Unknown agent \"${name}\". Use one of: claude, cursor, codex, agents, copilot`,\n+      );\n+      expect(readdirSync(cwd)).toEqual([]);\n+    },\n+  );\n   it('rejects unknown skills', () => {\n     const cwd = tmp();\n     const r = install(['nope', '--agent', 'claude'], cwd, tmp());\n",
@@ -1956,12 +1956,12 @@
     "last_seen_at": "2026-10-25T07:52:48.323Z",
     "opened_at": "2026-10-25T07:52:48.323Z",
     "head_sha": "9598f6e44f205a5f5c8a9acd3fc16b8892e059e6",
-    "mergeable": "MERGEABLE",
-    "ci_state": "pending",
+    "mergeable": "UNKNOWN",
+    "ci_state": "success",
     "review_decision": "REVIEW_REQUIRED",
-    "snapshot_at": "2026-10-25T07:53:23.433Z",
+    "snapshot_at": "2026-10-25T12:22:49.045Z",
     "ci_seen_sha": null,
-    "merge_state": "BLOCKED"
+    "merge_state": "UNKNOWN"
    },
    {
     "issue_id": 46,
@@ -1971,42 +1971,42 @@
     "last_seen_at": "2026-10-25T07:52:43.092Z",
     "opened_at": "2026-10-25T07:52:43.092Z",
     "head_sha": "2ef5e352b7caeef74cf5256c8e9756bfc525e9e9",
-    "mergeable": "MERGEABLE",
-    "ci_state": "pending",
+    "mergeable": "UNKNOWN",
+    "ci_state": "success",
     "review_decision": "REVIEW_REQUIRED",
-    "snapshot_at": "2026-10-25T07:53:25.557Z",
+    "snapshot_at": "2026-10-25T12:22:51.556Z",
     "ci_seen_sha": null,
-    "merge_state": "BLOCKED"
+    "merge_state": "UNKNOWN"
    },
    {
     "issue_id": 47,
     "url": "https://github.com/beiryu/vn-skills/pull/190",
     "number": 190,
-    "state": "open",
+    "state": "merged",
     "last_seen_at": "2026-10-25T07:52:36.634Z",
     "opened_at": "2026-10-25T07:52:36.634Z",
-    "head_sha": "606432de350791acae6b6b132e26c678f0d1384d",
-    "mergeable": "MERGEABLE",
+    "head_sha": "63d701e393e1a20aeb7f33d07605a75f0b3d5d64",
+    "mergeable": "UNKNOWN",
     "ci_state": "pending",
     "review_decision": "REVIEW_REQUIRED",
-    "snapshot_at": "2026-10-25T07:53:27.658Z",
+    "snapshot_at": "2026-10-25T12:22:53.276Z",
     "ci_seen_sha": null,
-    "merge_state": "BLOCKED"
+    "merge_state": "UNKNOWN"
    },
    {
     "issue_id": 48,
     "url": "https://github.com/beiryu/vn-skills/pull/189",
     "number": 189,
-    "state": "open",
+    "state": "merged",
     "last_seen_at": "2026-10-25T07:52:31.021Z",
     "opened_at": "2026-10-25T07:52:31.021Z",
     "head_sha": "51f90cad00b54dd06be50fb54a03ad84cb37d16e",
-    "mergeable": "MERGEABLE",
-    "ci_state": "pending",
+    "mergeable": "UNKNOWN",
+    "ci_state": "success",
     "review_decision": "REVIEW_REQUIRED",
-    "snapshot_at": "2026-10-25T07:53:29.668Z",
+    "snapshot_at": "2026-10-25T12:22:53.860Z",
     "ci_seen_sha": null,
-    "merge_state": "BLOCKED"
+    "merge_state": "UNKNOWN"
    }
   ],
   "pending_actions": [
