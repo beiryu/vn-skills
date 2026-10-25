@@ -1,6 +1,6 @@
 {
  "version": 1,
- "exported_at": "2026-10-25T13:19:44.009Z",
+ "exported_at": "2026-10-25T13:20:57.114Z",
  "tables": {
   "repos": [
    {
@@ -10,7 +10,7 @@
     "policy_status": null,
     "policy_excerpts": null,
     "block_reason": null,
-    "last_scanned": "2026-10-25T13:19:13.061Z"
+    "last_scanned": "2026-10-25T13:20:27.091Z"
    }
   ],
   "issues": [
@@ -2046,9 +2046,9 @@
     "opened_at": "2026-10-25T13:18:33.115Z",
     "head_sha": "ed9757e5780641d73064e91b2403ca1987634759",
     "mergeable": "MERGEABLE",
-    "ci_state": "pending",
+    "ci_state": "success",
     "review_decision": "REVIEW_REQUIRED",
-    "snapshot_at": "2026-10-25T13:19:07.418Z",
+    "snapshot_at": "2026-10-25T13:20:22.819Z",
     "ci_seen_sha": null,
     "merge_state": "BLOCKED"
    }
