@@ -222,3 +222,18 @@ describe('non-string input (untyped callers)', () => {
     if (!r.ok) expect(r.error.code).toBe('INVALID_DATE');
   });
 });
+
+describe('INVALID_NUMBER hint', () => {
+  const fns = { formatNumber, formatVnd, formatCompactVnd } as const;
+  for (const [name, fn] of Object.entries(fns)) {
+    it.each([NaN, Infinity, -Infinity, 'abc'])(`${name}(%s) returns a non-empty hint`, (v) => {
+      const r = fn(v as any);
+      expect(r.ok).toBe(false);
+      if (!r.ok) {
+        expect(r.error.code).toBe('INVALID_NUMBER');
+        expect(typeof r.error.hint).toBe('string');
+        expect(r.error.hint).toContain('1234567.89');
+      }
+    });
+  }
+});
