@@ -32,6 +32,7 @@ const NOT_PROOF = 'Format validity does not prove the identity exists.';
  */
 export function parseCitizenId(input: string, opts?: { today?: Date }): Result<CitizenIdParsed> {
   const s = String(input ?? '').trim();
+  if (s === '') return fail('EMPTY', 'ID is empty', 'Pass a 12-digit CCCD or a 9-digit CMND.');
   if (!/^\d+$/.test(s))
     return fail(
       'INVALID_FORMAT',

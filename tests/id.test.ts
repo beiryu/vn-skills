@@ -108,3 +108,17 @@ describe('parseCitizenId: future birth year', () => {
     expect(warningsOf(r).some((w) => w.includes('2027'))).toBe(true);
   });
 });
+
+describe('parseCitizenId: empty input', () => {
+  it.each([[''], ['   '], [null], [undefined]])('returns EMPTY for %j', (v) => {
+    const r = parseCitizenId(v as unknown as string);
+    expect(r).toMatchObject({ ok: false, error: { code: 'EMPTY' } });
+    expect((r as { error: { hint: string } }).error.hint).not.toBe('');
+  });
+  it('keeps INVALID_FORMAT for non-digits', () => {
+    expect(parseCitizenId('04809012345a')).toMatchObject({
+      ok: false,
+      error: { code: 'INVALID_FORMAT' },
+    });
+  });
+});
