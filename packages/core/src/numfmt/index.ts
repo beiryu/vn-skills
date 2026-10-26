@@ -4,6 +4,7 @@ export type TextResult = Result<{ text: string }>;
 export type AmountResult = Result<{ value: number }>;
 
 const NOT_FINITE = 'Value must be a finite number';
+const NOT_FINITE_HINT = 'Pass a plain number such as 1234567.89';
 
 function roundDecimal(abs: number, digits: number): string {
   const str = String(abs);
@@ -25,7 +26,7 @@ function roundDecimal(abs: number, digits: number): string {
  * exponent notation (e.g. 1e-7) fall back to toFixed.
  */
 export function formatNumber(n: number, opts: { maxFractionDigits?: number } = {}): TextResult {
-  if (!Number.isFinite(n)) return fail('INVALID_NUMBER', NOT_FINITE);
+  if (!Number.isFinite(n)) return fail('INVALID_NUMBER', NOT_FINITE, NOT_FINITE_HINT);
   const digits = opts.maxFractionDigits ?? 2;
   if (!Number.isInteger(digits) || digits < 0 || digits > 20) {
     return fail(
@@ -52,7 +53,7 @@ export function formatVnd(n: number): TextResult {
 
 /** "1,2 triệu", "1,5 tỷ", "500 nghìn"; amounts below 1.000 stay plain. */
 export function formatCompactVnd(n: number): TextResult {
-  if (!Number.isFinite(n)) return fail('INVALID_NUMBER', NOT_FINITE);
+  if (!Number.isFinite(n)) return fail('INVALID_NUMBER', NOT_FINITE, NOT_FINITE_HINT);
   const units: [number, string][] = [
     [1e9, ' tỷ'],
     [1e6, ' triệu'],
