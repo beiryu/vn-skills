@@ -180,6 +180,30 @@ describe('vn-skills MCP server', () => {
     );
     expect(j.summary).toEqual({ total: 2, converted: 1, failed: 1 });
   });
+  it('vn_address_convert_batch returns per-row errors for null and empty entries', async () => {
+    const j = text(
+      await client.callTool({
+        name: 'vn_address_convert_batch',
+        arguments: { addresses: ['Hà Nội', null, ''] },
+      }),
+    );
+    expect(j.ok).toBe(true);
+    const results = j.results as Array<{ ok: boolean; error?: { code?: string } }>;
+    expect(results).toHaveLength(3);
+    expect(results[1]?.ok).toBe(false);
+    expect(typeof results[1]?.error?.code).toBe('string');
+    expect((j.summary as { failed: number }).failed).toBeGreaterThanOrEqual(1);
+  });
+  it('vn_address_convert_batch still rejects more than 1000 entries', async () => {
+    const addresses = Array.from({ length: 1001 }, () => 'Hà Nội');
+    const r = await client
+      .callTool({ name: 'vn_address_convert_batch', arguments: { addresses } })
+      .then(
+        (x) => ({ isError: (x as { isError?: boolean }).isError === true }),
+        () => ({ isError: true }),
+      );
+    expect(r.isError).toBe(true);
+  });
   it('vn_address_parse', async () => {
     const j = text(
       await client.callTool({
