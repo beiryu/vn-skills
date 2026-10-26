@@ -71,7 +71,7 @@ Inside this repo use `pnpm vn-skills` instead of `npx -y @vn-skills/cli`. Output
 
 4. **Look things up**: `address provinces`, `address province "Gia Lai"`, `address wards "Tân Thành" -p "Tây Ninh"`.
 
-MCP: `vn_address_convert_batch` converts up to 1000 addresses in one call (`{ addresses: string[] }`) and returns per-row results plus `summary: { total, converted, failed }`; use `address convert-file` for larger inputs.
+MCP: `vn_address_convert_batch` converts up to 1000 addresses in one call (`{ addresses: string[] }`) and returns per-row results plus `summary: { total, converted, failed }`; null, empty or non-string entries come back as failed rows (`ok: false` with an error code) instead of failing the whole call; use `address convert-file` for larger inputs.
 
 Library: `parseAddress`, `convertAddress`, `convertAddresses`, `findProvince`, `searchWards`, `PROVINCES` from `@vn-skills/core`.
 
