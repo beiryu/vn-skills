@@ -2,6 +2,7 @@ import { tlvEncode } from '../shared/tlv.js';
 import { removeDiacritics } from '../shared/diacritics.js';
 import { fail, type Result } from '../shared/result.js';
 import { crc16CcittFalse } from './crc16.js';
+import { parseAmount } from '../numfmt/index.js';
 import { findBank, type Bank } from './banks.js';
 
 export const VIETQR_GUID = 'A000000727';
@@ -91,10 +92,15 @@ export function buildVietQR(opts: BuildVietQROptions): Result<BuildVietQRData> {
   if (opts.amount !== undefined && opts.amount !== null && String(opts.amount).trim() !== '') {
     const raw = parseAmountString(String(opts.amount));
     if (raw === null || !/^\d+$/.test(raw)) {
+      const parsed = parseAmount(String(opts.amount));
+      const hint =
+        parsed.ok && Number.isInteger(parsed.value) && parsed.value > 0
+          ? `"${opts.amount}" looks like ${parsed.value} VND; pass --amount ${parsed.value} (library: amount: ${parsed.value}).`
+          : 'VND has no decimals; pass e.g. 500000.';
       return fail(
         'INVALID_AMOUNT',
         `Amount "${opts.amount}" must be a positive integer in VND`,
-        'VND has no decimals; pass e.g. 500000.',
+        hint,
       );
     }
     amount = Number(raw);
