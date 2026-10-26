@@ -37,6 +37,11 @@ describe('vn-skills CLI', () => {
     expect(run(['--version']).out.trim()).toBe(pkg('cli'));
     expect(VERSION).toBe(pkg('core'));
   });
+  it('numfmt parse "" reports EMPTY', () => {
+    const r = run(['--json', 'numfmt', 'parse', '']);
+    expect(r.json()).toMatchObject({ ok: false, error: { code: 'EMPTY' } });
+  });
+
   it('id parse "" reports EMPTY', () => {
     const r = run(['--json', 'id', 'parse', '']);
     expect(r.json()).toMatchObject({ ok: false, error: { code: 'EMPTY' } });

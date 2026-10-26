@@ -29,7 +29,7 @@ MCP tool: `vn_number_format` (`mode`: number, vnd, compact, date, parse).
 - Suffixes `đ`, `₫`, `đồng`, `vnd` are ignored.
 - `,` is always the decimal mark: `1,5` = 1.5, `1,50` = 1.5.
 - Ambiguous `1.500`: a lone `.` followed by exactly 3-digit groups is a **thousands separator** (= 1500). Use `1,5k` or `1,5` for decimals.
-- Invalid input (`1..2`, `abc`, empty) returns an error.
+- Empty or blank input returns `EMPTY`; other invalid input (`1..2`, `abc`) returns `INVALID_AMOUNT`.
 
 ## Common mistakes
 
