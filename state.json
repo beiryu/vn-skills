@@ -1,6 +1,6 @@
 {
  "version": 1,
- "exported_at": "2026-10-26T08:38:04.572Z",
+ "exported_at": "2026-10-26T08:39:11.492Z",
  "tables": {
   "repos": [
    {
@@ -10,7 +10,7 @@
     "policy_status": null,
     "policy_excerpts": null,
     "block_reason": null,
-    "last_scanned": "2026-10-26T08:37:24.520Z"
+    "last_scanned": "2026-10-26T08:38:42.438Z"
    }
   ],
   "issues": [
@@ -1674,7 +1674,7 @@
     "title": "cli: give `vietqr decode` clear errors for an empty path and a missing file",
     "body": "## Problem\n\n`decodeQrPng` (`packages/cli/src/decode.ts:18-28`) wraps every read failure in one `READ_ERROR`. That error uses the raw Node message and a hint about PNG format:\n\n```\n$ node packages/cli/dist/index.js --json vietqr decode \"\"\n{\"ok\":false,\"error\":{\"code\":\"READ_ERROR\",\"message\":\"cannot read  as PNG: ENOENT: no such file or directory, open ''\",\"hint\":\"Only PNG images are supported; convert screenshots or JPEGs to PNG first.\"}}\n```\n\nThe message has a double space where the file name should be. It also exposes a raw `ENOENT`, and the hint points at the image format when the real problem is that no file was given (or the file doesn't exist).\n\n## Fix\n\nIn `decodeQrPng`, handle these cases before the PNG parse:\n\n1. Empty or blank `file` → `{ code: 'EMPTY', message: 'No image file given', hint: 'Pass the path to a PNG file, e.g. vn-skills vietqr decode qr.png.' }`\n2. File missing (`ENOENT`) → `{ code: 'READ_ERROR', message: 'File \"<file>\" not found', hint: 'Check the path.' }`\n3. Any other read or PNG-parse failure → keep the current `READ_ERROR` and the PNG hint, but quote the file name.\n\nKeep the exit code the CLI uses today for decode errors.\n\n## Acceptance\n\n- [ ] `--json vietqr decode \"\"` prints `code: \"EMPTY\"` with a hint and no `ENOENT` text\n- [ ] `--json vietqr decode does-not-exist.png` prints `READ_ERROR` with a message naming the file and the hint `Check the path.`\n- [ ] A file that exists but is not a PNG (e.g. a text file) still gets `READ_ERROR` with the PNG hint\n- [ ] Tests for all three cases in `tests/cli.test.ts` (use a temp dir)\n- [ ] `pnpm build && pnpm typecheck && pnpm lint && pnpm exec vitest run && pnpm format:check` pass",
     "url": "https://github.com/beiryu/vn-skills/issues/215",
-    "state": "pr_open",
+    "state": "done",
     "score": 1,
     "triage_reason": "When a decode fails, the error is the first thing a new user sees. Right now it sends them to fix the image format instead of the path.",
     "attempts": 0,
@@ -1690,7 +1690,7 @@
     "pr_body": "Closes #215\n\n## What & why\n\n`vietqr decode` wrapped every read failure in one `READ_ERROR` with the raw Node message and a PNG-format hint. An empty path printed a double space and `ENOENT`. A missing file got a hint about the image format.\n\n`decodeQrPng` in `packages/cli/src/decode.ts` now handles these cases before the PNG parse:\n\n- Empty or blank path: `EMPTY`, message `No image file given`, hint `Pass the path to a PNG file, e.g. vn-skills vietqr decode qr.png.`\n- Missing file (`ENOENT`): `READ_ERROR`, message `File \"<file>\" not found`, hint `Check the path.`\n- Any other read or PNG-parse failure: same `READ_ERROR` and PNG hint as before, with the file name now quoted.\n\nThe exit code for decode errors is unchanged.\n\nAcceptance from the issue:\n\n- [x] `--json vietqr decode \"\"` prints `code: \"EMPTY\"` with a hint and no `ENOENT` text\n- [x] `--json vietqr decode does-not-exist.png` prints `READ_ERROR` with a message naming the file and the hint `Check the path.`\n- [x] A file that exists but is not a PNG still gets `READ_ERROR` with the PNG hint\n- [x] Tests for all three cases in `tests/cli.test.ts` (using a temp dir)\n- [ ] `pnpm build && pnpm typecheck && pnpm lint && pnpm exec vitest run && pnpm format:check` pass (not confirmed by the pipeline)\n\n## Testing\n\nAdded to `tests/cli.test.ts`:\n\n- `vietqr decode with an empty path reports EMPTY, not ENOENT`\n- `vietqr decode with a missing file names the file and says to check the path`\n- `vietqr decode quotes the file name for an existing non-PNG file`\n\nThe last two use a temp dir. The existing test that matches `cannot read .* as PNG` still applies.\n\n## Checklist\n\n- [x] Title follows Conventional Commits (`feat|fix|docs|data|test|refactor|perf|build|ci|chore(scope): …`)\n- [x] Tests added or updated (golden test for every bug fix)\n- [ ] `pnpm build && pnpm typecheck && pnpm lint && pnpm test && pnpm format:check` pass locally\n- [x] Core stays offline (no `fetch`/HTTP in `packages/core`)\n- [x] Data changes go through `scripts/build-data.ts` and `SOURCES.md` (source + license)\n- [ ] SKILL.md / README updated if behaviour changed\n",
     "dry": 0,
     "claimed_at": null,
-    "updated_at": "2026-10-26T08:03:10.777Z",
+    "updated_at": "2026-10-26T08:38:35.191Z",
     "blocked": null,
     "patch": "diff --git a/packages/cli/src/decode.ts b/packages/cli/src/decode.ts\nindex a464d11..ab02083 100644\n--- a/packages/cli/src/decode.ts\n+++ b/packages/cli/src/decode.ts\n@@ -14,15 +14,29 @@ export function decodeQrPng(\n ):\n   | { ok: true; payload: string }\n   | { ok: false; error: { code: string; message: string; hint?: string } } {\n+  if (!file || !file.trim())\n+    return {\n+      ok: false,\n+      error: {\n+        code: 'EMPTY',\n+        message: 'No image file given',\n+        hint: 'Pass the path to a PNG file, e.g. vn-skills vietqr decode qr.png.',\n+      },\n+    };\n   let png: PNG;\n   try {\n     png = PNG.sync.read(readFileSync(file));\n   } catch (e) {\n+    if ((e as NodeJS.ErrnoException).code === 'ENOENT')\n+      return {\n+        ok: false,\n+        error: { code: 'READ_ERROR', message: `File \"${file}\" not found`, hint: 'Check the path.' },\n+      };\n     return {\n       ok: false,\n       error: {\n         code: 'READ_ERROR',\n-        message: `cannot read ${file} as PNG: ${(e as Error).message}`,\n+        message: `cannot read \"${file}\" as PNG: ${(e as Error).message}`,\n         hint: 'Only PNG images are supported; convert screenshots or JPEGs to PNG first.',\n       },\n     };\ndiff --git a/tests/cli.test.ts b/tests/cli.test.ts\nindex 9699343..3f5e290 100644\n--- a/tests/cli.test.ts\n+++ b/tests/cli.test.ts\n@@ -120,6 +120,35 @@ describe('vn-skills CLI', () => {\n     expect(r.code).not.toBe(0);\n     expect(r.out + r.err).toMatch(/cannot read .* as PNG/);\n   });\n+  it('vietqr decode with an empty path reports EMPTY, not ENOENT', () => {\n+    const r = run(['--json', 'vietqr', 'decode', '']);\n+    expect(r.code).not.toBe(0);\n+    const e = (r.json() as { error: { code: string; message: string; hint: string } }).error;\n+    expect(e.code).toBe('EMPTY');\n+    expect(e.message).toBe('No image file given');\n+    expect(e.hint).toBe('Pass the path to a PNG file, e.g. vn-skills vietqr decode qr.png.');\n+    expect(r.out).not.toMatch(/ENOENT/);\n+  });\n+  it('vietqr decode with a missing file names the file and says to check the path', () => {\n+    const file = join(mkdtempSync(join(tmpdir(), 'vn-skills-')), 'does-not-exist.png');\n+    const r = run(['--json', 'vietqr', 'decode', file]);\n+    expect(r.code).not.toBe(0);\n+    const e = (r.json() as { error: { code: string; message: string; hint: string } }).error;\n+    expect(e.code).toBe('READ_ERROR');\n+    expect(e.message).toBe(`File \"${file}\" not found`);\n+    expect(e.hint).toBe('Check the path.');\n+    expect(r.out).not.toMatch(/ENOENT/);\n+  });\n+  it('vietqr decode quotes the file name for an existing non-PNG file', () => {\n+    const file = join(mkdtempSync(join(tmpdir(), 'vn-skills-')), 'note.txt');\n+    writeFileSync(file, 'not an image');\n+    const r = run(['--json', 'vietqr', 'decode', file]);\n+    expect(r.code).not.toBe(0);\n+    const e = (r.json() as { error: { code: string; message: string; hint: string } }).error;\n+    expect(e.code).toBe('READ_ERROR');\n+    expect(e.message).toContain(`\"${file}\"`);\n+    expect(e.hint).toMatch(/Only PNG images are supported/);\n+  });\n   it('holidays year/check/add', () => {\n     const y = run(['holidays', 'year', '2026', '--json']).json();\n     expect(y.announced).toBe(true);\n",
     "repro_patch": "diff --git a/tests/cli.test.ts b/tests/cli.test.ts\nindex 9699343..3f5e290 100644\n--- a/tests/cli.test.ts\n+++ b/tests/cli.test.ts\n@@ -120,6 +120,35 @@ describe('vn-skills CLI', () => {\n     expect(r.code).not.toBe(0);\n     expect(r.out + r.err).toMatch(/cannot read .* as PNG/);\n   });\n+  it('vietqr decode with an empty path reports EMPTY, not ENOENT', () => {\n+    const r = run(['--json', 'vietqr', 'decode', '']);\n+    expect(r.code).not.toBe(0);\n+    const e = (r.json() as { error: { code: string; message: string; hint: string } }).error;\n+    expect(e.code).toBe('EMPTY');\n+    expect(e.message).toBe('No image file given');\n+    expect(e.hint).toBe('Pass the path to a PNG file, e.g. vn-skills vietqr decode qr.png.');\n+    expect(r.out).not.toMatch(/ENOENT/);\n+  });\n+  it('vietqr decode with a missing file names the file and says to check the path', () => {\n+    const file = join(mkdtempSync(join(tmpdir(), 'vn-skills-')), 'does-not-exist.png');\n+    const r = run(['--json', 'vietqr', 'decode', file]);\n+    expect(r.code).not.toBe(0);\n+    const e = (r.json() as { error: { code: string; message: string; hint: string } }).error;\n+    expect(e.code).toBe('READ_ERROR');\n+    expect(e.message).toBe(`File \"${file}\" not found`);\n+    expect(e.hint).toBe('Check the path.');\n+    expect(r.out).not.toMatch(/ENOENT/);\n+  });\n+  it('vietqr decode quotes the file name for an existing non-PNG file', () => {\n+    const file = join(mkdtempSync(join(tmpdir(), 'vn-skills-')), 'note.txt');\n+    writeFileSync(file, 'not an image');\n+    const r = run(['--json', 'vietqr', 'decode', file]);\n+    expect(r.code).not.toBe(0);\n+    const e = (r.json() as { error: { code: string; message: string; hint: string } }).error;\n+    expect(e.code).toBe('READ_ERROR');\n+    expect(e.message).toContain(`\"${file}\"`);\n+    expect(e.hint).toMatch(/Only PNG images are supported/);\n+  });\n   it('holidays year/check/add', () => {\n     const y = run(['holidays', 'year', '2026', '--json']).json();\n     expect(y.announced).toBe(true);\n",
@@ -2413,7 +2413,7 @@
     "mergeable": "UNKNOWN",
     "ci_state": "success",
     "review_decision": "REVIEW_REQUIRED",
-    "snapshot_at": "2026-10-26T08:35:34.534Z",
+    "snapshot_at": "2026-10-26T08:38:33.358Z",
     "ci_seen_sha": null,
     "merge_state": "UNKNOWN"
    },
@@ -2421,14 +2421,14 @@
     "issue_id": 58,
     "url": "https://github.com/beiryu/vn-skills/pull/220",
     "number": 220,
-    "state": "open",
+    "state": "merged",
     "last_seen_at": "2026-10-26T08:03:10.777Z",
     "opened_at": "2026-10-26T08:03:10.777Z",
-    "head_sha": "eeea5e8c9ba829fbf24c6b6257ad4b4e2c1f19c9",
+    "head_sha": "037335238ea2a06f84b055d22f922ce408c22629",
     "mergeable": "UNKNOWN",
     "ci_state": "success",
     "review_decision": "REVIEW_REQUIRED",
-    "snapshot_at": "2026-10-26T08:35:36.868Z",
+    "snapshot_at": "2026-10-26T08:38:35.191Z",
     "ci_seen_sha": null,
     "merge_state": "UNKNOWN"
    },
@@ -2443,9 +2443,9 @@
     "mergeable": "MERGEABLE",
     "ci_state": "pending",
     "review_decision": "REVIEW_REQUIRED",
-    "snapshot_at": "2026-10-26T08:35:39.106Z",
+    "snapshot_at": "2026-10-26T08:38:36.112Z",
     "ci_seen_sha": null,
-    "merge_state": "DIRTY"
+    "merge_state": "BLOCKED"
    }
   ],
   "pending_actions": [
