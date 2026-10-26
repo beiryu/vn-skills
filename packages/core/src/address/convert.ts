@@ -211,3 +211,99 @@ function alreadyNew(
     warnings: ['Input already uses the post-2025 structure; nothing to convert.'],
   };
 }
+
+/** Per-row result fields emitted by `convertAddresses` (and so by `address convert-file`). */
+export function conversionFields(r: ConvertedAddress) {
+  return {
+    mappingType: r.mappingType,
+    old: {
+      province: r.old.province?.fullName,
+      district: r.old.district?.fullName,
+      ward: r.old.ward?.fullName,
+      street: r.old.street,
+      formatted: r.old.formatted,
+    },
+    new: {
+      province: { code: r.new.province.code, fullName: r.new.province.fullName },
+      ward: r.new.ward && {
+        code: r.new.ward.code,
+        fullName: r.new.ward.fullName,
+        postalCode: r.new.ward.postalCode,
+      },
+      street: r.new.street,
+      formatted: r.new.formatted,
+    },
+    candidates: r.candidates.map((x) => ({
+      code: x.ward.code,
+      fullName: x.ward.fullName,
+      province: x.province.fullName,
+      isDefault: x.isDefault,
+    })),
+    confidence: r.confidence,
+    warnings: r.warnings,
+  };
+}
+
+export const MAX_BATCH_ADDRESSES = 1000;
+
+export type ConvertBatchRow =
+  | ({ index: number; input: unknown; ok: true } & ReturnType<typeof conversionFields>)
+  | { index: number; input: unknown; ok: false; error: { code: string; message: string } };
+
+export type ConvertBatchResult =
+  | {
+      ok: true;
+      results: ConvertBatchRow[];
+      summary: { total: number; converted: number; failed: number };
+    }
+  | { ok: false; error: { code: string; message: string; hint?: string } };
+
+/** Convert many free-text old addresses in one call; bad items become per-row errors, never throws. */
+export function convertAddresses(inputs: unknown): ConvertBatchResult {
+  if (!Array.isArray(inputs))
+    return {
+      ok: false,
+      error: {
+        code: 'INVALID_INPUT',
+        message: 'inputs must be an array of address strings',
+        hint: 'Pass an array such as ["P. Bến Nghé, Q.1, TP.HCM"].',
+      },
+    };
+  if (inputs.length > MAX_BATCH_ADDRESSES)
+    return {
+      ok: false,
+      error: {
+        code: 'TOO_MANY',
+        message: `at most ${MAX_BATCH_ADDRESSES} addresses per call, got ${inputs.length}`,
+        hint: 'Split the list, or use `vn-skills address convert-file <file>` for larger inputs.',
+      },
+    };
+  let converted = 0;
+  const results = inputs.map((input: unknown, index): ConvertBatchRow => {
+    if (typeof input !== 'string' || input.trim() === '')
+      return {
+        index,
+        input,
+        ok: false,
+        error: { code: 'INVALID_INPUT', message: 'address must be a non-empty string' },
+      };
+    try {
+      const r = convertAddress(input);
+      if (!r.ok) return { index, input, ok: false, error: r.error };
+      converted++;
+      return { index, input: r.input, ok: true, ...conversionFields(r) };
+    } catch (e) {
+      return {
+        index,
+        input,
+        ok: false,
+        error: { code: 'INTERNAL', message: (e as Error).message },
+      };
+    }
+  });
+  return {
+    ok: true,
+    results,
+    summary: { total: results.length, converted, failed: results.length - converted },
+  };
+}

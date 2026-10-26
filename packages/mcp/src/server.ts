@@ -12,6 +12,7 @@ import {
   initials,
   sortNames,
   convertAddress,
+  convertAddresses,
   searchWards,
   parsePhone,
   validateTaxId,
@@ -193,6 +194,22 @@ export function createServer(): McpServer {
               warnings: r.warnings,
             },
       );
+    },
+  );
+
+  server.registerTool(
+    'vn_address_convert_batch',
+    {
+      title: 'Convert many old addresses to new (2025)',
+      description:
+        'Convert up to 1000 pre-July-2025 Vietnamese free-text addresses (63 provinces, districts, wards) into the new 2-level structure (34 provinces, wards) in one call. Returns per-row results plus a summary of converted and failed rows.',
+      inputSchema: {
+        addresses: z.array(z.string()).max(1000).describe('Free-text old addresses (max 1000)'),
+      },
+    },
+    async ({ addresses }) => {
+      const r = convertAddresses(addresses);
+      return json(r, !r.ok);
     },
   );
 

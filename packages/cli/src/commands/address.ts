@@ -2,6 +2,7 @@ import { readFileSync } from 'node:fs';
 import { Command } from 'commander';
 import {
   convertAddress,
+  convertAddresses,
   lookupProvince,
   provincesList,
   parseAddress,
@@ -219,45 +220,18 @@ export function registerAddress(program: Command): void {
           const input = raw.trim();
           if (input === '') return;
           const line = i + 1;
-          const r = convertAddress(input);
-          if (!r.ok) {
+          const res = convertAddresses([input]);
+          const row = res.ok ? res.results[0] : undefined;
+          if (!row || !row.ok) {
             failed++;
-            process.stdout.write(JSON.stringify({ ok: false, line, input, error: r.error }) + '\n');
+            const error = row ? row.error : !res.ok ? res.error : undefined;
+            process.stdout.write(JSON.stringify({ ok: false, line, input, error }) + '\n');
             return;
           }
           ok++;
+          const { index: _i, input: _in, ok: _ok, ...fields } = row;
           process.stdout.write(
-            JSON.stringify({
-              ok: true,
-              line,
-              input: r.input,
-              mappingType: r.mappingType,
-              old: {
-                province: r.old.province?.fullName,
-                district: r.old.district?.fullName,
-                ward: r.old.ward?.fullName,
-                street: r.old.street,
-                formatted: r.old.formatted,
-              },
-              new: {
-                province: { code: r.new.province.code, fullName: r.new.province.fullName },
-                ward: r.new.ward && {
-                  code: r.new.ward.code,
-                  fullName: r.new.ward.fullName,
-                  postalCode: r.new.ward.postalCode,
-                },
-                street: r.new.street,
-                formatted: r.new.formatted,
-              },
-              candidates: r.candidates.map((x) => ({
-                code: x.ward.code,
-                fullName: x.ward.fullName,
-                province: x.province.fullName,
-                isDefault: x.isDefault,
-              })),
-              confidence: r.confidence,
-              warnings: r.warnings,
-            }) + '\n',
+            JSON.stringify({ ok: true, line, input: row.input, ...fields }) + '\n',
           );
         });
       }
