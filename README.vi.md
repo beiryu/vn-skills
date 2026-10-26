@@ -160,7 +160,7 @@ Sau đó trỏ client tới image (chạy `docker run -i --rm vn-skills-mcp`):
 }
 ```
 
-Client khác: dùng khối `mcpServers` chung ở trên.
+Client khác: dùng khối `mcpServers` chung ở trên. Agent AI (ví dụ Cline) có thể làm theo [llms-install.md](llms-install.md).
 
 ## Thư viện
 

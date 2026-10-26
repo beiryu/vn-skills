@@ -246,3 +246,34 @@ describe.each(['README.md', 'README.vi.md', 'docs/quickstart.md', 'docs/quicksta
     });
   },
 );
+
+describe('llms-install.md', () => {
+  const guide = (): string => read('llms-install.md');
+  const block = (
+    text: string,
+  ): { mcpServers: Record<string, { command: string; args: string[] }> } => {
+    const m = /```json\n(\{\s*"mcpServers"[\s\S]*?\})\n```/.exec(text)!;
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+    return JSON.parse(m[1]!);
+  };
+
+  it('ends with a newline', () => {
+    expect(guide().endsWith('\n')).toBe(true);
+  });
+
+  it('has an mcpServers block matching the README command/args', () => {
+    const got = block(guide()).mcpServers['vn-skills']!;
+    const want = block(read('README.md')).mcpServers['vn-skills']!;
+    expect(got.command).toBe(want.command);
+    expect(got.args).toEqual(want.args);
+  });
+
+  it('states the tool count registered in server.ts', () => {
+    const count = (server.match(/registerTool\(/g) ?? []).length;
+    expect(guide()).toMatch(new RegExp(`\\b${count} tools\\b`));
+  });
+
+  it.each(['README.md', 'README.vi.md'])('%s links to llms-install.md', (file) => {
+    expect(read(file)).toContain('llms-install.md');
+  });
+});
