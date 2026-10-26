@@ -3,6 +3,7 @@ import {
   parseAddress,
   parseAddress2025,
   convertAddress,
+  convertAddresses,
   findProvince,
   searchWards,
   PROVINCES,
@@ -101,5 +102,53 @@ describe('searchWards', () => {
   it('finds wards across provinces', () => {
     const list = searchWards('Tân Thành');
     expect(list.length).toBeGreaterThan(1);
+  });
+});
+
+describe('convertAddresses', () => {
+  const good = 'P. Bến Nghé, Q.1, TP.HCM';
+  it('handles a mixed batch', () => {
+    const r = convertAddresses([good, 'zzz không có địa chỉ này', null, '', 5]);
+    expect(r.ok).toBe(true);
+    if (!r.ok) return;
+    expect(r.summary).toEqual({ total: 5, converted: 1, failed: 4 });
+    expect(r.results.map((x) => x.ok)).toEqual([true, false, false, false, false]);
+    expect(r.results[3]).toMatchObject({ index: 3, input: '' });
+  });
+  it('matches convertAddress per item', () => {
+    const items = [good, 'Phường 1, Quận 3, TP.HCM', 'Xã Thanh Xuân, Huyện Sóc Sơn, Hà Nội'];
+    const r = convertAddresses(items);
+    if (!r.ok) throw new Error('unexpected');
+    items.forEach((input, i) => {
+      const one = convertAddress(input);
+      const row = r.results[i]!;
+      expect(row.index).toBe(i);
+      if (!one.ok) {
+        expect(row).toMatchObject({ ok: false, error: one.error });
+        return;
+      }
+      expect(row.ok).toBe(true);
+      if (!row.ok) return;
+      expect(row.mappingType).toBe(one.mappingType);
+      expect(row.old.formatted).toBe(one.old.formatted);
+      expect(row.new.formatted).toBe(one.new.formatted);
+      expect(row.new.ward?.code).toBe(one.new.ward?.code);
+      expect(row.candidates.map((c) => c.code)).toEqual(one.candidates.map((c) => c.ward.code));
+      expect(row.confidence).toBe(one.confidence);
+      expect(row.warnings).toEqual(one.warnings);
+    });
+  });
+  it('empty array', () => {
+    expect(convertAddresses([])).toEqual({
+      ok: true,
+      results: [],
+      summary: { total: 0, converted: 0, failed: 0 },
+    });
+  });
+  it('rejects too many and non-arrays', () => {
+    const r = convertAddresses(new Array(1001).fill(good));
+    expect(r.ok === false && r.error.code).toBe('TOO_MANY');
+    const n = convertAddresses('x');
+    expect(n.ok === false && n.error.code).toBe('INVALID_INPUT');
   });
 });

@@ -35,6 +35,7 @@ describe('vn-skills MCP server', () => {
         'vietqr_decode',
         'vn_address_parse',
         'vn_address_convert',
+        'vn_address_convert_batch',
         'vn_address_search_wards',
         'vn_tax_id_validate',
         'vn_id_parse',
@@ -169,6 +170,15 @@ describe('vn-skills MCP server', () => {
       }),
     );
     expect((j.new as { ward: { fullName: string } }).ward.fullName).toBe('Phường Sài Gòn');
+  });
+  it('vn_address_convert_batch', async () => {
+    const j = text(
+      await client.callTool({
+        name: 'vn_address_convert_batch',
+        arguments: { addresses: ['P. Bến Nghé, Q.1, TP.HCM', 'zzz không có địa chỉ này'] },
+      }),
+    );
+    expect(j.summary).toEqual({ total: 2, converted: 1, failed: 1 });
   });
   it('vn_address_parse', async () => {
     const j = text(

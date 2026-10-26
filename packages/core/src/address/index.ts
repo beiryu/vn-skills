@@ -23,6 +23,9 @@ export {
 } from './parse.js';
 export {
   convertAddress,
+  convertAddresses,
+  type ConvertBatchResult,
+  type ConvertBatchRow,
   type ConvertedAddress,
   type ConvertCandidate,
   type ConvertInput,
