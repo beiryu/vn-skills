@@ -1,6 +1,6 @@
 {
  "version": 1,
- "exported_at": "2026-10-26T02:25:28.398Z",
+ "exported_at": "2026-10-26T06:52:38.947Z",
  "tables": {
   "repos": [
    {
@@ -10,7 +10,7 @@
     "policy_status": null,
     "policy_excerpts": null,
     "block_reason": null,
-    "last_scanned": "2026-10-26T02:24:57.048Z"
+    "last_scanned": "2026-10-26T06:52:11.681Z"
    }
   ],
   "issues": [
@@ -1413,7 +1413,7 @@
     "title": "docs: add llms-install.md so Cline can set up the MCP server from the repo alone",
     "body": "## Problem\n\nCline's MCP Marketplace (https://github.com/cline/mcp-marketplace) asks submitters to confirm that Cline can install the server by itself, using `README.md` or an optional `llms-install.md` at the repo root. The repo has no `llms-install.md`. The MCP setup in `README.md` is mixed in with skills, the CLI and other clients, so it is harder for an agent to follow than one short, MCP-only guide.\n\nThe server needs no API keys or env vars and runs over stdio with `npx -y @vn-skills/mcp` (Node.js 22+). The repo already documents all of this in README.md under \"MCP server\" and \"MCP client setup\".\n\n## What to add\n\nA root `llms-install.md`, in English, written for an AI agent that is installing the MCP server. Copy the facts from `README.md`; do not add new ones.\n\n- Requirements: Node.js 22+, no accounts, API keys or env vars; the server is offline.\n- The `mcpServers` config block exactly as in README.md: `{ \"mcpServers\": { \"vn-skills\": { \"command\": \"npx\", \"args\": [\"-y\", \"@vn-skills/mcp\"] } } }`. If #154 has landed and the repo pins the version elsewhere, use that same pin and the same release-sync mechanism here; otherwise keep it unpinned like README.md.\n- How to check it worked: the server prints `vn-skills MCP server running on stdio` to stderr, and lists 28 tools. Take the tool count from README.md, and say tools are grouped by skill (vietqr, vn-address, …).\n- One example prompt that calls a tool, taken from the README examples (e.g. build a VietQR for VCB, or convert `P. Bến Nghé, Q.1, TP.HCM`).\n- The Docker alternative from README.md (`docker build -t vn-skills-mcp .` then `docker run -i --rm vn-skills-mcp`).\n- A one-line note that it is an offline toolkit, not a payment gateway (same wording as the README).\n\n## Acceptance\n\n- [ ] `llms-install.md` exists at the repo root and ends with a newline\n- [ ] Its JSON config block parses and has the same `command`/`args` as the README `mcpServers` block\n- [ ] A test in `tests/readme.test.ts` (or a new small test file) checks the two points above and that the tool count it states matches the number of `registerTool(` calls in `packages/mcp/src/server.ts`\n- [ ] README.md and README.vi.md link to it from the MCP client setup section (one line each)\n- [ ] `pnpm build && pnpm typecheck && pnpm lint && pnpm exec vitest run && pnpm format:check` pass",
     "url": "https://github.com/beiryu/vn-skills/issues/193",
-    "state": "pr_open",
+    "state": "done",
     "score": 1,
     "triage_reason": "The Cline MCP Marketplace is a channel where vn-skills isn't listed yet. Its submission asks submitters to confirm that Cline can install the server on its own, and a short guide makes that more reliable. With 0 stars, getting listed in another directory is one of the few things that can bring in users.",
     "attempts": 1,
@@ -1429,7 +1429,7 @@
     "pr_body": "## What & why\n\nCloses #193\n\nAdds a root `llms-install.md`: a short, MCP-only install guide for AI agents such as Cline. All facts come from `README.md`, and no new facts were added. It covers:\n\n- Requirements: Node.js 22+, no accounts, API keys or env vars, offline server.\n- The `mcpServers` config block (`npx -y @vn-skills/mcp`, unpinned like the README).\n- How to check it worked: the `vn-skills MCP server running on stdio` message on stderr, and the tool count, with tools grouped by skill.\n- One example prompt.\n- The Docker alternative.\n- A note that it is an offline toolkit, not a payment gateway.\n\n`README.md` and `README.vi.md` each get one line linking to it from the MCP client setup section.\n\nAcceptance:\n\n- [x] `llms-install.md` exists at the repo root and ends with a newline\n- [x] Its JSON config block parses and has the same `command`/`args` as the README `mcpServers` block\n- [x] Test in `tests/readme.test.ts` checks both points above and that the stated tool count matches the number of `registerTool(` calls in `packages/mcp/src/server.ts`\n- [x] README.md and README.vi.md link to it from the MCP client setup section\n- [x] `pnpm build && pnpm typecheck && pnpm lint && pnpm exec vitest run && pnpm format:check` pass\n\nTests: three cases added to `tests/readme.test.ts`: `ends with a newline`, `has an mcpServers block matching the README command/args`, and `states the tool count registered in server.ts`. One `eslint-disable-next-line` comment covers `no-unsafe-return` on `JSON.parse` in that file.\n\n## Checklist\n\n- [x] Title follows Conventional Commits (`feat|fix|docs|data|test|refactor|perf|build|ci|chore(scope): …`)\n- [x] Tests added or updated (golden test for every bug fix)\n- [x] `pnpm build && pnpm typecheck && pnpm lint && pnpm test && pnpm format:check` pass locally\n- [x] Core stays offline (no `fetch`/HTTP in `packages/core`)\n- [ ] Data changes go through `scripts/build-data.ts` and `SOURCES.md` (source + license)\n- [x] SKILL.md / README updated if behaviour changed\n",
     "dry": 0,
     "claimed_at": null,
-    "updated_at": "2026-10-25T13:18:33.115Z",
+    "updated_at": "2026-10-26T06:52:05.556Z",
     "blocked": null,
     "patch": "diff --git a/README.md b/README.md\nindex 90745c9..9e1d056 100644\n--- a/README.md\n+++ b/README.md\n@@ -162,7 +162,7 @@ Then point your client at it (it runs `docker run -i --rm vn-skills-mcp`):\n }\n ```\n \n-Other clients: use the generic `mcpServers` block above.\n+Other clients: use the generic `mcpServers` block above. AI agents (e.g. Cline) can follow [llms-install.md](llms-install.md).\n \n ## Library\n \ndiff --git a/README.vi.md b/README.vi.md\nindex 4d3cd81..ee0bcc3 100644\n--- a/README.vi.md\n+++ b/README.vi.md\n@@ -160,7 +160,7 @@ Sau đó trỏ client tới image (chạy `docker run -i --rm vn-skills-mcp`):\n }\n ```\n \n-Client khác: dùng khối `mcpServers` chung ở trên.\n+Client khác: dùng khối `mcpServers` chung ở trên. Agent AI (ví dụ Cline) có thể làm theo [llms-install.md](llms-install.md).\n \n ## Thư viện\n \ndiff --git a/llms-install.md b/llms-install.md\nnew file mode 100644\nindex 0000000..f17713a\n--- /dev/null\n+++ b/llms-install.md\n@@ -0,0 +1,39 @@\n+# Install the vn-skills MCP server\n+\n+vn-skills is an offline toolkit, not a payment gateway.\n+\n+## Requirements\n+\n+- Node.js 22+\n+- No accounts, API keys or environment variables. The server is offline.\n+\n+## Setup\n+\n+Add this to the MCP client config (runs over stdio):\n+\n+```json\n+{ \"mcpServers\": { \"vn-skills\": { \"command\": \"npx\", \"args\": [\"-y\", \"@vn-skills/mcp\"] } } }\n+```\n+\n+## Check that it works\n+\n+- The server prints `vn-skills MCP server running on stdio` to stderr.\n+- It lists 28 tools, grouped by skill (`vietqr`, `vn-address`, …).\n+\n+Example prompt: _\"tạo QR chuyển 500k vào VCB số tài khoản 0011001234567\"_ calls the `vietqr_build` tool.\n+\n+## Docker alternative\n+\n+```bash\n+docker build -t vn-skills-mcp .\n+```\n+\n+Then point the client at `docker run -i --rm vn-skills-mcp`:\n+\n+```json\n+{\n+  \"mcpServers\": {\n+    \"vn-skills\": { \"command\": \"docker\", \"args\": [\"run\", \"-i\", \"--rm\", \"vn-skills-mcp\"] }\n+  }\n+}\n+```\ndiff --git a/tests/readme.test.ts b/tests/readme.test.ts\nindex 0233aa2..c8ddb44 100644\n--- a/tests/readme.test.ts\n+++ b/tests/readme.test.ts\n@@ -246,3 +246,34 @@ describe.each(['README.md', 'README.vi.md', 'docs/quickstart.md', 'docs/quicksta\n     });\n   },\n );\n+\n+describe('llms-install.md', () => {\n+  const guide = (): string => read('llms-install.md');\n+  const block = (\n+    text: string,\n+  ): { mcpServers: Record<string, { command: string; args: string[] }> } => {\n+    const m = /```json\\n(\\{\\s*\"mcpServers\"[\\s\\S]*?\\})\\n```/.exec(text)!;\n+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return\n+    return JSON.parse(m[1]!);\n+  };\n+\n+  it('ends with a newline', () => {\n+    expect(guide().endsWith('\\n')).toBe(true);\n+  });\n+\n+  it('has an mcpServers block matching the README command/args', () => {\n+    const got = block(guide()).mcpServers['vn-skills']!;\n+    const want = block(read('README.md')).mcpServers['vn-skills']!;\n+    expect(got.command).toBe(want.command);\n+    expect(got.args).toEqual(want.args);\n+  });\n+\n+  it('states the tool count registered in server.ts', () => {\n+    const count = (server.match(/registerTool\\(/g) ?? []).length;\n+    expect(guide()).toMatch(new RegExp(`\\\\b${count} tools\\\\b`));\n+  });\n+\n+  it.each(['README.md', 'README.vi.md'])('%s links to llms-install.md', (file) => {\n+    expect(read(file)).toContain('llms-install.md');\n+  });\n+});\n",
     "repro_patch": "diff --git a/tests/readme.test.ts b/tests/readme.test.ts\nindex 0233aa2..c91a54d 100644\n--- a/tests/readme.test.ts\n+++ b/tests/readme.test.ts\n@@ -246,3 +246,33 @@ describe.each(['README.md', 'README.vi.md', 'docs/quickstart.md', 'docs/quicksta\n     });\n   },\n );\n+\n+describe('llms-install.md', () => {\n+  const guide = (): string => read('llms-install.md');\n+  const block = (\n+    text: string,\n+  ): { mcpServers: Record<string, { command: string; args: string[] }> } => {\n+    const m = /```json\\n(\\{\\s*\"mcpServers\"[\\s\\S]*?\\})\\n```/.exec(text)!;\n+    return JSON.parse(m[1]!);\n+  };\n+\n+  it('ends with a newline', () => {\n+    expect(guide().endsWith('\\n')).toBe(true);\n+  });\n+\n+  it('has an mcpServers block matching the README command/args', () => {\n+    const got = block(guide()).mcpServers['vn-skills']!;\n+    const want = block(read('README.md')).mcpServers['vn-skills']!;\n+    expect(got.command).toBe(want.command);\n+    expect(got.args).toEqual(want.args);\n+  });\n+\n+  it('states the tool count registered in server.ts', () => {\n+    const count = (server.match(/registerTool\\(/g) ?? []).length;\n+    expect(guide()).toMatch(new RegExp(`\\\\b${count} tools\\\\b`));\n+  });\n+\n+  it.each(['README.md', 'README.vi.md'])('%s links to llms-install.md', (file) => {\n+    expect(read(file)).toContain('llms-install.md');\n+  });\n+});\n",
@@ -2070,16 +2070,16 @@
     "issue_id": 49,
     "url": "https://github.com/beiryu/vn-skills/pull/195",
     "number": 195,
-    "state": "open",
+    "state": "merged",
     "last_seen_at": "2026-10-25T13:18:33.115Z",
     "opened_at": "2026-10-25T13:18:33.115Z",
     "head_sha": "ed9757e5780641d73064e91b2403ca1987634759",
-    "mergeable": "MERGEABLE",
+    "mergeable": "UNKNOWN",
     "ci_state": "success",
     "review_decision": "REVIEW_REQUIRED",
-    "snapshot_at": "2026-10-26T02:24:49.311Z",
+    "snapshot_at": "2026-10-26T06:52:05.555Z",
     "ci_seen_sha": null,
-    "merge_state": "BLOCKED"
+    "merge_state": "UNKNOWN"
    },
    {
     "issue_id": 50,
@@ -2089,12 +2089,12 @@
     "last_seen_at": "2026-10-26T02:24:17.850Z",
     "opened_at": "2026-10-26T02:24:17.850Z",
     "head_sha": "3740b72706431c47c5cf62ab49938d561fb33e33",
-    "mergeable": "MERGEABLE",
-    "ci_state": "pending",
+    "mergeable": "UNKNOWN",
+    "ci_state": "success",
     "review_decision": "REVIEW_REQUIRED",
-    "snapshot_at": "2026-10-26T02:24:51.313Z",
+    "snapshot_at": "2026-10-26T06:52:06.321Z",
     "ci_seen_sha": null,
-    "merge_state": "BLOCKED"
+    "merge_state": "UNKNOWN"
    }
   ],
   "pending_actions": [
