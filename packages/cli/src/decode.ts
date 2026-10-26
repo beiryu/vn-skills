@@ -14,15 +14,29 @@ export function decodeQrPng(
 ):
   | { ok: true; payload: string }
   | { ok: false; error: { code: string; message: string; hint?: string } } {
+  if (!file || !file.trim())
+    return {
+      ok: false,
+      error: {
+        code: 'EMPTY',
+        message: 'No image file given',
+        hint: 'Pass the path to a PNG file, e.g. vn-skills vietqr decode qr.png.',
+      },
+    };
   let png: PNG;
   try {
     png = PNG.sync.read(readFileSync(file));
   } catch (e) {
+    if ((e as NodeJS.ErrnoException).code === 'ENOENT')
+      return {
+        ok: false,
+        error: { code: 'READ_ERROR', message: `File "${file}" not found`, hint: 'Check the path.' },
+      };
     return {
       ok: false,
       error: {
         code: 'READ_ERROR',
-        message: `cannot read ${file} as PNG: ${(e as Error).message}`,
+        message: `cannot read "${file}" as PNG: ${(e as Error).message}`,
         hint: 'Only PNG images are supported; convert screenshots or JPEGs to PNG first.',
       },
     };

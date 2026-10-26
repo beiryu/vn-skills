@@ -124,6 +124,35 @@ describe('vn-skills CLI', () => {
     expect(r.code).not.toBe(0);
     expect(r.out + r.err).toMatch(/cannot read .* as PNG/);
   });
+  it('vietqr decode with an empty path reports EMPTY, not ENOENT', () => {
+    const r = run(['--json', 'vietqr', 'decode', '']);
+    expect(r.code).not.toBe(0);
+    const e = (r.json() as { error: { code: string; message: string; hint: string } }).error;
+    expect(e.code).toBe('EMPTY');
+    expect(e.message).toBe('No image file given');
+    expect(e.hint).toBe('Pass the path to a PNG file, e.g. vn-skills vietqr decode qr.png.');
+    expect(r.out).not.toMatch(/ENOENT/);
+  });
+  it('vietqr decode with a missing file names the file and says to check the path', () => {
+    const file = join(mkdtempSync(join(tmpdir(), 'vn-skills-')), 'does-not-exist.png');
+    const r = run(['--json', 'vietqr', 'decode', file]);
+    expect(r.code).not.toBe(0);
+    const e = (r.json() as { error: { code: string; message: string; hint: string } }).error;
+    expect(e.code).toBe('READ_ERROR');
+    expect(e.message).toBe(`File "${file}" not found`);
+    expect(e.hint).toBe('Check the path.');
+    expect(r.out).not.toMatch(/ENOENT/);
+  });
+  it('vietqr decode quotes the file name for an existing non-PNG file', () => {
+    const file = join(mkdtempSync(join(tmpdir(), 'vn-skills-')), 'note.txt');
+    writeFileSync(file, 'not an image');
+    const r = run(['--json', 'vietqr', 'decode', file]);
+    expect(r.code).not.toBe(0);
+    const e = (r.json() as { error: { code: string; message: string; hint: string } }).error;
+    expect(e.code).toBe('READ_ERROR');
+    expect(e.message).toContain(`"${file}"`);
+    expect(e.hint).toMatch(/Only PNG images are supported/);
+  });
   it('holidays year/check/add', () => {
     const y = run(['holidays', 'year', '2026', '--json']).json();
     expect(y.announced).toBe(true);

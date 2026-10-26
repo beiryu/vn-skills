@@ -73,7 +73,8 @@ export function buildVietQR(opts: BuildVietQROptions): Result<BuildVietQRData> {
   if (bank.deprecated)
     warnings.push(`${bank.shortName} is marked deprecated/merged in the bank list.`);
 
-  const account = String(opts.account ?? '').replace(/\s+/g, '');
+  const trimmedAccount = String(opts.account ?? '').trim();
+  const account = trimmedAccount.replace(/\s+/g, '');
   if (!/^[A-Za-z0-9]{1,19}$/.test(account)) {
     return fail(
       'INVALID_ACCOUNT',
@@ -81,6 +82,10 @@ export function buildVietQR(opts: BuildVietQROptions): Result<BuildVietQRData> {
       'Remove spaces and punctuation from the account number.',
     );
   }
+  if (account !== trimmedAccount)
+    warnings.push(
+      `Spaces removed from account "${trimmedAccount}" -> "${account}"; check the account number.`,
+    );
 
   let amount: number | undefined;
   if (opts.amount !== undefined && opts.amount !== null && String(opts.amount).trim() !== '') {
@@ -93,6 +98,10 @@ export function buildVietQR(opts: BuildVietQROptions): Result<BuildVietQRData> {
       );
     }
     amount = Number(raw);
+    if (/,/.test(String(opts.amount)))
+      warnings.push(
+        `Amount "${opts.amount}" was read as ${amount} VND; in Vietnamese ',' is the decimal mark. Pass plain digits to avoid ambiguity.`,
+      );
     if (amount <= 0) return fail('INVALID_AMOUNT', 'Amount must be greater than 0');
     if (String(amount).length > 13)
       return fail('INVALID_AMOUNT', 'Amount exceeds 13 digits allowed by EMVCo');

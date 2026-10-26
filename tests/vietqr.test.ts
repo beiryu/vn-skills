@@ -90,6 +90,24 @@ describe('buildVietQR', () => {
     const r = buildVietQR({ bank: 'VCB', account: '123', note: 'Thanh toán đơn hàng #42' });
     expect(r.ok && r.warnings.some((w) => w.includes('sanitized'))).toBe(true);
   });
+  it('warns when spaces are removed from the account', () => {
+    const r = buildVietQR({ bank: 'VCB', account: 'abc def' });
+    expect(r.ok && r.account).toBe('abcdef');
+    expect(r.ok && r.warnings).toContain(
+      'Spaces removed from account "abc def" -> "abcdef"; check the account number.',
+    );
+  });
+  it('warns for grouped account numbers', () => {
+    const r = buildVietQR({ bank: 'VCB', account: '0011 0012 34567' });
+    expect(r.ok && r.warnings).toContain(
+      'Spaces removed from account "0011 0012 34567" -> "0011001234567"; check the account number.',
+    );
+  });
+  it('does not warn for leading/trailing whitespace only', () => {
+    const r = buildVietQR({ bank: 'VCB', account: ' 0011001234567 ' });
+    expect(r.ok && r.account).toBe('0011001234567');
+    expect(r.ok && r.warnings).toEqual([]);
+  });
   it('truncates long notes', () => {
     const long = 'a'.repeat(40);
     const r = buildVietQR({ bank: 'VCB', account: '123', note: long });
@@ -133,6 +151,34 @@ describe('buildVietQR', () => {
   it('builds card service QR', () => {
     const r = buildVietQR({ bank: 'VCB', account: '9704360123456789', service: 'card' });
     expect(r.ok && r.payload.includes('QRIBFTTC')).toBe(true);
+  });
+  it('warns when a "," group separator is read as thousands', () => {
+    for (const [input, value] of [
+      ['1,000', 1000],
+      ['1,000,000', 1000000],
+    ] as const) {
+      const r = buildVietQR({ bank: 'VCB', account: '123', amount: input });
+      expect(r.ok).toBe(true);
+      if (!r.ok) return;
+      expect(r.amount).toBe(value);
+      const w = r.warnings.filter((x) => x.includes(`"${input}"`));
+      expect(w).toHaveLength(1);
+      expect(w[0]).toContain(String(value));
+    }
+  });
+  it('gives no amount warning for dot, plain, suffixed or number amounts', () => {
+    for (const amount of ['1.000.000', '1000000', '500000đ', 1000000]) {
+      const r = buildVietQR({ bank: 'VCB', account: '123', amount });
+      expect(r.ok).toBe(true);
+      if (!r.ok) return;
+      expect(r.warnings.filter((x) => /amount/i.test(x))).toEqual([]);
+    }
+  });
+  it('still rejects "1,5" as INVALID_AMOUNT', () => {
+    const r = buildVietQR({ bank: 'VCB', account: '123', amount: '1,5' });
+    expect(r.ok).toBe(false);
+    if (r.ok) return;
+    expect(r.error.code).toBe('INVALID_AMOUNT');
   });
   it('round-trips through parse', () => {
     const r = buildVietQR({

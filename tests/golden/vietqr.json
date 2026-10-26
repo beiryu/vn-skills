@@ -29,6 +29,17 @@
     "searchBanksFirst": [{ "name": "exact match first", "input": "vcb", "expected": { "bin": "970436" } }],
     "buildVietQR": [
       {
+        "name": "inner spaces in the account are removed with a warning",
+        "input": { "bank": "VCB", "account": "0011 0012 34567" },
+        "expected": {
+          "ok": true,
+          "account": "0011001234567",
+          "warnings": [
+            "Spaces removed from account \"0011 0012 34567\" -> \"0011001234567\"; check the account number."
+          ]
+        }
+      },
+      {
         "name": "reproduces the golden payload",
         "input": { "bank": "970423", "account": "mynamebvh", "amount": 50000, "note": "test" },
         "expected": {
@@ -52,6 +63,33 @@
         "name": "amount with comma separators",
         "input": { "bank": "VCB", "account": "123", "amount": "1,500,000" },
         "expected": { "ok": true, "amount": 1500000 }
+      },
+      {
+        "name": "comma-grouped amount 1,000 warns",
+        "input": { "bank": "VCB", "account": "123", "amount": "1,000" },
+        "expected": {
+          "ok": true,
+          "amount": 1000,
+          "warnings": [
+            "Amount \"1,000\" was read as 1000 VND; in Vietnamese ',' is the decimal mark. Pass plain digits to avoid ambiguity."
+          ]
+        }
+      },
+      {
+        "name": "comma-grouped amount 1,000,000 warns",
+        "input": { "bank": "VCB", "account": "123", "amount": "1,000,000" },
+        "expected": {
+          "ok": true,
+          "amount": 1000000,
+          "warnings": [
+            "Amount \"1,000,000\" was read as 1000000 VND; in Vietnamese ',' is the decimal mark. Pass plain digits to avoid ambiguity."
+          ]
+        }
+      },
+      {
+        "name": "dot-grouped amount 1.000.000 has no warning",
+        "input": { "bank": "VCB", "account": "123", "amount": "1.000.000" },
+        "expected": { "ok": true, "amount": 1000000, "warnings": [] }
       },
       {
         "name": "accepts 500.000",

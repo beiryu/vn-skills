@@ -78,6 +78,8 @@ Library use (TypeScript): `import { buildVietQR, parseVietQR, findBank } from '@
 
 - Writing the note with Vietnamese diacritics (many bank apps garble it).
 - Using the SWIFT code or the bank's 3-letter code as the BIN. The BIN is 6 digits starting with 9704/5460/4225/4587/9633.
+- Typing spaces inside the account number: they are removed (grouped numbers like `0011 0012 34567` are fine) and a warning shows both values; check the account.
+- Passing an amount with `,` separators such as `"1,000"`. It is accepted as 1000 VND, but in Vietnamese `,` is the decimal mark, so `buildVietQR` adds a warning naming the input and the value it was read as. Pass plain digits (`1000`) to avoid ambiguity.
 - Putting the amount in the note instead of tag 54.
 - Trusting a scanned payload without checking `crcValid`.
 - Promising payment confirmation. This skill only builds/validates QR offline; it is not a cổng thanh toán, so it cannot xác nhận (confirm) that a transfer arrived.
