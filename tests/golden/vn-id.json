@@ -166,6 +166,24 @@
         "expected": {
           "ok": false
         }
+      },
+      {
+        "input": "",
+        "expected": {
+          "ok": false,
+          "error": {
+            "code": "EMPTY"
+          }
+        }
+      },
+      {
+        "input": "   ",
+        "expected": {
+          "ok": false,
+          "error": {
+            "code": "EMPTY"
+          }
+        }
       }
     ]
   }
