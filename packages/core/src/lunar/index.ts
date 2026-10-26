@@ -92,7 +92,9 @@ export function parseDateInput(
   opts: { lunar?: boolean } = {},
 ): Result<{ day: number; month: number; year: number }> {
   const s = String(input ?? '').trim();
-  const hint = 'Use dd/mm/yyyy or yyyy-mm-dd.';
+  const hint = opts.lunar
+    ? 'Lunar dates use dd/mm/yyyy with day 1-30.'
+    : 'Use dd/mm/yyyy or yyyy-mm-dd.';
   let m = /^(\d{1,2})[/\-.](\d{1,2})[/\-.](\d{4})$/.exec(s);
   let day: number, month: number, year: number;
   if (m) {
@@ -116,7 +118,10 @@ export function parseDateInput(
         : 31;
   if (day < 1 || day > dim) {
     const mm = `${String(month).padStart(2, '0')}/${year}`;
-    return fail('INVALID_DATE', `Day ${day} is out of range for ${mm}`, hint);
+    const msg = opts.lunar
+      ? `Day ${day} is out of range for lunar month ${mm} (lunar months have 29 or 30 days)`
+      : `Day ${day} is out of range for ${mm}`;
+    return fail('INVALID_DATE', msg, hint);
   }
   return { ok: true, day, month, year };
 }
