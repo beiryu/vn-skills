@@ -1,6 +1,6 @@
 {
  "version": 1,
- "exported_at": "2026-10-26T10:00:59.992Z",
+ "exported_at": "2026-10-26T10:05:40.652Z",
  "tables": {
   "repos": [
    {
@@ -10,7 +10,7 @@
     "policy_status": null,
     "policy_excerpts": null,
     "block_reason": null,
-    "last_scanned": "2026-10-26T09:53:41.649Z"
+    "last_scanned": "2026-10-26T10:01:39.260Z"
    }
   ],
   "issues": [
@@ -1732,27 +1732,27 @@
     "title": "vn-number-format: return a distinct EMPTY error when parseAmount gets empty or blank input",
     "body": "## Problem\n\n`parseAmount` (`packages/core/src/numfmt/index.ts:140-142`) handles empty input the same way as any other input it can't parse. It returns the generic `INVALID_AMOUNT` error:\n\n```\n$ node packages/cli/dist/index.js --json numfmt parse \"\"\n{\"ok\":false,\"error\":{\"code\":\"INVALID_AMOUNT\",\"message\":\"Cannot parse amount \\\"\\\"\",\"hint\":\"Try \\\"1tr2\\\", \\\"500k\\\", \\\"1.200.000\\\"\"}}\n```\n\nThe other parsers now return a separate code for empty input: phone and tax ID (`EMPTY`, #114, #141), citizen ID (`EMPTY`, #214/#221) and name split (`EMPTY_NAME`):\n\n```\n$ node packages/cli/dist/index.js --json name split \"\"\n{\"ok\":false,\"error\":{\"code\":\"EMPTY_NAME\",\"message\":\"Name is empty\",\"hint\":\"Pass a non-empty full name\"}}\n```\n\nAn agent that branches on the error code can't tell \"nothing was given\" apart from \"the amount was typed wrong\".\n\n## Fix\n\nIn `parseAmount`, after `const raw = String(input ?? '')`, return `fail('EMPTY', 'Amount is empty', 'Pass a non-empty amount, e.g. \"1tr2\", \"500k\" or \"1.200.000\"')` when `raw.trim()` is empty. Use the same `EMPTY` code and message style as `packages/core/src/taxid` and `packages/core/src/id`. Input that is not empty but can't be parsed keeps `INVALID_AMOUNT`.\n\nIf the CLI `numfmt parse` command or the `vn_number_format` MCP tool (`packages/mcp/src/server.ts`) lists or documents error codes, add `EMPTY` there too. Do the same in `skills/vn-number-format/SKILL.md` if it lists error codes.\n\n## Acceptance\n\n- [ ] `parseAmount('')`, `parseAmount('   ')`, `parseAmount(null as any)` and `parseAmount(undefined as any)` return `{ ok: false, error: { code: 'EMPTY', message, hint } }`, and `hint` is not empty\n- [ ] `parseAmount('abc')` still returns `INVALID_AMOUNT`\n- [ ] Golden cases for `\"\"` and `\"   \"` → `EMPTY` added to `tests/golden/vn-number-format.json`, following the existing case format\n- [ ] A CLI test in `tests/cli.test.ts`: `--json numfmt parse \"\"` prints `code: \"EMPTY\"`\n- [ ] `pnpm build && pnpm typecheck && pnpm lint && pnpm exec vitest run && pnpm format:check` pass",
     "url": "https://github.com/beiryu/vn-skills/issues/222",
-    "state": "triaged",
+    "state": "pr_open",
     "score": 1,
     "triage_reason": "This is the last parser that still sends empty input to a generic error code. Phone, tax ID, ID and name were all fixed in the last few days, so this completes that work.",
     "attempts": 0,
     "skip_reason": null,
     "feedback": null,
-    "summary": null,
-    "base_sha": null,
-    "test_files": null,
-    "test_hashes": null,
-    "test_vars": null,
-    "branch": null,
-    "pr_title": null,
-    "pr_body": null,
+    "summary": "parseAmount returns EMPTY (message 'Amount is empty', non-empty hint) for empty/blank/null/undefined input; other bad input keeps INVALID_AMOUNT. Added golden cases, unit tests, CLI test and updated SKILL.md.",
+    "base_sha": "a79c8fd84b01c930b5a1fe0b4f188143a093e900",
+    "test_files": "[]",
+    "test_hashes": "{}",
+    "test_vars": "{}",
+    "branch": "fix/222-vn-number-format-return-a-distinct-empty",
+    "pr_title": "fix(vn-number-format): return EMPTY from parseAmount for blank input",
+    "pr_body": "## What & why\n\nCloses #222\n\n`parseAmount` returned `INVALID_AMOUNT` for empty or blank input. It now returns `EMPTY` with message `Amount is empty` and a non-empty hint, which matches the phone, tax ID, citizen ID and name parsers. Agents that branch on the error code can now tell \"nothing given\" from \"typed wrong\". Other unparseable input (for example `abc`) still returns `INVALID_AMOUNT`.\n\nChanged files: `packages/core/src/numfmt/index.ts`, `skills/vn-number-format/SKILL.md`, and the tests below. The CLI and MCP code needed no change.\n\nAcceptance:\n\n- [x] `parseAmount('')`, `'   '`, `null` and `undefined` return `{ ok: false, error: { code: 'EMPTY', message, hint } }` with a non-empty hint\n- [x] `parseAmount('abc')` still returns `INVALID_AMOUNT`\n- [x] Golden cases for `\"\"` and `\"   \"` added to `tests/golden/vn-number-format.json`\n- [x] CLI test in `tests/cli.test.ts`: `--json numfmt parse \"\"` prints `code: \"EMPTY\"`\n- [x] `pnpm build && pnpm typecheck && pnpm lint && pnpm exec vitest run && pnpm format:check` pass\n\nTests: golden cases in `tests/golden/vn-number-format.json`, unit cases in `tests/vn-number-format.test.ts`, and the CLI case in `tests/cli.test.ts`.\n\n## Checklist\n\n- [x] Title follows Conventional Commits (`feat|fix|docs|data|test|refactor|perf|build|ci|chore(scope): …`)\n- [x] Tests added or updated (golden test for every bug fix)\n- [x] `pnpm build && pnpm typecheck && pnpm lint && pnpm test && pnpm format:check` pass locally\n- [x] Core stays offline (no `fetch`/HTTP in `packages/core`)\n- [x] Data changes go through `scripts/build-data.ts` and `SOURCES.md` (source + license) (no data changes)\n- [x] SKILL.md / README updated if behaviour changed\n",
     "dry": 0,
     "claimed_at": null,
-    "updated_at": "2026-10-26T10:00:56.224Z",
+    "updated_at": "2026-10-26T10:05:38.766Z",
     "blocked": null,
-    "patch": null,
+    "patch": "diff --git a/packages/core/src/numfmt/index.ts b/packages/core/src/numfmt/index.ts\nindex 9917ada..6cacd78 100644\n--- a/packages/core/src/numfmt/index.ts\n+++ b/packages/core/src/numfmt/index.ts\n@@ -138,6 +138,13 @@ function plainNumber(s: string): number | null {\n  */\n export function parseAmount(input: string): AmountResult {\n   const raw = String(input ?? '');\n+  if (raw.trim() === '') {\n+    return fail(\n+      'EMPTY',\n+      'Amount is empty',\n+      'Pass a non-empty amount, e.g. \"1tr2\", \"500k\" or \"1.200.000\"',\n+    );\n+  }\n   const bad = (hint = 'Try \"1tr2\", \"500k\", \"1.200.000\"') =>\n     fail<{ value: number }>('INVALID_AMOUNT', `Cannot parse amount \"${raw}\"`, hint);\n   let s = raw\ndiff --git a/skills/vn-number-format/SKILL.md b/skills/vn-number-format/SKILL.md\nindex b9b3967..8d140e2 100644\n--- a/skills/vn-number-format/SKILL.md\n+++ b/skills/vn-number-format/SKILL.md\n@@ -29,7 +29,7 @@ MCP tool: `vn_number_format` (`mode`: number, vnd, compact, date, parse).\n - Suffixes `đ`, `₫`, `đồng`, `vnd` are ignored.\n - `,` is always the decimal mark: `1,5` = 1.5, `1,50` = 1.5.\n - Ambiguous `1.500`: a lone `.` followed by exactly 3-digit groups is a **thousands separator** (= 1500). Use `1,5k` or `1,5` for decimals.\n-- Invalid input (`1..2`, `abc`, empty) returns an error.\n+- Empty or blank input returns `EMPTY`; other invalid input (`1..2`, `abc`) returns `INVALID_AMOUNT`.\n \n ## Common mistakes\n \ndiff --git a/tests/cli.test.ts b/tests/cli.test.ts\nindex 8998e50..14103b7 100644\n--- a/tests/cli.test.ts\n+++ b/tests/cli.test.ts\n@@ -37,6 +37,11 @@ describe('vn-skills CLI', () => {\n     expect(run(['--version']).out.trim()).toBe(pkg('cli'));\n     expect(VERSION).toBe(pkg('core'));\n   });\n+  it('numfmt parse \"\" reports EMPTY', () => {\n+    const r = run(['--json', 'numfmt', 'parse', '']);\n+    expect(r.json()).toMatchObject({ ok: false, error: { code: 'EMPTY' } });\n+  });\n+\n   it('id parse \"\" reports EMPTY', () => {\n     const r = run(['--json', 'id', 'parse', '']);\n     expect(r.json()).toMatchObject({ ok: false, error: { code: 'EMPTY' } });\ndiff --git a/tests/golden/vn-number-format.json b/tests/golden/vn-number-format.json\nindex da257db..2155481 100644\n--- a/tests/golden/vn-number-format.json\n+++ b/tests/golden/vn-number-format.json\n@@ -1 +1 @@\n-{\"skill\": \"vn-number-format\", \"cases\": {\"formatNumber\": [{\"input\": 1234567.89, \"expected\": \"1.234.567,89\"}, {\"input\": 1234567, \"expected\": \"1.234.567\"}, {\"input\": 0, \"expected\": \"0\"}, {\"input\": 999, \"expected\": \"999\"}, {\"input\": 1000, \"expected\": \"1.000\"}, {\"input\": -1234.5, \"expected\": \"-1.234,5\"}, {\"input\": 0.5, \"expected\": \"0,5\"}], \"formatVnd\": [{\"input\": 1200000, \"expected\": \"1.200.000 ₫\"}, {\"input\": 0, \"expected\": \"0 ₫\"}, {\"input\": 500, \"expected\": \"500 ₫\"}], \"formatCompactVnd\": [{\"input\": 1200000, \"expected\": \"1,2 triệu\"}, {\"input\": 1500000000, \"expected\": \"1,5 tỷ\"}, {\"input\": 500000, \"expected\": \"500 nghìn\"}], \"formatDate\": [{\"input\": \"2025-01-29\", \"expected\": \"29/01/2025\"}, {\"input\": \"2024-03-05\", \"expected\": \"05/03/2024\"}, {\"input\": \"5/3/2024\", \"expected\": \"05/03/2024\"}, {\"input\": \"0050-01-01\", \"expected\": \"01/01/0050\"}, {\"input\": \"29/02/0004\", \"expected\": \"29/02/0004\"}, {\"input\": \"0003-02-29\", \"expected\": null}], \"parseAmount\": [{\"input\": \"1tr2\", \"expected\": 1200000}, {\"input\": \"500k\", \"expected\": 500000}, {\"input\": \"1,5 tỷ\", \"expected\": 1500000000}, {\"input\": \"1.500\", \"expected\": 1500}, {\"input\": \"1,50\", \"expected\": 1.5}, {\"input\": \"1.234.567,89\", \"expected\": 1234567.89}], \"formatNumberLarge\": [{\"input\": 1e21, \"expected\": \"1.000.000.000.000.000.000.000\"}, {\"input\": -1e21, \"expected\": \"-1.000.000.000.000.000.000.000\"}], \"formatNumberRounding\": [{\"input\": {\"value\": 2.675, \"maxFractionDigits\": 2}, \"expected\": \"2,68\"}, {\"input\": {\"value\": 1.005, \"maxFractionDigits\": 2}, \"expected\": \"1,01\"}, {\"input\": {\"value\": -2.675, \"maxFractionDigits\": 2}, \"expected\": \"-2,68\"}, {\"input\": {\"value\": 0.5, \"maxFractionDigits\": 0}, \"expected\": \"1\"}, {\"input\": {\"value\": -0.004, \"maxFractionDigits\": 2}, \"expected\": \"0\"}, {\"input\": {\"value\": 1e25}, \"expected\": \"10.000.000.000.000.000.905.969.664\"}]}}\n+{\"skill\": \"vn-number-format\", \"cases\": {\"formatNumber\": [{\"input\": 1234567.89, \"expected\": \"1.234.567,89\"}, {\"input\": 1234567, \"expected\": \"1.234.567\"}, {\"input\": 0, \"expected\": \"0\"}, {\"input\": 999, \"expected\": \"999\"}, {\"input\": 1000, \"expected\": \"1.000\"}, {\"input\": -1234.5, \"expected\": \"-1.234,5\"}, {\"input\": 0.5, \"expected\": \"0,5\"}], \"formatVnd\": [{\"input\": 1200000, \"expected\": \"1.200.000 ₫\"}, {\"input\": 0, \"expected\": \"0 ₫\"}, {\"input\": 500, \"expected\": \"500 ₫\"}], \"formatCompactVnd\": [{\"input\": 1200000, \"expected\": \"1,2 triệu\"}, {\"input\": 1500000000, \"expected\": \"1,5 tỷ\"}, {\"input\": 500000, \"expected\": \"500 nghìn\"}], \"formatDate\": [{\"input\": \"2025-01-29\", \"expected\": \"29/01/2025\"}, {\"input\": \"2024-03-05\", \"expected\": \"05/03/2024\"}, {\"input\": \"5/3/2024\", \"expected\": \"05/03/2024\"}, {\"input\": \"0050-01-01\", \"expected\": \"01/01/0050\"}, {\"input\": \"29/02/0004\", \"expected\": \"29/02/0004\"}, {\"input\": \"0003-02-29\", \"expected\": null}], \"parseAmount\": [{\"input\": \"1tr2\", \"expected\": 1200000}, {\"input\": \"500k\", \"expected\": 500000}, {\"input\": \"1,5 tỷ\", \"expected\": 1500000000}, {\"input\": \"1.500\", \"expected\": 1500}, {\"input\": \"1,50\", \"expected\": 1.5}, {\"input\": \"1.234.567,89\", \"expected\": 1234567.89}], \"parseAmountErrors\": [{\"input\": \"\", \"expected\": {\"ok\": false, \"error\": {\"code\": \"EMPTY\"}}}, {\"input\": \"   \", \"expected\": {\"ok\": false, \"error\": {\"code\": \"EMPTY\"}}}], \"formatNumberLarge\": [{\"input\": 1e21, \"expected\": \"1.000.000.000.000.000.000.000\"}, {\"input\": -1e21, \"expected\": \"-1.000.000.000.000.000.000.000\"}], \"formatNumberRounding\": [{\"input\": {\"value\": 2.675, \"maxFractionDigits\": 2}, \"expected\": \"2,68\"}, {\"input\": {\"value\": 1.005, \"maxFractionDigits\": 2}, \"expected\": \"1,01\"}, {\"input\": {\"value\": -2.675, \"maxFractionDigits\": 2}, \"expected\": \"-2,68\"}, {\"input\": {\"value\": 0.5, \"maxFractionDigits\": 0}, \"expected\": \"1\"}, {\"input\": {\"value\": -0.004, \"maxFractionDigits\": 2}, \"expected\": \"0\"}, {\"input\": {\"value\": 1e25}, \"expected\": \"10.000.000.000.000.000.905.969.664\"}]}}\ndiff --git a/tests/vn-number-format.test.ts b/tests/vn-number-format.test.ts\nindex d9627e8..52c4dae 100644\n--- a/tests/vn-number-format.test.ts\n+++ b/tests/vn-number-format.test.ts\n@@ -10,6 +10,7 @@ import {\n import { loadGolden, title } from './golden.js';\n \n const golden = loadGolden<{\n+  parseAmountErrors: { input: string; expected: object }[];\n   formatNumberLarge: { input: number; expected: string }[];\n   formatNumberRounding: {\n     input: { value: number; maxFractionDigits?: number };\n@@ -210,10 +211,23 @@ describe('non-string input (untyped callers)', () => {\n     expect(parseAmount(5 as any)).toEqual({ ok: true, value: 5 });\n   });\n \n-  it.each([null, undefined])('parseAmount(%s) returns INVALID_AMOUNT', (v) => {\n+  it.each([null, undefined])('parseAmount(%s) returns EMPTY', (v) => {\n     const r = parseAmount(v as any);\n     expect(r.ok).toBe(false);\n+    if (!r.ok) {\n+      expect(r.error.code).toBe('EMPTY');\n+      expect(r.error.hint).toBeTruthy();\n+    }\n+  });\n+\n+  it('parseAmount(\"abc\") keeps INVALID_AMOUNT', () => {\n+    const r = parseAmount('abc');\n     if (!r.ok) expect(r.error.code).toBe('INVALID_AMOUNT');\n+    else throw new Error('expected failure');\n+  });\n+\n+  it.each(golden.parseAmountErrors.map((c) => [title(c), c] as const))('golden %s', (_, c) => {\n+    expect(parseAmount(c.input)).toMatchObject(c.expected);\n   });\n \n   it.each([null, undefined, 20250101])('formatDate(%s) returns INVALID_DATE', (v) => {\n",
     "repro_patch": null,
-    "repro_notes": null
+    "repro_notes": "parseAmount('') / blank / null / undefined and the CLI `numfmt parse \"\"` return INVALID_AMOUNT instead of EMPTY, so the new tests fail. The 'abc' -> INVALID_AMOUNT test passes now, as intended."
    }
   ],
   "prs": [
@@ -2475,6 +2475,21 @@
     "snapshot_at": "2026-10-26T09:52:33.382Z",
     "ci_seen_sha": null,
     "merge_state": "UNKNOWN"
+   },
+   {
+    "issue_id": 60,
+    "url": "https://github.com/beiryu/vn-skills/pull/224",
+    "number": 224,
+    "state": "open",
+    "last_seen_at": "2026-10-26T10:05:38.766Z",
+    "opened_at": "2026-10-26T10:05:38.766Z",
+    "head_sha": null,
+    "mergeable": null,
+    "ci_state": null,
+    "review_decision": null,
+    "snapshot_at": null,
+    "ci_seen_sha": null,
+    "merge_state": null
    }
   ],
   "pending_actions": [
@@ -7931,6 +7946,62 @@
     "ok": 1,
     "result_json": "{\"parsed\":{\"issues\":[{\"title\":\"vn-number-format: return a distinct EMPTY error when parseAmount gets empty or blank input\",\"body\":\"## Problem\\n\\n`parseAmount` (`packages/core/src/numfmt/index.ts:140-142`) handles empty input the same way as any other input it can't parse. It returns the generic `INVALID_AMOUNT` error:\\n\\n```\\n$ node packages/cli/dist/index.js --json numfmt parse \\\"\\\"\\n{\\\"ok\\\":false,\\\"error\\\":{\\\"code\\\":\\\"INVALID_AMOUNT\\\",\\\"message\\\":\\\"Cannot parse amount \\\\\\\"\\\\\\\"\\\",\\\"hint\\\":\\\"Try \\\\\\\"1tr2\\\\\\\", \\\\\\\"500k\\\\\\\", \\\\\\\"1.200.000\\\\\\\"\\\"}}\\n```\\n\\nThe other parsers now return a separate code for empty input: phone and tax ID (`EMPTY`, #114, #141), citizen ID (`EMPTY`, #214/#221) and name split (`EMPTY_NAME`):\\n\\n```\\n$ node packages/cli/dist/index.js --json name split \\\"\\\"\\n{\\\"ok\\\":false,\\\"error\\\":{\\\"code\\\":\\\"EMPTY_NAME\\\",\\\"message\\\":\\\"Name is empty\\\",\\\"hint\\\":\\\"Pass a non-empty full name\\\"}}\\n```\\n\\nAn agent that branches on the error code can't tell \\\"nothing was given\\\" apart from \\\"the amount was typed wrong\\\".\\n\\n## Fix\\n\\nIn `parseAmount`, after `const raw = String(input ?? '')`, return `fail('EMPTY', 'Amount is empty', 'Pass a non-empty amount, e.g. \\\"1tr2\\\", \\\"500k\\\" or \\\"1.200.000\\\"')` when `raw.trim()` is empty. Use the same `EMPTY` code and message style as `packages/core/src/taxid` and `packages/core/src/id`. Input that is not empty but can't be parsed keeps `INVALID_AMOUNT`.\\n\\nIf the CLI `numfmt parse` command or the `vn_number_format` MCP tool (`packages/m",
     "models": "claude-opus-5.5"
+   },
+   {
+    "id": 384,
+    "run_id": "b2ea8a98-9159-4595-b42d-16e2a347ab90",
+    "issue_id": 60,
+    "agent": "reproducer",
+    "started_at": "2026-10-26T10:01:39.491Z",
+    "duration_ms": 48106,
+    "input_tokens": 98340,
+    "output_tokens": 2439,
+    "cost_usd": 0.0756032,
+    "ok": 1,
+    "result_json": "{\"parsed\":{\"reproduced\":true,\"testFiles\":[\"tests/vn-number-format.test.ts\",\"tests/number-format-golden.test.ts\",\"tests/cli.test.ts\",\"tests/golden/vn-number-format.json\"],\"testVars\":{\"file\":\"tests/vn-number-format.test.ts tests/number-format-golden.test.ts tests/cli.test.ts\"},\"notes\":\"parseAmount('') / blank / null / undefined and the CLI `numfmt parse \\\"\\\"` return INVALID_AMOUNT instead of EMPTY, so the new tests fail. The 'abc' -> INVALID_AMOUNT test passes now, as intended.\"},\"result\":\"Suites failed to load; likely packages not built. Run the full command.\\n\\nFour new unit tests fail and the 91 existing ones still pass. I did not run lint or the format check; I ran prettier on the three `.ts` test files.\\n\\nThe new tests fail for the issue's reason: on this base, `parseAmount` returns `INVALID_AMOUNT` where the issue wants `EMPTY`.\\n\\nAdded tests:\\n- **`tests/vn-number-format.test.ts`:**\\n  - `''`, `'   '`, `null` and `undefined` must return `EMPTY` with a non-empty hint.\\n  - `'abc'` must keep `INVALID_AMOUNT`. This one passes now, as intended.\\n- **`tests/golden/vn-number-format.json` and `tests/number-format-golden.test.ts`:** two `parseAmount` golden cases, `\\\"\\\"` and `\\\"   \\\"`, expecting `EMPTY`. The golden test file now has a block that checks them.\\n- **`tests/cli.test.ts`:** `--json numfmt parse \\\"\\\"` must print `code: \\\"EMPTY\\\"`.\\n\\nI ran `tests/number-format-golden.test.ts` and `tests/cli.test.ts` together; 3 tests failed there and 75 passed.\\n\\n```json\\n{\\\"reprod",
+    "models": "claude-sonnet-5.5"
+   },
+   {
+    "id": 385,
+    "run_id": "b2ea8a98-9159-4595-b42d-16e2a347ab90",
+    "issue_id": 60,
+    "agent": "coder",
+    "started_at": "2026-10-26T10:02:28.037Z",
+    "duration_ms": 80490,
+    "input_tokens": 230371,
+    "output_tokens": 3869,
+    "cost_usd": 0.1159237,
+    "ok": 1,
+    "result_json": "{\"parsed\":{\"done\":true,\"summary\":\"parseAmount returns EMPTY (message 'Amount is empty', non-empty hint) for empty/blank/null/undefined input; other bad input keeps INVALID_AMOUNT. Added golden cases, unit tests, CLI test and updated SKILL.md.\",\"filesChanged\":[\"packages/core/src/numfmt/index.ts\",\"skills/vn-number-format/SKILL.md\",\"tests/cli.test.ts\",\"tests/golden/vn-number-format.json\",\"tests/vn-number-format.test.ts\"],\"testWrong\":false},\"result\":\"`parseAmount` now returns `EMPTY` for empty, blank, `null` and `undefined` input, with the message \\\"Amount is empty\\\" and a non-empty hint. `parseAmount('abc')` still returns `INVALID_AMOUNT`. Build, typecheck, lint, the full test run (1166 tests) and the format check all pass. I didn't commit.\\n\\n- **Core:** the check is in `packages/core/src/numfmt/index.ts`.\\n- **Tests:**\\n  - The existing `null`/`undefined` test now expects `EMPTY` and a non-empty hint.\\n  - A new test covers `'abc'` keeping `INVALID_AMOUNT`.\\n  - Two golden cases (`\\\"\\\"` and `\\\"   \\\"`) are in `tests/golden/vn-number-format.json`.\\n  - `tests/cli.test.ts` has a test that `--json numfmt parse \\\"\\\"` prints `code: \\\"EMPTY\\\"`.\\n- **Docs:** `skills/vn-number-format/SKILL.md` now says empty or blank input returns `EMPTY`, and other invalid input returns `INVALID_AMOUNT`.\\n\\nI didn't touch the CLI command or `packages/mcp/src/server.ts`, because I didn't check whether they list error codes. I only grepped `INVALID_AMOUNT` across the repo, and neither file appeared in t",
+    "models": "claude-sonnet-5.5"
+   },
+   {
+    "id": 386,
+    "run_id": "b2ea8a98-9159-4595-b42d-16e2a347ab90",
+    "issue_id": 60,
+    "agent": "reviewer",
+    "started_at": "2026-10-26T10:04:38.209Z",
+    "duration_ms": 20344,
+    "input_tokens": 86172,
+    "output_tokens": 2084,
+    "cost_usd": 0.0735628,
+    "ok": 1,
+    "result_json": "{\"parsed\":{\"verdict\":\"approve\",\"reasons\":[],\"redoTest\":false,\"retryable\":true},\"result\":\"The patch looks mergeable as it stands. I read the diff and the CLI and MCP call sites but did not run the build, typecheck, lint or tests.\\n\\n- **Behaviour:** `parseAmount` now returns `EMPTY` with a non-empty hint when the trimmed input is blank. That covers `''`, whitespace, `null` and `undefined`. Unparseable input such as `abc` still returns `INVALID_AMOUNT`.\\n- **CLI and MCP:** Both pass the result straight through, so `numfmt parse \\\"\\\"` now prints `EMPTY`. Neither lists error codes, so nothing needed adding there.\\n- **Docs:** The `SKILL.md` line now matches the code.\\n- **Tests:**\\n  - New golden cases for `\\\"\\\"` and `\\\"   \\\"` under `parseAmountErrors`, run by the existing test file.\\n  - Unit tests for `null` and `undefined` that also check the hint is set.\\n  - A test that `abc` keeps `INVALID_AMOUNT`.\\n  - A CLI test for `--json numfmt parse \\\"\\\"`.\\n- **Scope:** The diff touches only what the issue asks for, with no data, workflow or ROADMAP edits.\\n\\n```json\\n{\\\"verdict\\\": \\\"approve\\\", \\\"reasons\\\": [], \\\"redoTest\\\": false, \\\"retryable\\\": true}\\n```\\n\"}",
+    "models": "claude-sonnet-5.5"
+   },
+   {
+    "id": 387,
+    "run_id": "b2ea8a98-9159-4595-b42d-16e2a347ab90",
+    "issue_id": 60,
+    "agent": "pr-writer",
+    "started_at": "2026-10-26T10:04:58.654Z",
+    "duration_ms": 10978,
+    "input_tokens": 29825,
+    "output_tokens": 1258,
+    "cost_usd": 0.0341531,
+    "ok": 1,
+    "result_json": "{\"parsed\":{\"title\":\"fix(vn-number-format): return EMPTY from parseAmount for blank input\",\"body\":\"## What & why\\n\\nCloses #222\\n\\n`parseAmount` returned `INVALID_AMOUNT` for empty or blank input. It now returns `EMPTY` with message `Amount is empty` and a non-empty hint, which matches the phone, tax ID, citizen ID and name parsers. Agents that branch on the error code can now tell \\\"nothing given\\\" from \\\"typed wrong\\\". Other unparseable input (for example `abc`) still returns `INVALID_AMOUNT`.\\n\\nChanged files: `packages/core/src/numfmt/index.ts`, `skills/vn-number-format/SKILL.md`, and the tests below. The CLI and MCP code needed no change.\\n\\nAcceptance:\\n\\n- [x] `parseAmount('')`, `'   '`, `null` and `undefined` return `{ ok: false, error: { code: 'EMPTY', message, hint } }` with a non-empty hint\\n- [x] `parseAmount('abc')` still returns `INVALID_AMOUNT`\\n- [x] Golden cases for `\\\"\\\"` and `\\\"   \\\"` added to `tests/golden/vn-number-format.json`\\n- [x] CLI test in `tests/cli.test.ts`: `--json numfmt parse \\\"\\\"` prints `code: \\\"EMPTY\\\"`\\n- [x] `pnpm build && pnpm typecheck && pnpm lint && pnpm exec vitest run && pnpm format:check` pass\\n\\nTests: golden cases in `tests/golden/vn-number-format.json`, unit cases in `tests/vn-number-format.test.ts`, and the CLI case in `tests/cli.test.ts`.\\n\\n## Checklist\\n\\n- [x] Title follows Conventional Commits (`feat|fix|docs|data|test|refactor|perf|build|ci|chore(scope): …`)\\n- [x] Tests added or updated (golden test for every bug fix)\\n- ",
+    "models": "claude-sonnet-5.5"
    }
   ],
   "proposals": [
