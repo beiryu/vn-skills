@@ -152,6 +152,34 @@ describe('buildVietQR', () => {
     const r = buildVietQR({ bank: 'VCB', account: '9704360123456789', service: 'card' });
     expect(r.ok && r.payload.includes('QRIBFTTC')).toBe(true);
   });
+  it('warns when a "," group separator is read as thousands', () => {
+    for (const [input, value] of [
+      ['1,000', 1000],
+      ['1,000,000', 1000000],
+    ] as const) {
+      const r = buildVietQR({ bank: 'VCB', account: '123', amount: input });
+      expect(r.ok).toBe(true);
+      if (!r.ok) return;
+      expect(r.amount).toBe(value);
+      const w = r.warnings.filter((x) => x.includes(`"${input}"`));
+      expect(w).toHaveLength(1);
+      expect(w[0]).toContain(String(value));
+    }
+  });
+  it('gives no amount warning for dot, plain, suffixed or number amounts', () => {
+    for (const amount of ['1.000.000', '1000000', '500000đ', 1000000]) {
+      const r = buildVietQR({ bank: 'VCB', account: '123', amount });
+      expect(r.ok).toBe(true);
+      if (!r.ok) return;
+      expect(r.warnings.filter((x) => /amount/i.test(x))).toEqual([]);
+    }
+  });
+  it('still rejects "1,5" as INVALID_AMOUNT', () => {
+    const r = buildVietQR({ bank: 'VCB', account: '123', amount: '1,5' });
+    expect(r.ok).toBe(false);
+    if (r.ok) return;
+    expect(r.error.code).toBe('INVALID_AMOUNT');
+  });
   it('round-trips through parse', () => {
     const r = buildVietQR({
       bank: 'MB',
