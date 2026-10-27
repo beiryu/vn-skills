@@ -1,6 +1,7 @@
 import { Command } from 'commander';
 import {
   lunarInfo,
+  lunarMonthCalendar,
   lunarToSolar,
   parseDateInput,
   holidays,
@@ -36,6 +37,31 @@ export function registerLunar(program: Command): void {
             ['Solar term', r.solarTerm],
           ]) + '\n',
         );
+    });
+
+  cmd
+    .command('month <month>')
+    .description('Month calendar (mm/yyyy or yyyy-mm): lunar dates, can chi, solar terms, holidays')
+    .action((arg: string, _o, c: Command) => {
+      const m = /^(\d{1,2})[/-](\d{4})$/.exec(arg.trim()) ?? /^(\d{4})-(\d{1,2})$/.exec(arg.trim());
+      if (!m)
+        failExit(c, {
+          code: 'INVALID_DATE',
+          message: `Cannot parse month "${arg}"`,
+          hint: 'Use mm/yyyy or yyyy-mm.',
+        });
+      const iso = /^\d{4}/.test(m[1]!);
+      const r = lunarMonthCalendar(Number(iso ? m[2] : m[1]), Number(iso ? m[1] : m[2]));
+      if (!r.ok) failExit(c, r.error);
+      if (wantsJson(c)) printJson(r);
+      else
+        for (const d of r.days) {
+          const l = `${d.lunar.day}/${d.lunar.month}${d.lunar.leap ? 'n' : ''}`;
+          const extra = [d.solarTerm, ...d.holidays].filter(Boolean).join('; ');
+          process.stdout.write(
+            `${d.date}  ${d.weekday.padEnd(9)}  ${l.padEnd(6)}  ${d.dayCanChi.padEnd(9)}${extra ? `  ${extra}` : ''}\n`,
+          );
+        }
     });
 
   cmd
