@@ -67,7 +67,7 @@ Library use (TypeScript): `import { buildVietQR, parseVietQR, findBank } from '@
 
 ## Rules and gotchas
 
-- **Amount is integer VND.** "500k" means 500000; "1,5 triệu" means 1500000. The CLI rejects decimals.
+- **Amount is integer VND.** "500k" means 500000; "1,5 triệu" means 1500000. The CLI rejects decimals and shorthand: convert first (e.g. `vn-skills numfmt parse 500k`), then pass the plain integer to `--amount`.
 - **Note is sanitized**: diacritics removed, only `A-Z a-z 0-9` and spaces, max 25 characters. Tell the user if it was changed (see `warnings`).
 - **Do not invent BINs.** If the bank is unknown, run `vietqr banks <query>` and ask the user to pick.
 - The CRC (tag 63) is CRC-16/CCITT-FALSE over the payload up to and including `6304`. The tool computes it; do not edit the payload after building.

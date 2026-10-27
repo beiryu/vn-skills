@@ -10,6 +10,7 @@ import {
 import { loadGolden, title } from './golden.js';
 
 const golden = loadGolden<{
+  parseAmountErrors: { input: string; expected: object }[];
   formatNumberLarge: { input: number; expected: string }[];
   formatNumberRounding: {
     input: { value: number; maxFractionDigits?: number };
@@ -210,10 +211,23 @@ describe('non-string input (untyped callers)', () => {
     expect(parseAmount(5 as any)).toEqual({ ok: true, value: 5 });
   });
 
-  it.each([null, undefined])('parseAmount(%s) returns INVALID_AMOUNT', (v) => {
+  it.each([null, undefined])('parseAmount(%s) returns EMPTY', (v) => {
     const r = parseAmount(v as any);
     expect(r.ok).toBe(false);
+    if (!r.ok) {
+      expect(r.error.code).toBe('EMPTY');
+      expect(r.error.hint).toBeTruthy();
+    }
+  });
+
+  it('parseAmount("abc") keeps INVALID_AMOUNT', () => {
+    const r = parseAmount('abc');
     if (!r.ok) expect(r.error.code).toBe('INVALID_AMOUNT');
+    else throw new Error('expected failure');
+  });
+
+  it.each(golden.parseAmountErrors.map((c) => [title(c), c] as const))('golden %s', (_, c) => {
+    expect(parseAmount(c.input)).toMatchObject(c.expected);
   });
 
   it.each([null, undefined, 20250101])('formatDate(%s) returns INVALID_DATE', (v) => {
