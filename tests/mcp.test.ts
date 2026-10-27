@@ -24,6 +24,19 @@ describe('vn-skills MCP server', () => {
     await client.close();
   });
 
+  it('vn_holidays_count_working_days', async () => {
+    const ok = await client.callTool({
+      name: 'vn_holidays_count_working_days',
+      arguments: { from: '2026-02-10', to: '2026-03-02' },
+    });
+    expect(ok.isError).toBeFalsy();
+    const bad = await client.callTool({
+      name: 'vn_holidays_count_working_days',
+      arguments: { from: '2026-02-10', to: 'nope' },
+    });
+    expect(bad.isError).toBe(true);
+  });
+
   it('lists the expected tools', async () => {
     const { tools } = await client.listTools();
     const names = tools.map((t) => t.name).sort();
@@ -55,6 +68,7 @@ describe('vn-skills MCP server', () => {
         'vn_einvoice_example',
         'vn_name',
         'vn_holidays_add_working_days',
+        'vn_holidays_count_working_days',
         'vn_holidays_is_working_day',
         'vn_holidays_year',
         'vn_phone',

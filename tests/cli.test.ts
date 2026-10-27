@@ -158,6 +158,16 @@ describe('vn-skills CLI', () => {
     expect(e.message).toContain(`"${file}"`);
     expect(e.hint).toMatch(/Only PNG images are supported/);
   });
+  it('holidays count', () => {
+    expect(run(['holidays', 'count', '2026-02-10', '2026-03-02', '--json']).json()).toMatchObject({
+      from: '2026-02-10',
+      to: '2026-03-02',
+      certain: true,
+    });
+    const bad = run(['holidays', 'count', '2026-02-10', 'nope', '--json']);
+    expect(bad.code).not.toBe(0);
+    expect(bad.json()).toMatchObject({ ok: false });
+  });
   it('holidays year/check/add', () => {
     const y = run(['holidays', 'year', '2026', '--json']).json();
     expect(y.announced).toBe(true);

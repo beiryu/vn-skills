@@ -86,7 +86,7 @@ Hoặc trong cấu hình MCP bất kỳ:
 { "mcpServers": { "vn-skills": { "command": "npx", "args": ["-y", "@vn-skills/mcp"] } } }
 ```
 
-Server cung cấp 29 tool, nhóm theo skill:
+Server cung cấp 30 tool, nhóm theo skill:
 
 | Skill              | Tool                                                                                                                                           |
 | ------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -95,7 +95,7 @@ Server cung cấp 29 tool, nhóm theo skill:
 | `vn-tax-id`        | `vn_tax_id_validate`, `vn_tax_id_check_digit`                                                                                                  |
 | `vn-id`            | `vn_id_parse`                                                                                                                                  |
 | `vn-phone`         | `vn_phone`                                                                                                                                     |
-| `vn-holidays`      | `vn_holidays_year`, `vn_holidays_is_working_day`, `vn_holidays_add_working_days`                                                               |
+| `vn-holidays`      | `vn_holidays_year`, `vn_holidays_is_working_day`, `vn_holidays_add_working_days`, `vn_holidays_count_working_days`                             |
 | `vn-money-words`   | `vn_money_to_words`                                                                                                                            |
 | `vn-lunar`         | `vn_lunar_from_solar`, `vn_lunar_to_solar`, `vn_lunar_holidays`, `vn_lunar_tet`, `vn_lunar_canchi`                                             |
 | `vn-einvoice`      | `vn_einvoice_validate`, `vn_einvoice_totals`, `vn_einvoice_mock_issue`, `vn_einvoice_example`                                                  |

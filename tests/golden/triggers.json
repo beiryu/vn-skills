@@ -12,7 +12,7 @@
     "en": ["e-invoice", "VAT", "invoice"]
   },
   "vn-holidays": {
-    "vi": ["ngày nghỉ lễ", "nghỉ bù", "ngày làm việc", "lịch nghỉ Tết"],
+    "vi": ["ngày nghỉ lễ", "nghỉ bù", "ngày làm việc", "lịch nghỉ Tết", "đếm ngày làm việc", "bao nhiêu ngày làm việc"],
     "en": ["public holidays", "working days", "business days"]
   },
   "vn-id": {
