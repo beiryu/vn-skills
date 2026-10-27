@@ -1,5 +1,6 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
+import { registerPrompts } from './prompts.js';
 import QRCode from 'qrcode';
 import { decodeQrPng } from '@vn-skills/cli/decode';
 import {
@@ -670,6 +671,8 @@ export function createServer(): McpServer {
     },
     async () => json(exampleInvoice()),
   );
+
+  registerPrompts(server);
 
   return server;
 }

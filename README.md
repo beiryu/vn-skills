@@ -104,6 +104,10 @@ The server exposes 30 tools, grouped by skill:
 | `vn-name`          | `vn_name`                                                                                                                                      |
 | `vn-number-format` | `vn_number_format`                                                                                                                             |
 
+### Prompts
+
+The server also offers prompt templates, shown as `/` commands in clients that support MCP prompts: `tao-vietqr`, `doi-dia-chi-moi`, `kiem-tra-mst`, `doc-cccd`, `so-tien-bang-chu`, `ngay-lam-viec`, `doi-am-duong`, `kiem-tra-hoa-don`.
+
 ### MCP client setup
 
 Requires Node.js 22+. Each client has its own file and shape; check the linked docs for the exact location.

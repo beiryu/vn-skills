@@ -335,4 +335,56 @@ describe('vn-skills MCP server', () => {
     const v = text(await client.callTool({ name: 'vn_einvoice_validate', arguments: { invoice } }));
     expect(v.ok).toBe(true);
   });
+  describe('prompts', () => {
+    const PROMPTS: Record<string, string> = {
+      'tao-vietqr': 'vietqr_build',
+      'doi-dia-chi-moi': 'vn_address_convert',
+      'kiem-tra-mst': 'vn_tax_id_validate',
+      'doc-cccd': 'vn_id_parse',
+      'so-tien-bang-chu': 'vn_money_to_words',
+      'ngay-lam-viec': 'vn_holidays_add_working_days',
+      'doi-am-duong': 'vn_lunar_from_solar',
+      'kiem-tra-hoa-don': 'vn_einvoice_validate',
+    };
+
+    it('advertises the prompts capability', () => {
+      expect(client.getServerCapabilities()?.prompts).toBeDefined();
+    });
+    it('prompts/list returns every prompt with title and description', async () => {
+      const { prompts } = await client.listPrompts();
+      expect(prompts.map((p) => p.name).sort()).toEqual(Object.keys(PROMPTS).sort());
+      for (const p of prompts) {
+        expect(p.title).toBeTruthy();
+        expect(p.description).toBeTruthy();
+      }
+    });
+    it('each prompt names a tool that exists in tools/list', async () => {
+      const tools = new Set((await client.listTools()).tools.map((t) => t.name));
+      for (const tool of Object.values(PROMPTS)) expect(tools.has(tool)).toBe(true);
+      const { prompts } = await client.listPrompts();
+      for (const p of prompts) {
+        const args: Record<string, string> = {};
+        for (const a of p.arguments ?? []) if (a.required) args[a.name] = '1';
+        const r = await client.getPrompt({ name: p.name, arguments: args });
+        expect(r.messages).toHaveLength(1);
+        expect(r.messages[0]!.role).toBe('user');
+        const c = r.messages[0]!.content as { type: string; text: string };
+        expect(c.text).toContain(PROMPTS[p.name]!);
+      }
+    });
+    it('tao-vietqr embeds the given arguments', async () => {
+      const r = await client.getPrompt({
+        name: 'tao-vietqr',
+        arguments: { bank: 'VCB', account: '0123456789', amount: '50000', note: 'cafe' },
+      });
+      const c = r.messages[0]!.content as { type: string; text: string };
+      for (const v of ['vietqr_build', 'VCB', '0123456789', '50000', 'cafe'])
+        expect(c.text).toContain(v);
+    });
+    it('missing required argument is an error', async () => {
+      await expect(
+        client.getPrompt({ name: 'tao-vietqr', arguments: { bank: 'VCB' } }),
+      ).rejects.toThrow();
+    });
+  });
 });
