@@ -164,6 +164,16 @@ Then point your client at it (it runs `docker run -i --rm vn-skills-mcp`):
 
 Other clients: use the generic `mcpServers` block above. AI agents (e.g. Cline) can follow [llms-install.md](llms-install.md).
 
+### HTTP mode
+
+For a shared or remote server, run the opt-in Streamable HTTP transport (stateless, `POST /mcp`):
+
+```bash
+npx -y @vn-skills/mcp --http --port 3000   # http://127.0.0.1:3000/mcp
+```
+
+It binds to `127.0.0.1` by default; use `--host 0.0.0.0` to expose it (e.g. `docker run -p 3000:3000 vn-skills-mcp --http --host 0.0.0.0`). Requests with a non-localhost `Origin` header get 403 unless you pass `--allow-origin <origin>` (repeatable). Without `--http` the server uses stdio.
+
 ## Library
 
 ```ts

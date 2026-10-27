@@ -162,6 +162,16 @@ Sau đó trỏ client tới image (chạy `docker run -i --rm vn-skills-mcp`):
 
 Client khác: dùng khối `mcpServers` chung ở trên. Agent AI (ví dụ Cline) có thể làm theo [llms-install.md](llms-install.md).
 
+### Chế độ HTTP
+
+Để dùng chung hoặc từ xa, chạy transport Streamable HTTP (tùy chọn, không lưu session, `POST /mcp`):
+
+```bash
+npx -y @vn-skills/mcp --http --port 3000   # http://127.0.0.1:3000/mcp
+```
+
+Mặc định chỉ lắng nghe trên `127.0.0.1`; dùng `--host 0.0.0.0` để mở ra ngoài (ví dụ `docker run -p 3000:3000 vn-skills-mcp --http --host 0.0.0.0`). Request có header `Origin` không phải localhost sẽ bị từ chối (403) trừ khi thêm `--allow-origin <origin>` (có thể lặp lại). Không có `--http` thì server dùng stdio.
+
 ## Thư viện
 
 ```ts
