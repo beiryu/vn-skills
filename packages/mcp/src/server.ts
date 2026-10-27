@@ -1,4 +1,4 @@
-import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
+import { McpServer, ResourceTemplate } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
 import { registerPrompts } from './prompts.js';
 import QRCode from 'qrcode';
@@ -33,6 +33,9 @@ import {
   taxIdCheckDigitResult,
   lookupProvince,
   provincesList,
+  provinceInfo,
+  provinceByCode,
+  PROVINCES,
   exampleInvoice,
   holidays,
   publicHolidays,
@@ -744,6 +747,85 @@ export function createServer(): McpServer {
   );
 
   registerPrompts(server);
+
+  const asResource = (uri: URL, data: unknown) => ({
+    contents: [
+      {
+        uri: uri.href,
+        mimeType: 'application/json',
+        text: JSON.stringify(data, null, 2),
+      },
+    ],
+  });
+  const fail = (e: VnError): never => {
+    throw new Error(e.hint ? `${e.message} (${e.hint})` : e.message);
+  };
+  const one = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v) ?? '';
+
+  server.registerResource(
+    'provinces',
+    'vn-skills://provinces',
+    {
+      title: 'Danh sách 34 tỉnh, thành (2025) / The 34 provinces',
+      description: 'The 34 current Vietnamese provinces (since 01/07/2025) with ward counts.',
+      mimeType: 'application/json',
+    },
+    (uri) => asResource(uri, provincesList()),
+  );
+
+  server.registerResource(
+    'banks',
+    'vn-skills://banks',
+    {
+      title: 'Danh sách ngân hàng VietQR / VietQR bank list',
+      description: 'The NAPAS bank list used by VietQR: BIN, code, short and full names.',
+      mimeType: 'application/json',
+    },
+    (uri) => asResource(uri, { ok: true, banks: searchBanks('') }),
+  );
+
+  server.registerResource(
+    'province-wards',
+    new ResourceTemplate('vn-skills://province/{code}/wards', {
+      list: () => ({
+        resources: PROVINCES.map((p) => ({
+          uri: `vn-skills://province/${p.code}/wards`,
+          name: `wards-${p.code}`,
+          title: `Phường/xã của ${p.fullName} / Wards of ${p.nameEn ?? p.fullName}`,
+          mimeType: 'application/json',
+        })),
+      }),
+    }),
+    {
+      title: 'Phường/xã theo tỉnh / Wards of a province',
+      description: 'A province (2-digit code) with its list of wards.',
+      mimeType: 'application/json',
+    },
+    (uri, { code }) => {
+      const p = provinceByCode.get(one(code));
+      if (!p)
+        return fail({
+          code: 'PROVINCE_NOT_FOUND',
+          message: `No province with code "${one(code)}"`,
+          hint: 'Use a 2-digit code from vn-skills://provinces',
+        });
+      return asResource(uri, { ok: true, ...provinceInfo(p), wards: p.wards });
+    },
+  );
+
+  server.registerResource(
+    'holidays-year',
+    new ResourceTemplate('vn-skills://holidays/{year}', { list: undefined }),
+    {
+      title: 'Ngày nghỉ lễ trong năm / Official days off of a year',
+      description: 'Official days off for public-sector staff in a year (2023-2199).',
+      mimeType: 'application/json',
+    },
+    (uri, { year }) => {
+      const r = publicHolidays(Number(one(year)));
+      return r.ok ? asResource(uri, r) : fail(r.error);
+    },
+  );
 
   return server;
 }
