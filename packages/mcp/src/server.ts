@@ -18,6 +18,7 @@ import {
   validateTaxId,
   parseCitizenId,
   moneyToWords,
+  numberToWords,
   formatNumber,
   formatVnd,
   formatCompactVnd,
@@ -392,7 +393,7 @@ export function createServer(): McpServer {
       title: 'Amount in Vietnamese words',
       annotations: OFFLINE_READ_ONLY,
       description:
-        'Read an integer VND amount in Vietnamese words, e.g. 1200000 -> "một triệu hai trăm nghìn đồng". Options: thousand "nghìn"/"ngàn", odd "lẻ"/"linh", capitalize, unit.',
+        'Read an integer VND amount in Vietnamese words, e.g. 1200000 -> "một triệu hai trăm nghìn đồng". Also reads plain numbers without a unit with plain: true, e.g. 30 -> "ba mươi". Options: thousand "nghìn"/"ngàn", odd "lẻ"/"linh", capitalize, unit.',
       inputSchema: {
         amount: z.union([z.number(), z.string()]),
         thousand: z.enum(['nghìn', 'ngàn']).optional(),
@@ -400,10 +401,27 @@ export function createServer(): McpServer {
         unit: z.string().optional().describe('Default "đồng"; "" for none'),
         capitalize: z.boolean().optional(),
         chan: z.boolean().optional().describe('Append "chẵn" for round amounts'),
+        plain: z
+          .boolean()
+          .optional()
+          .describe('Read a plain number without a unit (default false); not with unit/chan'),
       },
     },
-    async ({ amount, ...opts }) => {
-      const r = moneyToWords(amount, opts);
+    async ({ amount, plain, ...opts }) => {
+      if (plain && (opts.unit !== undefined || opts.chan)) {
+        return json(
+          {
+            ok: false,
+            error: {
+              code: 'INVALID_OPTIONS',
+              message: 'plain cannot be combined with unit or chan',
+            },
+          },
+          true,
+        );
+      }
+      const { unit: _u, chan: _c, ...rest } = opts;
+      const r = plain ? numberToWords(amount, rest) : moneyToWords(amount, opts);
       return r.ok
         ? json({ ok: true, amount: r.amount, words: r.words })
         : json({ ok: false, error: r.error }, true);
