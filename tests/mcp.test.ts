@@ -37,6 +37,19 @@ describe('vn-skills MCP server', () => {
     expect(bad.isError).toBe(true);
   });
 
+  it('declares a title and read-only, closed-world annotations on every tool', async () => {
+    const { tools } = await client.listTools();
+    expect(tools.length).toBeGreaterThan(0);
+    for (const t of tools) {
+      expect(typeof t.title, `${t.name} title`).toBe('string');
+      expect(t.title!.trim().length, `${t.name} title`).toBeGreaterThan(0);
+      expect(t.annotations?.readOnlyHint, `${t.name} readOnlyHint`).toBe(true);
+      expect(t.annotations?.destructiveHint, `${t.name} destructiveHint`).toBe(false);
+      expect(t.annotations?.idempotentHint, `${t.name} idempotentHint`).toBe(true);
+      expect(t.annotations?.openWorldHint, `${t.name} openWorldHint`).toBe(false);
+    }
+  });
+
   it('lists the expected tools', async () => {
     const { tools } = await client.listTools();
     const names = tools.map((t) => t.name).sort();

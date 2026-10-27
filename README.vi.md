@@ -86,7 +86,7 @@ Hoặc trong cấu hình MCP bất kỳ:
 { "mcpServers": { "vn-skills": { "command": "npx", "args": ["-y", "@vn-skills/mcp"] } } }
 ```
 
-Server cung cấp 30 tool, nhóm theo skill:
+Server cung cấp 30 tool, nhóm theo skill. Mọi tool đều được khai báo chỉ đọc và offline (`readOnlyHint: true`, `openWorldHint: false`).
 
 | Skill              | Tool                                                                                                                                           |
 | ------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------- |
