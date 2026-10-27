@@ -102,6 +102,10 @@ Server cung cấp 31 tool, nhóm theo skill. Mọi tool đều được khai bá
 | `vn-name`          | `vn_name`                                                                                                                                      |
 | `vn-number-format` | `vn_number_format`                                                                                                                             |
 
+### Prompts
+
+Server cũng cung cấp prompt mẫu, hiển thị dạng lệnh `/` trong các client hỗ trợ MCP prompts: `tao-vietqr`, `doi-dia-chi-moi`, `kiem-tra-mst`, `doc-cccd`, `so-tien-bang-chu`, `ngay-lam-viec`, `doi-am-duong`, `kiem-tra-hoa-don`.
+
 ### Cài đặt MCP theo client
 
 Cần Node.js 22+. Mỗi client dùng file và cấu trúc riêng; xem tài liệu được liên kết để biết đúng vị trí file.
