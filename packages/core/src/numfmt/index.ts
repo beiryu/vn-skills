@@ -138,6 +138,13 @@ function plainNumber(s: string): number | null {
  */
 export function parseAmount(input: string): AmountResult {
   const raw = String(input ?? '');
+  if (raw.trim() === '') {
+    return fail(
+      'EMPTY',
+      'Amount is empty',
+      'Pass a non-empty amount, e.g. "1tr2", "500k" or "1.200.000"',
+    );
+  }
   const bad = (hint = 'Try "1tr2", "500k", "1.200.000"') =>
     fail<{ value: number }>('INVALID_AMOUNT', `Cannot parse amount "${raw}"`, hint);
   let s = raw
