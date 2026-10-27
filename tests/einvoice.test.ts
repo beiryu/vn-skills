@@ -40,6 +40,7 @@ const golden = loadGolden<{
       vatByRate?: Record<string, number>;
     }
   >;
+  computeTotalsInvalid: Array<{ name: string; input: unknown; expected: Subset }>;
   roundVnd: Array<{ name: string; input: number; expected: number }>;
 }>('vn-einvoice');
 
@@ -64,6 +65,34 @@ describe('computeTotals (golden)', () => {
     expect(t).toMatchObject(c.expected);
     for (const [rate, vat] of Object.entries(c.vatByRate ?? {}))
       expect(t.byRate.find((b) => String(b.rate) === rate)?.vat).toBe(vat);
+  });
+});
+
+describe('computeTotals (invalid input)', () => {
+  it.each(golden.computeTotalsInvalid.map((c) => [title(c), c] as const))('%s', (_, c) => {
+    const t = computeTotals(c.input as never);
+    expect(t).toMatchObject(c.expected);
+    expect(t.totalInWordsError?.message).toBeTruthy();
+    expect(t.totalInWordsError?.hint).toContain('validateInvoice');
+  });
+
+  it('returns INVALID_INVOICE for undefined', () => {
+    const t = computeTotals(undefined as never);
+    expect(t.lines).toEqual([]);
+    expect(t.grandTotal).toBe(0);
+    expect(t.totalInWordsError?.code).toBe('INVALID_INVOICE');
+  });
+
+  it('skips null and non-object line entries', () => {
+    const valid = validateInvoice(base()).invoice!;
+    const expected = computeTotals(valid);
+    const dirty = { ...valid, lines: [null, 'x', 5, ...valid.lines, undefined] };
+    const t = computeTotals(dirty as never);
+    expect(t.lines).toHaveLength(valid.lines.length);
+    expect(t.subtotal).toBe(expected.subtotal);
+    expect(t.vatTotal).toBe(expected.vatTotal);
+    expect(t.grandTotal).toBe(expected.grandTotal);
+    expect(t.totalInWordsError).toBeUndefined();
   });
 });
 
