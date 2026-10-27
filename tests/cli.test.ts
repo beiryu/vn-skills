@@ -205,6 +205,11 @@ describe('vn-skills CLI', () => {
     expect(r.json().crcValid).toBe(true);
     expect(r.json().bin).toBe('970423');
   });
+  it('vietqr banks text shows SWIFT and finds by SWIFT', () => {
+    const r = run(['vietqr', 'banks', 'bftvvnvx', '--pretty']);
+    expect(r.out).toContain('BFTVVNVX');
+    expect(r.out).toContain('970436');
+  });
   it('vietqr banks', () => {
     const r = run(['vietqr', 'banks', 'vietcom']);
     expect((r.json().banks as unknown[]).length).toBeGreaterThan(0);

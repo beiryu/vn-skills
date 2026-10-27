@@ -157,14 +157,14 @@ export function registerVietqr(program: Command): void {
 
   cmd
     .command('banks [query]')
-    .description('List banks / search by BIN, code or name')
+    .description('List banks / search by BIN, code, SWIFT/BIC or name')
     .action((query: string | undefined, _o, c: Command) => {
       const list = searchBanks(query ?? '');
       if (wantsJson(c)) printJson({ ok: true, count: list.length, banks: list });
       else {
         for (const b of list)
           process.stdout.write(
-            `${b.bin}  ${b.code.padEnd(12)} ${b.shortName.padEnd(18)} ${b.name}${b.deprecated ? '  (deprecated)' : ''}\n`,
+            `${b.bin}  ${b.code.padEnd(12)} ${b.shortName.padEnd(18)} ${(b.swift ?? '').padEnd(11)} ${b.name}${b.deprecated ? '  (deprecated)' : ''}\n`,
           );
       }
     });

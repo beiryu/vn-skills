@@ -161,8 +161,13 @@ export function createServer(): McpServer {
       title: 'Search banks',
       annotations: OFFLINE_READ_ONLY,
       description:
-        'Search the NAPAS bank list by BIN, code, short name or full name. Empty query lists all banks.',
-      inputSchema: { query: z.string().optional().describe('e.g. "vietcombank", "VCB", "9704"') },
+        'Search the NAPAS bank list by BIN, code, short name, full name or SWIFT/BIC code. Empty query lists all banks.',
+      inputSchema: {
+        query: z
+          .string()
+          .optional()
+          .describe('e.g. "vietcombank", "VCB", "9704", "BFTVVNVX" (SWIFT/BIC)'),
+      },
     },
     async ({ query }) => json({ ok: true, banks: searchBanks(query ?? '') }),
   );

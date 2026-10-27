@@ -108,6 +108,11 @@ export function findBank(query: string): Bank | undefined {
     if (compactKey(b.shortName) === key) return b;
     if (b.keywords?.some((k) => compactKey(k) === key)) return b;
   }
+  if (/^[a-z]{6}[a-z0-9]{2}([a-z0-9]{3})?$/i.test(q)) {
+    const bic = q.slice(0, 8).toUpperCase();
+    const bySwift = BANKS.find((b) => b.swift?.slice(0, 8).toUpperCase() === bic);
+    if (bySwift) return bySwift;
+  }
   const sub = BANKS.filter(
     (b) => compactKey(b.shortName).includes(key) || compactKey(b.name).includes(key),
   );
@@ -124,6 +129,7 @@ export function searchBanks(query = ''): Bank[] {
       b !== exact &&
       (b.bin.includes(key) ||
         compactKey(b.code).includes(key) ||
+        b.swift?.toLowerCase().includes(key) ||
         compactKey(b.shortName).includes(key) ||
         compactKey(b.name).includes(key) ||
         b.keywords?.some((k) => compactKey(k).includes(key))),
