@@ -69,6 +69,7 @@ describe('vn-skills MCP server', () => {
         'vn_number_format',
         'vn_lunar_from_solar',
         'vn_lunar_to_solar',
+        'vn_lunar_month',
         'vn_lunar_holidays',
         'vn_einvoice_validate',
         'vn_einvoice_totals',
@@ -179,6 +180,19 @@ describe('vn-skills MCP server', () => {
       await client.callTool({ name: 'vn_lunar_from_solar', arguments: { date: '2025-01-29' } }),
     );
     expect(j.yearCanChi).toBe('Ất Tỵ');
+  });
+  it('vn_lunar_month', async () => {
+    const j = text(
+      await client.callTool({ name: 'vn_lunar_month', arguments: { month: 2, year: 2027 } }),
+    );
+    const days = j.days as Array<{ date: string; lunar: { day: number; month: number } }>;
+    expect(days).toHaveLength(28);
+    expect(days.find((d) => d.date === '2027-02-06')?.lunar).toMatchObject({ day: 1, month: 1 });
+    const bad = await client.callTool({
+      name: 'vn_lunar_month',
+      arguments: { month: 13, year: 2026 },
+    });
+    expect(bad.isError).toBe(true);
   });
   it('vn_lunar_to_solar', async () => {
     const j = text(

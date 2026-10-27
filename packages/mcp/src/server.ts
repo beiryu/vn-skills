@@ -24,6 +24,7 @@ import {
   formatDate,
   parseAmount,
   lunarInfo,
+  lunarMonthCalendar,
   lunarToSolar,
   tetInfo,
   canChiOfYear,
@@ -483,6 +484,21 @@ export function createServer(): McpServer {
             date: `${r.year}-${String(r.month).padStart(2, '0')}-${String(r.day).padStart(2, '0')}`,
           })
         : json({ ok: false, error: r.error }, true);
+    },
+  );
+
+  server.registerTool(
+    'vn_lunar_month',
+    {
+      title: 'Lunar month calendar',
+      annotations: OFFLINE_READ_ONLY,
+      description:
+        'Calendar of a Gregorian month: each day with lunar date (leap flag, mùng 1, rằm), day can chi, solar term starts and holidays/days off.',
+      inputSchema: { month: z.number().int(), year: z.number().int() },
+    },
+    async ({ month, year }) => {
+      const r = lunarMonthCalendar(month, year);
+      return r.ok ? json(r) : json({ ok: false, error: r.error }, true);
     },
   );
 

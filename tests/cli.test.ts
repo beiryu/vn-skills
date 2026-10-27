@@ -279,6 +279,16 @@ describe('vn-skills CLI', () => {
     const r = run(['lunar', 'from-solar', '29/01/2025']);
     expect(r.json().text).toBe('Mùng 1 tháng Giêng năm Ất Tỵ');
   });
+  it('lunar month', () => {
+    const j = run(['lunar', 'month', '02/2027']).json() as { days: Array<{ date: string }> };
+    expect(j.days).toHaveLength(28);
+    const iso = run(['lunar', 'month', '2027-02']).json() as typeof j & { month: number };
+    expect(iso.month).toBe(2);
+    expect(iso.days).toEqual(j.days);
+    const bad = run(['lunar', 'month', '13/2026']);
+    expect(bad.code).toBe(1);
+    expect(bad.json()).toMatchObject({ ok: false, error: { code: 'INVALID_DATE' } });
+  });
   it('lunar to-solar', () => {
     const r = run(['lunar', 'to-solar', '1/1/2026']);
     expect((r.json().solar as { date: string }).date).toBe('2026-02-17');
