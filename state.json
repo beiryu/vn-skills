@@ -1,6 +1,6 @@
 {
  "version": 1,
- "exported_at": "2026-10-27T09:29:31.103Z",
+ "exported_at": "2026-10-27T09:31:05.410Z",
  "tables": {
   "repos": [
    {
@@ -10,7 +10,7 @@
     "policy_status": null,
     "policy_excerpts": null,
     "block_reason": null,
-    "last_scanned": "2026-10-27T09:29:08.986Z"
+    "last_scanned": "2026-10-27T09:30:39.206Z"
    }
   ],
   "issues": [
@@ -1964,7 +1964,7 @@
     "title": "vn-money-words: read plain numbers without 'đồng' in the CLI and MCP tool",
     "body": "## Problem\nContracts and invoices also write numbers in words that are not money: \"ba mươi (30) ngày\", \"số lượng: mười hai\". Core already has `numberToWords()` (`packages/core/src/money/index.ts:164`), which is `moneyToWords` with `unit: ''` and `chan: false`. Neither the CLI (`packages/cli/src/commands/money.ts`, only `money words <amount>`) nor the MCP server (`vn_money_to_words` in `packages/mcp/src/server.ts`) exposes it, so CLI and MCP users always get \"… đồng\". The most-used npm package for this (`read-vietnamese-number`, ~5.6k downloads/month) reads plain numbers by default.\n\nThis needs no new domain facts: it reuses the existing reading rules.\n\n## Proposed surface\n- CLI: `vn-skills money words <amount> --plain` calls `numberToWords` with the same `--thousand`/`--odd`/capitalize-style options the command already accepts. `--plain` together with any unit or `chẵn` option is a usage error.\n- MCP: add an optional `plain: boolean` (default false) to `vn_money_to_words`; when true, call `numberToWords`. Update the tool description to say it also reads plain numbers.\n- Negative numbers keep working (`money words --plain -- -5` → `âm năm`, and the existing negative-amount handling in `packages/cli/src/index.ts`).\n\n## Acceptance\n- [ ] `vn-skills money words 30 --plain` → `ba mươi`; `105 --plain` → `một trăm lẻ năm`; `0 --plain` → `không`; `--plain --thousand ngàn 1500` uses `ngàn`\n- [ ] Golden cases for `numberToWords` added to the money golden fixture in `tests/golden/` (≥ 6 cases incl. 0, 10, 15, 21, 105, 1 000 000) and loaded by the existing golden loader\n- [ ] CLI tests in `tests/cli.test.ts` and an MCP test in `tests/mcp.test.ts` for `plain: true`\n- [ ] `skills/vn-money-words/SKILL.md` documents `--plain` with trigger words (e.g. \"đọc số\", \"số bằng chữ\", \"viết số thành chữ\")\n- [ ] Default behaviour (with `đồng`) unchanged; existing tests pass",
     "url": "https://github.com/beiryu/vn-skills/issues/238",
-    "state": "pr_open",
+    "state": "done",
     "score": 1,
     "triage_reason": "This is a frequent contract-drafting request that core already handles but users cannot reach. It is a small change that closes a gap with the most popular competitor.",
     "attempts": 0,
@@ -1980,7 +1980,7 @@
     "pr_body": "## What & why\n\nCloses #238\n\nContracts and invoices also write plain numbers in words, such as \"ba mươi (30) ngày\". Core already has `numberToWords()`, but the CLI and the MCP tool always added \"đồng\". This change exposes it.\n\n- CLI: `vn-skills money words <amount> --plain` calls `numberToWords` and accepts the same `--thousand`, `--odd`, `--no-tu` and `--capitalize` options. `--plain` with `--unit` or `--chan` is a usage error. Negative numbers work (`money words --plain -- -5` gives `âm năm`).\n- MCP: `vn_money_to_words` has a new optional `plain` boolean (default false). When true it calls `numberToWords`. With `unit` or `chan` it returns an `INVALID_OPTIONS` error. The tool description now mentions plain numbers.\n- `skills/vn-money-words/SKILL.md` documents `--plain` and adds the trigger words \"đọc số\", \"số bằng chữ\" and \"viết số thành chữ\".\n- The default behaviour (with \"đồng\") is unchanged. No core code or data changed.\n\n## Acceptance (from #238)\n\n- [x] `money words 30 --plain` gives `ba mươi`, `105` gives `một trăm lẻ năm`, `0` gives `không`, and `--plain --thousand ngàn 1500` uses `ngàn`\n- [x] Golden cases for `numberToWords` added to `tests/golden/vn-money-words.json` (0, 10, 15, 21, 30, 105, 1 000 000, -5, plus the existing 2024), loaded by the existing golden loader\n- [x] CLI tests in `tests/cli.test.ts` and an MCP test in `tests/mcp.test.ts` for `plain: true`\n- [x] `skills/vn-money-words/SKILL.md` documents `--plain` with trigger words\n- [x] Default behaviour unchanged; existing tests pass\n\n## Tests\n\n- `tests/cli.test.ts`: `money words --plain reads without a unit`, `money words --plain honours --thousand and negatives`, `money words --plain rejects unit and chan`\n- `tests/mcp.test.ts`: `vn_money_to_words plain` (plain true, with `thousand`, plain false keeps \"đồng\", plain with `unit` is rejected)\n- `tests/golden/vn-money-words.json`: 8 new `numberToWords` cases\n\n## Checklist\n\n- [x] Title follows Conventional Commits (`feat|fix|docs|data|test|refactor|perf|build|ci|chore(scope): …`)\n- [x] Tests added or updated (golden test for every bug fix)\n- [ ] `pnpm build && pnpm typecheck && pnpm lint && pnpm test && pnpm format:check` pass locally\n- [x] Core stays offline (no `fetch`/HTTP in `packages/core`)\n- [x] Data changes go through `scripts/build-data.ts` and `SOURCES.md` (source + license) (no data changes)\n- [x] SKILL.md / README updated if behaviour changed\n",
     "dry": 0,
     "claimed_at": null,
-    "updated_at": "2026-10-27T07:20:55.720Z",
+    "updated_at": "2026-10-27T09:30:14.717Z",
     "blocked": null,
     "patch": "diff --git a/packages/cli/src/commands/money.ts b/packages/cli/src/commands/money.ts\nindex e15f580..7ba6831 100644\n--- a/packages/cli/src/commands/money.ts\n+++ b/packages/cli/src/commands/money.ts\n@@ -1,5 +1,5 @@\n import { Command } from 'commander';\n-import { moneyToWords } from '@vn-skills/core';\n+import { moneyToWords, numberToWords } from '@vn-skills/core';\n import { failExit, printJson, wantsJson } from '../output.js';\n \n export function registerMoney(program: Command): void {\n@@ -15,19 +15,24 @@ export function registerMoney(program: Command): void {\n     .option('--no-tu', 'read 4 as \"bốn\" instead of \"tư\" in 24, 34, ...')\n     .option('-c, --capitalize', 'capitalize the first letter')\n     .option('--chan', 'append \"chẵn\" for round amounts')\n+    .option('--plain', 'read a plain number without a unit, e.g. 30 -> \"ba mươi\"')\n     .addHelpText(\n       'after',\n       '\\nNegative amounts: vn-skills money words -5 (or, explicitly, vn-skills money words -- -5)',\n     )\n     .action((amount: string, opts, c: Command) => {\n-      const r = moneyToWords(amount, {\n+      if (opts.plain && (opts.unit !== undefined || opts.chan)) {\n+        c.error('error: --plain cannot be combined with --unit or --chan');\n+      }\n+      const common = {\n         thousand: opts.thousand,\n         odd: opts.odd,\n-        unit: opts.unit,\n         useTu: opts.tu,\n         capitalize: opts.capitalize,\n-        chan: opts.chan,\n-      });\n+      };\n+      const r = opts.plain\n+        ? numberToWords(amount, common)\n+        : moneyToWords(amount, { ...common, unit: opts.unit, chan: opts.chan });\n       if (!r.ok) failExit(c, r.error);\n       if (wantsJson(c)) printJson({ ok: true, amount: r.amount, words: r.words });\n       else process.stdout.write(r.words + '\\n');\ndiff --git a/packages/mcp/src/server.ts b/packages/mcp/src/server.ts\nindex 479e989..90871a3 100644\n--- a/packages/mcp/src/server.ts\n+++ b/packages/mcp/src/server.ts\n@@ -18,6 +18,7 @@ import {\n   validateTaxId,\n   parseCitizenId,\n   moneyToWords,\n+  numberToWords,\n   formatNumber,\n   formatVnd,\n   formatCompactVnd,\n@@ -371,7 +372,7 @@ export function createServer(): McpServer {\n     {\n       title: 'Amount in Vietnamese words',\n       description:\n-        'Read an integer VND amount in Vietnamese words, e.g. 1200000 -> \"một triệu hai trăm nghìn đồng\". Options: thousand \"nghìn\"/\"ngàn\", odd \"lẻ\"/\"linh\", capitalize, unit.',\n+        'Read an integer VND amount in Vietnamese words, e.g. 1200000 -> \"một triệu hai trăm nghìn đồng\". Also reads plain numbers without a unit with plain: true, e.g. 30 -> \"ba mươi\". Options: thousand \"nghìn\"/\"ngàn\", odd \"lẻ\"/\"linh\", capitalize, unit.',\n       inputSchema: {\n         amount: z.union([z.number(), z.string()]),\n         thousand: z.enum(['nghìn', 'ngàn']).optional(),\n@@ -379,10 +380,27 @@ export function createServer(): McpServer {\n         unit: z.string().optional().describe('Default \"đồng\"; \"\" for none'),\n         capitalize: z.boolean().optional(),\n         chan: z.boolean().optional().describe('Append \"chẵn\" for round amounts'),\n+        plain: z\n+          .boolean()\n+          .optional()\n+          .describe('Read a plain number without a unit (default false); not with unit/chan'),\n       },\n     },\n-    async ({ amount, ...opts }) => {\n-      const r = moneyToWords(amount, opts);\n+    async ({ amount, plain, ...opts }) => {\n+      if (plain && (opts.unit !== undefined || opts.chan)) {\n+        return json(\n+          {\n+            ok: false,\n+            error: {\n+              code: 'INVALID_OPTIONS',\n+              message: 'plain cannot be combined with unit or chan',\n+            },\n+          },\n+          true,\n+        );\n+      }\n+      const { unit: _u, chan: _c, ...rest } = opts;\n+      const r = plain ? numberToWords(amount, rest) : moneyToWords(amount, opts);\n       return r.ok\n         ? json({ ok: true, amount: r.amount, words: r.words })\n         : json({ ok: false, error: r.error }, true);\ndiff --git a/skills/vn-money-words/SKILL.md b/skills/vn-money-words/SKILL.md\nindex ad05c93..cea01af 100644\n--- a/skills/vn-money-words/SKILL.md\n+++ b/skills/vn-money-words/SKILL.md\n@@ -1,6 +1,6 @@\n ---\n name: vn-money-words\n-description: Convert VND amounts to Vietnamese words (\"1.200.000 đồng\" -> \"một triệu hai trăm nghìn đồng\") with correct rules for mốt/lăm/tư, lẻ/linh, nghìn/ngàn, zero groups and very large numbers (tỷ tỷ). Use for invoices, contracts, receipts, bank transfer forms, \"số tiền bằng chữ\", \"đọc số tiền thành chữ\", \"viết bằng chữ\", or any time an amount must be spelled out in Vietnamese.\n+description: Convert VND amounts to Vietnamese words (\"1.200.000 đồng\" -> \"một triệu hai trăm nghìn đồng\") with correct rules for mốt/lăm/tư, lẻ/linh, nghìn/ngàn, zero groups and very large numbers (tỷ tỷ). Use for invoices, contracts, receipts, bank transfer forms, \"số tiền bằng chữ\", \"đọc số tiền thành chữ\", \"viết bằng chữ\", \"đọc số\", \"số bằng chữ\", \"viết số thành chữ\", or any time an amount must be spelled out in Vietnamese.\n license: MIT\n compatibility: Requires Node.js 22+ (runs npx -y @vn-skills/cli).\n metadata:\n@@ -32,6 +32,9 @@ npx -y @vn-skills/cli money words 2500000 --thousand ngàn --odd linh\n # hai triệu năm trăm ngàn đồng\n ```\n \n+Plain numbers (not money, e.g. \"ba mươi (30) ngày\"): `money words 30 --plain` → `ba mươi`. `--plain` cannot be combined\n+with `--unit` or `--chan`. MCP: `vn_money_to_words` with `plain: true`.\n+\n JSON output: `{ \"ok\": true, \"amount\": \"1200000\", \"words\": \"một triệu hai trăm nghìn đồng\" }`.\n \n Options:\n@@ -44,6 +47,7 @@ Options:\n | `-u, --unit \"\"`    | change/remove the unit word (default \"đồng\")             |\n | `-c, --capitalize` | capital first letter (invoice style)                     |\n | `--chan`           | append \"chẵn\" when the amount is a round thousand        |\n+| `--plain`          | read a plain number without \"đồng\" (30 → ba mươi)        |\n \n Library: `moneyToWords(1200000, { capitalize: true })` and `numberToWords(2024)` from `@vn-skills/core`.\n \ndiff --git a/tests/cli.test.ts b/tests/cli.test.ts\nindex 288eb29..7f30c1c 100644\n--- a/tests/cli.test.ts\n+++ b/tests/cli.test.ts\n@@ -246,6 +246,26 @@ describe('vn-skills CLI', () => {\n     const r = run(['money', 'words', '1200000']);\n     expect(r.json().words).toBe('một triệu hai trăm nghìn đồng');\n   });\n+  it('money words --plain reads without a unit', () => {\n+    expect(run(['money', 'words', '30', '--plain', '--pretty']).out.trim()).toBe('ba mươi');\n+    expect(run(['money', 'words', '105', '--plain', '--pretty']).out.trim()).toBe(\n+      'một trăm lẻ năm',\n+    );\n+    expect(run(['money', 'words', '0', '--plain', '--pretty']).out.trim()).toBe('không');\n+  });\n+  it('money words --plain honours --thousand and negatives', () => {\n+    expect(run(['money', 'words', '--plain', '--thousand', 'ngàn', '1500']).json().words).toBe(\n+      'một ngàn năm trăm',\n+    );\n+    expect(run(['money', 'words', '--plain', '--', '-5']).json().words).toBe('âm năm');\n+  });\n+  it('money words --plain rejects unit and chan', () => {\n+    for (const extra of [['--unit', 'USD'], ['-u', ''], ['--chan']]) {\n+      const r = run(['money', 'words', '1000', '--plain', ...extra]);\n+      expect(r.code).not.toBe(0);\n+      expect(r.out + r.err).toContain('--plain');\n+    }\n+  });\n   it('money words --pretty prints plain text', () => {\n     expect(run(['money', 'words', '15', '--pretty']).out.trim()).toBe('mười lăm đồng');\n   });\ndiff --git a/tests/golden/vn-money-words.json b/tests/golden/vn-money-words.json\nindex 0b94cd4..936419d 100644\n--- a/tests/golden/vn-money-words.json\n+++ b/tests/golden/vn-money-words.json\n@@ -104,6 +104,16 @@\n       { \"name\": \"rejects 1001 digits\", \"input\": \"9\", \"repeat\": 1001 },\n       { \"name\": \"rejects negative 1001 digits\", \"input\": \"9\", \"prefix\": \"-\", \"repeat\": 1001 }\n     ],\n-    \"numberToWords\": [{ \"input\": 2024, \"expected\": \"hai nghìn không trăm hai mươi tư\" }]\n+    \"numberToWords\": [\n+      { \"input\": 2024, \"expected\": \"hai nghìn không trăm hai mươi tư\" },\n+      { \"input\": 0, \"expected\": \"không\" },\n+      { \"input\": 10, \"expected\": \"mười\" },\n+      { \"input\": 15, \"expected\": \"mười lăm\" },\n+      { \"input\": 21, \"expected\": \"hai mươi mốt\" },\n+      { \"input\": 30, \"expected\": \"ba mươi\" },\n+      { \"input\": 105, \"expected\": \"một trăm lẻ năm\" },\n+      { \"input\": 1000000, \"expected\": \"một triệu\" },\n+      { \"input\": -5, \"expected\": \"âm năm\" }\n+    ]\n   }\n }\ndiff --git a/tests/mcp.test.ts b/tests/mcp.test.ts\nindex 5c44138..ce5ac56 100644\n--- a/tests/mcp.test.ts\n+++ b/tests/mcp.test.ts\n@@ -149,6 +149,16 @@ describe('vn-skills MCP server', () => {\n     );\n     expect(j.words).toBe('một triệu hai trăm nghìn đồng');\n   });\n+  it('vn_money_to_words plain', async () => {\n+    const call = async (args: Record<string, unknown>) =>\n+      text(await client.callTool({ name: 'vn_money_to_words', arguments: args }));\n+    expect((await call({ amount: 105, plain: true })).words).toBe('một trăm lẻ năm');\n+    expect((await call({ amount: 1500, plain: true, thousand: 'ngàn' })).words).toBe(\n+      'một ngàn năm trăm',\n+    );\n+    expect((await call({ amount: 30, plain: false })).words).toBe('ba mươi đồng');\n+    expect((await call({ amount: 30, plain: true, unit: 'đồng' })).ok).toBe(false);\n+  });\n   it('vn_tax_id_validate', async () => {\n     const j = text(\n       await client.callTool({ name: 'vn_tax_id_validate', arguments: { taxId: '0100233488' } }),\n",
     "repro_patch": null,
@@ -3211,28 +3211,28 @@
     "state": "open",
     "last_seen_at": "2026-10-27T07:21:02.312Z",
     "opened_at": "2026-10-27T07:21:02.312Z",
-    "head_sha": "69b89da288a83451af11e676beecf4461446568c",
-    "mergeable": "UNKNOWN",
-    "ci_state": "success",
+    "head_sha": "d4b5defaa8e5fb09f185e46c1a9e842d21156bc9",
+    "mergeable": "MERGEABLE",
+    "ci_state": "pending",
     "review_decision": "REVIEW_REQUIRED",
-    "snapshot_at": "2026-10-27T09:28:45.577Z",
+    "snapshot_at": "2026-10-27T09:30:11.963Z",
     "ci_seen_sha": null,
-    "merge_state": "UNKNOWN"
+    "merge_state": "BLOCKED"
    },
    {
     "issue_id": 68,
     "url": "https://github.com/beiryu/vn-skills/pull/247",
     "number": 247,
-    "state": "open",
+    "state": "merged",
     "last_seen_at": "2026-10-27T07:20:55.720Z",
     "opened_at": "2026-10-27T07:20:55.720Z",
     "head_sha": "e3c50f42b8e18209b1393d24e669b00817322e29",
-    "mergeable": "MERGEABLE",
-    "ci_state": "pending",
+    "mergeable": "UNKNOWN",
+    "ci_state": "success",
     "review_decision": "REVIEW_REQUIRED",
-    "snapshot_at": "2026-10-27T09:28:47.695Z",
+    "snapshot_at": "2026-10-27T09:30:14.716Z",
     "ci_seen_sha": null,
-    "merge_state": "BLOCKED"
+    "merge_state": "UNKNOWN"
    },
    {
     "issue_id": 70,
@@ -3290,7 +3290,7 @@
     "mergeable": "UNKNOWN",
     "ci_state": "success",
     "review_decision": "REVIEW_REQUIRED",
-    "snapshot_at": "2026-10-27T09:28:50.469Z",
+    "snapshot_at": "2026-10-27T09:30:15.988Z",
     "ci_seen_sha": null,
     "merge_state": "UNKNOWN"
    },
@@ -3305,7 +3305,7 @@
     "mergeable": "UNKNOWN",
     "ci_state": "success",
     "review_decision": "REVIEW_REQUIRED",
-    "snapshot_at": "2026-10-27T09:28:52.725Z",
+    "snapshot_at": "2026-10-27T09:30:18.851Z",
     "ci_seen_sha": null,
     "merge_state": "UNKNOWN"
    },
@@ -3320,7 +3320,7 @@
     "mergeable": "UNKNOWN",
     "ci_state": "success",
     "review_decision": "REVIEW_REQUIRED",
-    "snapshot_at": "2026-10-27T09:28:55.040Z",
+    "snapshot_at": "2026-10-27T09:30:21.694Z",
     "ci_seen_sha": null,
     "merge_state": "UNKNOWN"
    },
@@ -3335,7 +3335,7 @@
     "mergeable": "UNKNOWN",
     "ci_state": "success",
     "review_decision": "REVIEW_REQUIRED",
-    "snapshot_at": "2026-10-27T09:28:57.630Z",
+    "snapshot_at": "2026-10-27T09:30:24.658Z",
     "ci_seen_sha": null,
     "merge_state": "UNKNOWN"
    },
@@ -3347,12 +3347,12 @@
     "last_seen_at": "2026-10-27T09:10:57.507Z",
     "opened_at": "2026-10-27T09:10:57.507Z",
     "head_sha": "79e8eb0a0aa767ecaa779ca6cf121548e173d582",
-    "mergeable": "UNKNOWN",
+    "mergeable": "MERGEABLE",
     "ci_state": "success",
     "review_decision": "REVIEW_REQUIRED",
-    "snapshot_at": "2026-10-27T09:29:00.052Z",
+    "snapshot_at": "2026-10-27T09:30:27.628Z",
     "ci_seen_sha": null,
-    "merge_state": "UNKNOWN"
+    "merge_state": "BEHIND"
    }
   ],
   "pending_actions": [
