@@ -1,6 +1,6 @@
 {
  "version": 1,
- "exported_at": "2026-10-27T09:28:07.852Z",
+ "exported_at": "2026-10-27T09:29:31.103Z",
  "tables": {
   "repos": [
    {
@@ -10,7 +10,7 @@
     "policy_status": null,
     "policy_excerpts": null,
     "block_reason": null,
-    "last_scanned": "2026-10-27T09:27:40.683Z"
+    "last_scanned": "2026-10-27T09:29:08.986Z"
    }
   ],
   "issues": [
@@ -2022,7 +2022,7 @@
     "title": "vn-lunar: return a month calendar with lunar dates, can chi, solar terms and holidays (core, CLI `lunar month`, MCP…",
     "body": "## Problem\nQuestions like \"tháng này rằm ngày nào?\" or \"lịch âm tháng 12\" need a whole month, but the CLI (`packages/cli/src/commands/lunar.ts`: `from-solar`, `to-solar`, `holidays`, `tet`, `canchi`) and the MCP tools convert one date at a time. An agent has to make ~30 calls. The leading competitor `react-native-lich-am` ships a month calendar component. A grep for a month-level function in `packages/core/src/lunar` finds none.\n\nAll the parts exist: `lunarInfo` (`lunar/index.ts:53`), `dayCanChi` (`lunar/canchi.ts`), `getSolarTermIndex` (`lunar/astro.ts:302`), `holidays()` (`lunar/holidays.ts:205`) and `publicHolidays()` (`holidays/index.ts:158`). No new domain facts are needed. Giờ hoàng đạo and trực stay out until #205 is resolved.\n\n## Proposed surface\n- Core: `lunarMonthCalendar(month: number, year: number): Result<{ month; year; days: Array<{ date: string /* yyyy-mm-dd */; weekday: string; lunar: { day; month; year; leap: boolean }; text: string; dayCanChi: string; firstOfLunarMonth: boolean /* mùng 1 */; fullMoon: boolean /* lunar day 15, rằm */; solarTerm?: string /* only on the day a new term starts */; holidays: string[] /* names from lunar holidays() and publicHolidays().daysOff */ }> }>`. Invalid month/year → `INVALID_DATE`; years outside the supported lunar range return the existing range error. A year outside the vn-holidays range only skips the public days off.\n- CLI: `vn-skills lunar month <mm/yyyy>` (also accepts `yyyy-mm`): JSON when piped, a compact table in a terminal.\n- MCP: `vn_lunar_month` with `{ month, year }`.\n\n## Acceptance\n- [ ] ≥ 12 new tests in `tests/lunar.test.ts`: day count for 28/29/30/31-day months incl. February of a leap year; each day matches `lunarInfo` for the same date; the month containing Tết 2027 (`2027-02-06` per README) flags that day as lunar 1/1 and lists the Tết holiday; a month that spans a leap lunar month (find one with `leapMonthOf`) has `leap: true` on those days; exactly the days where the solar term changes carry `solarTerm`; invalid input `13/2026` and `0/2026`\n- [ ] CLI test in `tests/cli.test.ts` and MCP test in `tests/mcp.test.ts`\n- [ ] `skills/vn-lunar/SKILL.md` documents the command; trigger words \"lịch âm tháng\", \"lịch vạn niên\", \"rằm tháng này\"\n- [ ] README.md and README.vi.md: MCP tool table and tool count updated",
     "url": "https://github.com/beiryu/vn-skills/issues/240",
-    "state": "pr_open",
+    "state": "done",
     "score": 1,
     "triage_reason": "The month view is how Vietnamese users read the lunar calendar. Without it the agent needs dozens of calls; with it, the most common lunar question is answered in one call, using only existing functions.",
     "attempts": 1,
@@ -2038,7 +2038,7 @@
     "pr_body": "## What & why\n\nCloses #240\n\nAdds a month-level lunar calendar so an agent can answer \"tháng này rằm ngày nào?\" in one call instead of about 30.\n\n- Core: `lunarMonthCalendar(month, year)` returns each day with its solar date, weekday, lunar date (including `leap`), text, day can chi, `firstOfLunarMonth`, `fullMoon`, `solarTerm` (only on the day a new term starts) and `holidays`. Holidays come from lunar `holidays()` and the `publicHolidays()` days off. Invalid month or year returns `INVALID_DATE`. A year outside the lunar range returns the existing range error. A year outside the vn-holidays range only skips the public days off.\n- CLI: `vn-skills lunar month <mm/yyyy>` (also accepts `yyyy-mm`). It prints JSON when piped and a compact table in a terminal.\n- MCP: new tool `vn_lunar_month` with `{ month, year }`.\n- Docs: `skills/vn-lunar/SKILL.md` (command and trigger words), `README.md`, `README.vi.md` (MCP tool table and count), `llms-install.md`.\n\nNo new data and no new Vietnamese facts. Everything reuses existing functions. Giờ hoàng đạo and trực are not included.\n\n## Acceptance (from the issue)\n\n- [x] At least 12 new tests in `tests/lunar.test.ts`. They cover day counts for 28/29/30/31-day months including February of a leap year, each day matching `lunarInfo`, the Tết 2027 month (lunar 1/1 flagged, Tết holiday listed), a month with a leap lunar month (`leap: true`), `solarTerm` set exactly on the days the term changes, and invalid input `13/2026` and `0/2026`.\n- [x] CLI test in `tests/cli.test.ts` and MCP test in `tests/mcp.test.ts`\n- [x] `skills/vn-lunar/SKILL.md` documents the command with the triggers \"lịch âm tháng\", \"lịch vạn niên\", \"rằm tháng này\"\n- [x] `README.md` and `README.vi.md`: MCP tool table and tool count updated\n\n## Testing\n\nNew tests are in `tests/lunar.test.ts`, `tests/cli.test.ts` and `tests/mcp.test.ts`, as listed above. `pnpm build`, `pnpm typecheck`, `pnpm lint`, `pnpm exec vitest run` and `pnpm format:check` all pass.\n\n## Checklist\n\n- [x] Title follows Conventional Commits (`feat|fix|docs|data|test|refactor|perf|build|ci|chore(scope): …`)\n- [x] Tests added or updated (golden test for every bug fix)\n- [x] `pnpm build && pnpm typecheck && pnpm lint && pnpm test && pnpm format:check` pass locally\n- [x] Core stays offline (no `fetch`/HTTP in `packages/core`)\n- [ ] Data changes go through `scripts/build-data.ts` and `SOURCES.md` (source + license)\n- [x] SKILL.md / README updated if behaviour changed\n\nThe data box is unticked because this PR has no data changes.\n",
     "dry": 0,
     "claimed_at": null,
-    "updated_at": "2026-10-27T09:22:24.996Z",
+    "updated_at": "2026-10-27T09:28:49.650Z",
     "blocked": null,
     "patch": "diff --git a/README.md b/README.md\nindex dc4994e..29909ba 100644\n--- a/README.md\n+++ b/README.md\n@@ -88,7 +88,7 @@ Setup for other clients is in [MCP client setup](#mcp-client-setup). Or in any M\n { \"mcpServers\": { \"vn-skills\": { \"command\": \"npx\", \"args\": [\"-y\", \"@vn-skills/mcp\"] } } }\n ```\n \n-The server exposes 30 tools, grouped by skill. All tools are declared read-only and offline (`readOnlyHint: true`, `openWorldHint: false`).\n+The server exposes 31 tools, grouped by skill. All tools are declared read-only and offline (`readOnlyHint: true`, `openWorldHint: false`).\n \n | Skill              | Tools                                                                                                                                          |\n | ------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------- |\n@@ -99,7 +99,7 @@ The server exposes 30 tools, grouped by skill. All tools are declared read-only\n | `vn-phone`         | `vn_phone`                                                                                                                                     |\n | `vn-holidays`      | `vn_holidays_year`, `vn_holidays_is_working_day`, `vn_holidays_add_working_days`, `vn_holidays_count_working_days`                             |\n | `vn-money-words`   | `vn_money_to_words`                                                                                                                            |\n-| `vn-lunar`         | `vn_lunar_from_solar`, `vn_lunar_to_solar`, `vn_lunar_holidays`, `vn_lunar_tet`, `vn_lunar_canchi`                                             |\n+| `vn-lunar`         | `vn_lunar_from_solar`, `vn_lunar_to_solar`, `vn_lunar_month`, `vn_lunar_holidays`, `vn_lunar_tet`, `vn_lunar_canchi`                           |\n | `vn-einvoice`      | `vn_einvoice_validate`, `vn_einvoice_totals`, `vn_einvoice_mock_issue`, `vn_einvoice_example`                                                  |\n | `vn-name`          | `vn_name`                                                                                                                                      |\n | `vn-number-format` | `vn_number_format`                                                                                                                             |\ndiff --git a/README.vi.md b/README.vi.md\nindex b3fefb9..d021e39 100644\n--- a/README.vi.md\n+++ b/README.vi.md\n@@ -86,7 +86,7 @@ Hoặc trong cấu hình MCP bất kỳ:\n { \"mcpServers\": { \"vn-skills\": { \"command\": \"npx\", \"args\": [\"-y\", \"@vn-skills/mcp\"] } } }\n ```\n \n-Server cung cấp 30 tool, nhóm theo skill. Mọi tool đều được khai báo chỉ đọc và offline (`readOnlyHint: true`, `openWorldHint: false`).\n+Server cung cấp 31 tool, nhóm theo skill. Mọi tool đều được khai báo chỉ đọc và offline (`readOnlyHint: true`, `openWorldHint: false`).\n \n | Skill              | Tool                                                                                                                                           |\n | ------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------- |\n@@ -97,7 +97,7 @@ Server cung cấp 30 tool, nhóm theo skill. Mọi tool đều được khai bá\n | `vn-phone`         | `vn_phone`                                                                                                                                     |\n | `vn-holidays`      | `vn_holidays_year`, `vn_holidays_is_working_day`, `vn_holidays_add_working_days`, `vn_holidays_count_working_days`                             |\n | `vn-money-words`   | `vn_money_to_words`                                                                                                                            |\n-| `vn-lunar`         | `vn_lunar_from_solar`, `vn_lunar_to_solar`, `vn_lunar_holidays`, `vn_lunar_tet`, `vn_lunar_canchi`                                             |\n+| `vn-lunar`         | `vn_lunar_from_solar`, `vn_lunar_to_solar`, `vn_lunar_month`, `vn_lunar_holidays`, `vn_lunar_tet`, `vn_lunar_canchi`                           |\n | `vn-einvoice`      | `vn_einvoice_validate`, `vn_einvoice_totals`, `vn_einvoice_mock_issue`, `vn_einvoice_example`                                                  |\n | `vn-name`          | `vn_name`                                                                                                                                      |\n | `vn-number-format` | `vn_number_format`                                                                                                                             |\ndiff --git a/llms-install.md b/llms-install.md\nindex 6e77f57..03ee399 100644\n--- a/llms-install.md\n+++ b/llms-install.md\n@@ -18,7 +18,7 @@ Add this to the MCP client config (runs over stdio):\n ## Check that it works\n \n - The server prints `vn-skills MCP server running on stdio` to stderr.\n-- It lists 30 tools, grouped by skill (`vietqr`, `vn-address`, …).\n+- It lists 31 tools, grouped by skill (`vietqr`, `vn-address`, …).\n \n Example prompt: _\"tạo QR chuyển 500k vào VCB số tài khoản 0011001234567\"_ calls the `vietqr_build` tool.\n \ndiff --git a/packages/cli/src/commands/lunar.ts b/packages/cli/src/commands/lunar.ts\nindex c688c4e..f891f07 100644\n--- a/packages/cli/src/commands/lunar.ts\n+++ b/packages/cli/src/commands/lunar.ts\n@@ -1,6 +1,7 @@\n import { Command } from 'commander';\n import {\n   lunarInfo,\n+  lunarMonthCalendar,\n   lunarToSolar,\n   parseDateInput,\n   holidays,\n@@ -38,6 +39,31 @@ export function registerLunar(program: Command): void {\n         );\n     });\n \n+  cmd\n+    .command('month <month>')\n+    .description('Month calendar (mm/yyyy or yyyy-mm): lunar dates, can chi, solar terms, holidays')\n+    .action((arg: string, _o, c: Command) => {\n+      const m = /^(\\d{1,2})[/-](\\d{4})$/.exec(arg.trim()) ?? /^(\\d{4})-(\\d{1,2})$/.exec(arg.trim());\n+      if (!m)\n+        failExit(c, {\n+          code: 'INVALID_DATE',\n+          message: `Cannot parse month \"${arg}\"`,\n+          hint: 'Use mm/yyyy or yyyy-mm.',\n+        });\n+      const iso = /^\\d{4}/.test(m[1]!);\n+      const r = lunarMonthCalendar(Number(iso ? m[2] : m[1]), Number(iso ? m[1] : m[2]));\n+      if (!r.ok) failExit(c, r.error);\n+      if (wantsJson(c)) printJson(r);\n+      else\n+        for (const d of r.days) {\n+          const l = `${d.lunar.day}/${d.lunar.month}${d.lunar.leap ? 'n' : ''}`;\n+          const extra = [d.solarTerm, ...d.holidays].filter(Boolean).join('; ');\n+          process.stdout.write(\n+            `${d.date}  ${d.weekday.padEnd(9)}  ${l.padEnd(6)}  ${d.dayCanChi.padEnd(9)}${extra ? `  ${extra}` : ''}\\n`,\n+          );\n+        }\n+    });\n+\n   cmd\n     .command('to-solar <date>')\n     .description('Lunar dd/mm/yyyy -> solar date')\ndiff --git a/packages/core/src/lunar/index.ts b/packages/core/src/lunar/index.ts\nindex a8ea2fd..93cb0e5 100644\n--- a/packages/core/src/lunar/index.ts\n+++ b/packages/core/src/lunar/index.ts\n@@ -10,6 +10,8 @@ import {\n   CHI,\n } from './canchi.js';\n import { fail, type Result } from '../shared/result.js';\n+import { holidays } from './holidays.js';\n+import { publicHolidays } from '../holidays/index.js';\n \n export { jdFromDate, jdToDate, newMoon, sunLongitude } from './astro.js';\n export {\n@@ -33,7 +35,8 @@ export {\n   CHI_ANIMALS_EN,\n   SOLAR_TERMS,\n } from './canchi.js';\n-export { holidays, type Holiday } from './holidays.js';\n+export { type Holiday } from './holidays.js';\n+export { holidays };\n \n export interface LunarInfo extends LunarDate {\n   solar: { day: number; month: number; year: number; date: string; weekday: string };\n@@ -83,6 +86,63 @@ export function lunarInfo(\n   };\n }\n \n+export interface LunarMonthDay {\n+  date: string;\n+  weekday: string;\n+  lunar: { day: number; month: number; year: number; leap: boolean };\n+  text: string;\n+  dayCanChi: string;\n+  /** Mùng 1 of a lunar month. */\n+  firstOfLunarMonth: boolean;\n+  /** Rằm: lunar day 15. */\n+  fullMoon: boolean;\n+  /** Only on the day a new solar term starts. */\n+  solarTerm?: string;\n+  holidays: string[];\n+}\n+\n+/** Every day of a solar month with lunar date, can chi, solar term starts and holidays/days off. */\n+export function lunarMonthCalendar(\n+  month: number,\n+  year: number,\n+): Result<{ month: number; year: number; days: LunarMonthDay[] }> {\n+  if (!Number.isInteger(month) || month < 1 || month > 12)\n+    return fail('INVALID_DATE', `Month ${month} is out of range (1-12)`, 'Use mm/yyyy or yyyy-mm.');\n+  if (!Number.isInteger(year))\n+    return fail('INVALID_DATE', `Invalid year \"${year}\"`, 'Use mm/yyyy or yyyy-mm.');\n+  const dim = month === 2 ? (isLeap(year) ? 29 : 28) : [4, 6, 9, 11].includes(month) ? 30 : 31;\n+  const names = new Map<string, string[]>();\n+  const add = (date: string, name: string) => {\n+    const list = names.get(date) ?? [];\n+    if (!list.includes(name)) list.push(name);\n+    names.set(date, list);\n+  };\n+  for (const h of holidays(year)) add(h.date, h.name);\n+  const pub = publicHolidays(year);\n+  if (pub.ok) for (const d of pub.daysOff) add(d.date, d.name);\n+  const days: LunarMonthDay[] = [];\n+  let prevTerm = -1;\n+  for (let d = 1; d <= dim; d++) {\n+    const r = lunarInfo(d, month, year);\n+    if (!r.ok) return r;\n+    const idx = getSolarTermIndex(jdFromDate(d, month, year), VN_TIMEZONE);\n+    if (d === 1) prevTerm = getSolarTermIndex(jdFromDate(d, month, year) - 1, VN_TIMEZONE);\n+    days.push({\n+      date: r.solar.date,\n+      weekday: r.solar.weekday,\n+      lunar: { day: r.day, month: r.month, year: r.year, leap: r.leap },\n+      text: r.text,\n+      dayCanChi: r.dayCanChi,\n+      firstOfLunarMonth: r.day === 1,\n+      fullMoon: r.day === 15,\n+      ...(idx !== prevTerm ? { solarTerm: SOLAR_TERMS[idx]! } : {}),\n+      holidays: names.get(r.solar.date) ?? [],\n+    });\n+    prevTerm = idx;\n+  }\n+  return { ok: true, month, year, days };\n+}\n+\n /**\n  * Parse \"dd/mm/yyyy\", \"dd-mm-yyyy\" or ISO \"yyyy-mm-dd\" into numbers.\n  * Days are checked against the Gregorian calendar; pass `{ lunar: true }` to allow 1-30 for any month.\ndiff --git a/packages/mcp/src/server.ts b/packages/mcp/src/server.ts\nindex d6b1cb5..3031613 100644\n--- a/packages/mcp/src/server.ts\n+++ b/packages/mcp/src/server.ts\n@@ -24,6 +24,7 @@ import {\n   formatDate,\n   parseAmount,\n   lunarInfo,\n+  lunarMonthCalendar,\n   lunarToSolar,\n   tetInfo,\n   canChiOfYear,\n@@ -486,6 +487,21 @@ export function createServer(): McpServer {\n     },\n   );\n \n+  server.registerTool(\n+    'vn_lunar_month',\n+    {\n+      title: 'Lunar month calendar',\n+      annotations: OFFLINE_READ_ONLY,\n+      description:\n+        'Calendar of a Gregorian month: each day with lunar date (leap flag, mùng 1, rằm), day can chi, solar term starts and holidays/days off.',\n+      inputSchema: { month: z.number().int(), year: z.number().int() },\n+    },\n+    async ({ month, year }) => {\n+      const r = lunarMonthCalendar(month, year);\n+      return r.ok ? json(r) : json({ ok: false, error: r.error }, true);\n+    },\n+  );\n+\n   server.registerTool(\n     'vn_lunar_holidays',\n     {\ndiff --git a/skills/vn-lunar/SKILL.md b/skills/vn-lunar/SKILL.md\nindex b36783f..ed63995 100644\n--- a/skills/vn-lunar/SKILL.md\n+++ b/skills/vn-lunar/SKILL.md\n@@ -1,6 +1,6 @@\n ---\n name: vn-lunar\n-description: Vietnamese lunar calendar (âm lịch) - convert solar to lunar dates and back, leap months (tháng nhuận), can chi (Giáp Thìn, Ất Tỵ), zodiac, 24 solar terms, Tết date for any year, and Vietnamese public holidays (Tết, Giỗ Tổ Hùng Vương, 30/4, 1/5, 2/9). Uses astronomical new-moon and solar-term calculations at UTC+7, which differs from the Chinese calendar on some dates. Use for \"hôm nay là ngày mấy âm lịch\", \"Tết năm 2027 ngày nào\", \"ngày lễ\", \"mùng 1\", \"rằm\", scheduling around holidays, or any lunar/solar conversion.\n+description: Vietnamese lunar calendar (âm lịch) - convert solar to lunar dates and back, leap months (tháng nhuận), can chi (Giáp Thìn, Ất Tỵ), zodiac, 24 solar terms, Tết date for any year, and Vietnamese public holidays (Tết, Giỗ Tổ Hùng Vương, 30/4, 1/5, 2/9). Uses astronomical new-moon and solar-term calculations at UTC+7, which differs from the Chinese calendar on some dates. Use for \"hôm nay là ngày mấy âm lịch\", \"Tết năm 2027 ngày nào\", \"lịch âm tháng\", \"lịch vạn niên\", \"rằm tháng này\", \"ngày lễ\", \"mùng 1\", \"rằm\", scheduling around holidays, or any lunar/solar conversion.\n license: MIT\n compatibility: Requires Node.js 22+ (runs npx -y @vn-skills/cli).\n metadata:\n@@ -52,9 +52,10 @@ npx -y @vn-skills/cli lunar to-solar 01/06/2025 --leap   # leap month 6 of Ất\n npx -y @vn-skills/cli lunar tet 2027                     # 2027-02-06  Đinh Mùi (Goat)\n npx -y @vn-skills/cli lunar holidays 2026 --public       # official days off with solar dates\n npx -y @vn-skills/cli lunar canchi 2024                  # Giáp Thìn\n+npx -y @vn-skills/cli lunar month 02/2027                # whole month: lunar dates, can chi, solar terms, holidays (also yyyy-mm)\n ```\n \n-Library: `solarToLunar`, `lunarToSolar`, `lunarInfo`, `tetDate`, `holidays`, `yearCanChi`, `dayCanChi`, `leapMonthOf` from `@vn-skills/core`.\n+Library: `solarToLunar`, `lunarToSolar`, `lunarInfo`, `tetDate`, `holidays`, `yearCanChi`, `dayCanChi`, `leapMonthOf`, `lunarMonthCalendar` from `@vn-skills/core`.\n \n ## Rules and gotchas\n \ndiff --git a/tests/cli.test.ts b/tests/cli.test.ts\nindex 288eb29..a16fb09 100644\n--- a/tests/cli.test.ts\n+++ b/tests/cli.test.ts\n@@ -279,6 +279,16 @@ describe('vn-skills CLI', () => {\n     const r = run(['lunar', 'from-solar', '29/01/2025']);\n     expect(r.json().text).toBe('Mùng 1 tháng Giêng năm Ất Tỵ');\n   });\n+  it('lunar month', () => {\n+    const j = run(['lunar', 'month', '02/2027']).json() as { days: Array<{ date: string }> };\n+    expect(j.days).toHaveLength(28);\n+    const iso = run(['lunar', 'month', '2027-02']).json() as typeof j & { month: number };\n+    expect(iso.month).toBe(2);\n+    expect(iso.days).toEqual(j.days);\n+    const bad = run(['lunar', 'month', '13/2026']);\n+    expect(bad.code).toBe(1);\n+    expect(bad.json()).toMatchObject({ ok: false, error: { code: 'INVALID_DATE' } });\n+  });\n   it('lunar to-solar', () => {\n     const r = run(['lunar', 'to-solar', '1/1/2026']);\n     expect((r.json().solar as { date: string }).date).toBe('2026-02-17');\ndiff --git a/tests/lunar.test.ts b/tests/lunar.test.ts\nindex 43c6133..db149f2 100644\n--- a/tests/lunar.test.ts\n+++ b/tests/lunar.test.ts\n@@ -14,6 +14,9 @@ import {\n   jdFromDate,\n   jdToDate,\n   lunarMonthLength,\n+  lunarMonthCalendar,\n+  publicHolidays,\n+  tetInfo,\n } from '@vn-skills/core';\n import { loadGolden, title } from './golden.js';\n \n@@ -209,3 +212,100 @@ const r = ${call}; console.log(r.ok === false ? r.error.code : 'ok');`;\n     expect(out.stdout.trim()).toBe('INVALID_TIMEZONE');\n   });\n });\n+\n+describe('lunarMonthCalendar', () => {\n+  const cal = (m: number, y: number) => {\n+    const r = lunarMonthCalendar(m, y);\n+    if (!r.ok) throw new Error(r.error.message);\n+    return r.days;\n+  };\n+  it.each([\n+    [2, 2023, 28],\n+    [2, 2024, 29],\n+    [4, 2026, 30],\n+    [1, 2026, 31],\n+  ])('has the right day count for %i/%i', (m, y, n) => {\n+    expect(cal(m, y)).toHaveLength(n);\n+  });\n+  it('matches lunarInfo for each day', () => {\n+    for (const d of cal(8, 2025)) {\n+      const [y, m, dd] = d.date.split('-').map(Number);\n+      const i = lunarInfo(dd!, m!, y!);\n+      if (!i.ok) throw new Error('x');\n+      expect(d.lunar).toEqual({ day: i.day, month: i.month, year: i.year, leap: i.leap });\n+      expect(d.dayCanChi).toBe(i.dayCanChi);\n+      expect(d.text).toBe(i.text);\n+      expect(d.weekday).toBe(i.solar.weekday);\n+    }\n+  });\n+  it('flags Tết 2027', () => {\n+    const d = cal(2, 2027).find((x) => x.date === '2027-02-06')!;\n+    expect(d.lunar).toMatchObject({ day: 1, month: 1, leap: false });\n+    expect(d.firstOfLunarMonth).toBe(true);\n+    expect(d.holidays.some((h) => h.includes('Tết'))).toBe(true);\n+  });\n+  it('flags rằm and mùng 1 exactly where the lunar day is 15 and 1', () => {\n+    const days = cal(3, 2026);\n+    expect(days.filter((d) => d.fullMoon)).toHaveLength(1);\n+    expect(days.filter((d) => d.firstOfLunarMonth)).toHaveLength(1);\n+    expect(days.every((d) => d.fullMoon === (d.lunar.day === 15))).toBe(true);\n+    expect(days.every((d) => d.firstOfLunarMonth === (d.lunar.day === 1))).toBe(true);\n+  });\n+  it('marks leap-month days', () => {\n+    const ly = 2025;\n+    const lm = leapMonthOf(ly)!;\n+    const s = lunarToSolar(1, lm, ly, true);\n+    if (!s.ok) throw new Error('x');\n+    const days = cal(s.month, s.year);\n+    const d = days.find(\n+      (x) =>\n+        x.date ===\n+        `${s.year}-${String(s.month).padStart(2, '0')}-${String(s.day).padStart(2, '0')}`,\n+    )!;\n+    expect(d.lunar.leap).toBe(true);\n+    expect(days.some((x) => !x.lunar.leap)).toBe(true);\n+  });\n+  it('carries solarTerm exactly where the term changes', () => {\n+    const days = cal(5, 2026);\n+    const withTerm = days.filter((d) => d.solarTerm).map((d) => d.date);\n+    expect(withTerm).toHaveLength(2);\n+    const info = (s: string) => {\n+      const [y, m, dd] = s.split('-').map(Number);\n+      const r = lunarInfo(dd!, m!, y!);\n+      if (!r.ok) throw new Error('x');\n+      return r.solarTerm;\n+    };\n+    days.forEach((d, i) => {\n+      if (i > 0) expect(!!d.solarTerm).toBe(info(d.date) !== info(days[i - 1]!.date));\n+      if (d.solarTerm) expect(d.solarTerm).toBe(info(d.date));\n+    });\n+  });\n+  it('lists public days off', () => {\n+    expect(cal(9, 2025).find((d) => d.date === '2025-09-02')!.holidays.length).toBeGreaterThan(0);\n+  });\n+  it('skips only public days off for years outside the holiday data', () => {\n+    expect(publicHolidays(1900).ok).toBe(false);\n+    const t = tetInfo(1900);\n+    if (!t.ok) throw new Error('x');\n+    const month = Number(t.date.slice(5, 7));\n+    const days = cal(month, 1900);\n+    const tet = days.find((d) => d.date === t.date);\n+    expect(tet?.holidays.some((h) => h.includes('Tết'))).toBe(true);\n+  });\n+  it.each([\n+    [13, 2026],\n+    [0, 2026],\n+    [1.5, 2026],\n+  ])('rejects month %s', (m, y) => {\n+    const r = lunarMonthCalendar(m, y);\n+    expect(r.ok).toBe(false);\n+    if (!r.ok) expect(r.error.code).toBe('INVALID_DATE');\n+  });\n+  it('rejects unsupported lunar years', () => {\n+    const r = lunarMonthCalendar(6, 1500);\n+    const info = lunarInfo(1, 6, 1500);\n+    expect(r.ok).toBe(false);\n+    expect(info.ok).toBe(false);\n+    if (!r.ok && !info.ok) expect(r.error.code).toBe(info.error.code);\n+  });\n+});\ndiff --git a/tests/mcp.test.ts b/tests/mcp.test.ts\nindex ac748e2..cfd0379 100644\n--- a/tests/mcp.test.ts\n+++ b/tests/mcp.test.ts\n@@ -69,6 +69,7 @@ describe('vn-skills MCP server', () => {\n         'vn_number_format',\n         'vn_lunar_from_solar',\n         'vn_lunar_to_solar',\n+        'vn_lunar_month',\n         'vn_lunar_holidays',\n         'vn_einvoice_validate',\n         'vn_einvoice_totals',\n@@ -180,6 +181,19 @@ describe('vn-skills MCP server', () => {\n     );\n     expect(j.yearCanChi).toBe('Ất Tỵ');\n   });\n+  it('vn_lunar_month', async () => {\n+    const j = text(\n+      await client.callTool({ name: 'vn_lunar_month', arguments: { month: 2, year: 2027 } }),\n+    );\n+    const days = j.days as Array<{ date: string; lunar: { day: number; month: number } }>;\n+    expect(days).toHaveLength(28);\n+    expect(days.find((d) => d.date === '2027-02-06')?.lunar).toMatchObject({ day: 1, month: 1 });\n+    const bad = await client.callTool({\n+      name: 'vn_lunar_month',\n+      arguments: { month: 13, year: 2026 },\n+    });\n+    expect(bad.isError).toBe(true);\n+  });\n   it('vn_lunar_to_solar', async () => {\n     const j = text(\n       await client.callTool({\n",
     "repro_patch": null,
@@ -3212,12 +3212,12 @@
     "last_seen_at": "2026-10-27T07:21:02.312Z",
     "opened_at": "2026-10-27T07:21:02.312Z",
     "head_sha": "69b89da288a83451af11e676beecf4461446568c",
-    "mergeable": "MERGEABLE",
-    "ci_state": "pending",
+    "mergeable": "UNKNOWN",
+    "ci_state": "success",
     "review_decision": "REVIEW_REQUIRED",
-    "snapshot_at": "2026-10-27T09:27:12.343Z",
+    "snapshot_at": "2026-10-27T09:28:45.577Z",
     "ci_seen_sha": null,
-    "merge_state": "BLOCKED"
+    "merge_state": "UNKNOWN"
    },
    {
     "issue_id": 68,
@@ -3226,28 +3226,28 @@
     "state": "open",
     "last_seen_at": "2026-10-27T07:20:55.720Z",
     "opened_at": "2026-10-27T07:20:55.720Z",
-    "head_sha": "d3207617f60d595bfe5f9a78783780deb03e06de",
+    "head_sha": "e3c50f42b8e18209b1393d24e669b00817322e29",
     "mergeable": "MERGEABLE",
-    "ci_state": "success",
+    "ci_state": "pending",
     "review_decision": "REVIEW_REQUIRED",
-    "snapshot_at": "2026-10-27T09:27:15.011Z",
+    "snapshot_at": "2026-10-27T09:28:47.695Z",
     "ci_seen_sha": null,
-    "merge_state": "BEHIND"
+    "merge_state": "BLOCKED"
    },
    {
     "issue_id": 70,
     "url": "https://github.com/beiryu/vn-skills/pull/246",
     "number": 246,
-    "state": "open",
+    "state": "merged",
     "last_seen_at": "2026-10-27T07:20:50.062Z",
     "opened_at": "2026-10-27T07:20:50.062Z",
     "head_sha": "5430b80f868904410d9ccf65934256fcea0ec09b",
-    "mergeable": "MERGEABLE",
+    "mergeable": "UNKNOWN",
     "ci_state": "success",
     "review_decision": "REVIEW_REQUIRED",
-    "snapshot_at": "2026-10-27T09:27:18.216Z",
+    "snapshot_at": "2026-10-27T09:28:49.650Z",
     "ci_seen_sha": null,
-    "merge_state": "BLOCKED"
+    "merge_state": "UNKNOWN"
    },
    {
     "issue_id": 72,
@@ -3287,12 +3287,12 @@
     "last_seen_at": "2026-10-27T08:09:00.937Z",
     "opened_at": "2026-10-27T08:09:00.937Z",
     "head_sha": "209cc5272de829e9018897c1a06ca9369766b670",
-    "mergeable": "MERGEABLE",
+    "mergeable": "UNKNOWN",
     "ci_state": "success",
     "review_decision": "REVIEW_REQUIRED",
-    "snapshot_at": "2026-10-27T09:27:20.787Z",
+    "snapshot_at": "2026-10-27T09:28:50.469Z",
     "ci_seen_sha": null,
-    "merge_state": "BEHIND"
+    "merge_state": "UNKNOWN"
    },
    {
     "issue_id": 77,
@@ -3302,12 +3302,12 @@
     "last_seen_at": "2026-10-27T09:11:17.709Z",
     "opened_at": "2026-10-27T09:11:17.709Z",
     "head_sha": "f91a8f876894343c4117e21bd2aa89f900f8b991",
-    "mergeable": "MERGEABLE",
+    "mergeable": "UNKNOWN",
     "ci_state": "success",
     "review_decision": "REVIEW_REQUIRED",
-    "snapshot_at": "2026-10-27T09:27:23.182Z",
+    "snapshot_at": "2026-10-27T09:28:52.725Z",
     "ci_seen_sha": null,
-    "merge_state": "BLOCKED"
+    "merge_state": "UNKNOWN"
    },
    {
     "issue_id": 78,
@@ -3317,12 +3317,12 @@
     "last_seen_at": "2026-10-27T09:11:10.908Z",
     "opened_at": "2026-10-27T09:11:10.908Z",
     "head_sha": "5b459e190db7d1067e6e465bd9d32297e8df386f",
-    "mergeable": "MERGEABLE",
+    "mergeable": "UNKNOWN",
     "ci_state": "success",
     "review_decision": "REVIEW_REQUIRED",
-    "snapshot_at": "2026-10-27T09:27:25.722Z",
+    "snapshot_at": "2026-10-27T09:28:55.040Z",
     "ci_seen_sha": null,
-    "merge_state": "BEHIND"
+    "merge_state": "UNKNOWN"
    },
    {
     "issue_id": 79,
@@ -3332,12 +3332,12 @@
     "last_seen_at": "2026-10-27T09:11:04.370Z",
     "opened_at": "2026-10-27T09:11:04.370Z",
     "head_sha": "f446df02a1c44008ad70eda9b6cfe95695767461",
-    "mergeable": "MERGEABLE",
+    "mergeable": "UNKNOWN",
     "ci_state": "success",
     "review_decision": "REVIEW_REQUIRED",
-    "snapshot_at": "2026-10-27T09:27:28.564Z",
+    "snapshot_at": "2026-10-27T09:28:57.630Z",
     "ci_seen_sha": null,
-    "merge_state": "BLOCKED"
+    "merge_state": "UNKNOWN"
    },
    {
     "issue_id": 81,
@@ -3347,12 +3347,12 @@
     "last_seen_at": "2026-10-27T09:10:57.507Z",
     "opened_at": "2026-10-27T09:10:57.507Z",
     "head_sha": "79e8eb0a0aa767ecaa779ca6cf121548e173d582",
-    "mergeable": "MERGEABLE",
+    "mergeable": "UNKNOWN",
     "ci_state": "success",
     "review_decision": "REVIEW_REQUIRED",
-    "snapshot_at": "2026-10-27T09:27:31.608Z",
+    "snapshot_at": "2026-10-27T09:29:00.052Z",
     "ci_seen_sha": null,
-    "merge_state": "BEHIND"
+    "merge_state": "UNKNOWN"
    }
   ],
   "pending_actions": [
