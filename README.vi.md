@@ -40,6 +40,7 @@ Chuyển hàng loạt địa chỉ đã lưu (mỗi dòng một địa chỉ →
 ```bash
 vn-skills address convert-file addresses.txt
 vn-skills address convert-file customers.csv --csv --column address > converted.csv
+vn-skills address convert-file customers.csv --csv --province-column province --district-column district --ward-column ward > converted.csv
 ```
 
 ## Cài skill

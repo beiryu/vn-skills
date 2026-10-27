@@ -5,7 +5,7 @@ import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { PNG } from 'pngjs';
 import jsqrModule from 'jsqr';
-import { parseVietQR, VERSION } from '@vn-skills/core';
+import { convertAddress, parseVietQR, VERSION } from '@vn-skills/core';
 
 const CLI = resolve(__dirname, '..', 'packages', 'cli', 'dist', 'index.js');
 
@@ -489,6 +489,165 @@ describe('vn-skills CLI', () => {
       expect(j.error.code).toBe('COLUMN_NOT_FOUND');
       expect(j.error.hint).toContain('name');
       expect(j.error.hint).toContain('address');
+    });
+
+    describe('structured columns', () => {
+      const P = 'TP.HCM';
+      const D = 'Q.1';
+      const W = 'P. Bến Nghé';
+      const S = '12 Lê Lợi';
+      const RES = [
+        'new_address',
+        'new_ward_code',
+        'new_province_code',
+        'mapping_type',
+        'confidence',
+        'warnings',
+      ];
+      const expectedCells = (input: Parameters<typeof convertAddress>[0]) => {
+        const r = convertAddress(input);
+        if (!r.ok) throw new Error('core conversion failed');
+        return [
+          r.new.formatted,
+          r.new.ward?.code ?? '',
+          r.new.province.code,
+          r.mappingType,
+          String(r.confidence),
+          r.warnings.join('; '),
+        ];
+      };
+      const structured = [
+        '--csv',
+        '--province-column',
+        'province',
+        '--district-column',
+        'district',
+        '--ward-column',
+        'ward',
+      ];
+
+      it('province/district/ward columns equal convertAddress on the structured input', () => {
+        const file = tmpFile('s.csv', `id,province,district,ward\n1,${P},${D},"${W}"\n`);
+        const r = run(['address', 'convert-file', file, ...structured]);
+        expect(r.code).toBe(0);
+        const rows = parseCsv(r.out);
+        expect(rows[0]).toEqual(['id', 'province', 'district', 'ward', ...RES]);
+        expect(rows[1]!.slice(0, 4)).toEqual(['1', P, D, W]);
+        expect(rows[1]!.slice(4)).toEqual(expectedCells({ province: P, district: D, ward: W }));
+      });
+
+      it('province column only', () => {
+        const file = tmpFile('p.csv', `id,province\n1,${P}\n`);
+        const r = run(['address', 'convert-file', file, '--csv', '--province-column', 'province']);
+        const rows = parseCsv(r.out);
+        expect(rows[0]).toEqual(['id', 'province', ...RES]);
+        expect(rows[1]!.slice(2)).toEqual(expectedCells({ province: P }));
+      });
+
+      it('province + ward + street columns, blank cells left out', () => {
+        const file = tmpFile('pws.csv', `province,ward,street\n${P},"${W}",${S}\n${P},,\n`);
+        const r = run([
+          'address',
+          'convert-file',
+          file,
+          '--csv',
+          '--province-column',
+          'province',
+          '--ward-column',
+          'ward',
+          '--street-column',
+          'street',
+        ]);
+        const rows = parseCsv(r.out);
+        expect(rows[1]!.slice(3)).toEqual(expectedCells({ province: P, ward: W, street: S }));
+        expect(rows[2]!.slice(3)).toEqual(expectedCells({ province: P }));
+      });
+
+      it('blank province cell fails the row and exits 2', () => {
+        const file = tmpFile(
+          'blank.csv',
+          `province,district,ward\n${P},${D},"${W}"\n,${D},"${W}"\n`,
+        );
+        const r = run(['address', 'convert-file', file, ...structured]);
+        expect(r.code).toBe(2);
+        expect(r.err).toContain('converted 1, failed 1');
+        const rows = parseCsv(r.out);
+        expect(rows[2]!.slice(3, 8)).toEqual(['', '', '', '', '']);
+        expect(rows[2]![8]).toMatch(/^error: /);
+      });
+
+      it('reads structured columns from stdin', () => {
+        const input = `province,district,ward\n${P},${D},"${W}"\n`;
+        const r = run(['address', 'convert-file', '-', ...structured], input);
+        expect(r.code).toBe(0);
+        expect(parseCsv(r.out)[1]!.slice(3)).toEqual(
+          expectedCells({ province: P, district: D, ward: W }),
+        );
+      });
+
+      it('--column with a structured option is CONFLICTING_OPTIONS', () => {
+        const file = tmpFile('c.csv', `address,province\n"${OLD}",${P}\n`);
+        const r = run([
+          '--json',
+          'address',
+          'convert-file',
+          file,
+          '--csv',
+          '--column',
+          'address',
+          '--province-column',
+          'province',
+        ]);
+        expect(r.code).toBe(1);
+        const j = r.json() as { ok: boolean; error: { code: string; hint: string } };
+        expect(j.error.code).toBe('CONFLICTING_OPTIONS');
+        expect(j.error.hint).toBeTruthy();
+      });
+
+      it('structured option without --province-column is MISSING_COLUMN', () => {
+        const file = tmpFile('m.csv', `province,ward\n${P},"${W}"\n`);
+        const r = run([
+          '--json',
+          'address',
+          'convert-file',
+          file,
+          '--csv',
+          '--ward-column',
+          'ward',
+        ]);
+        expect(r.code).toBe(1);
+        const j = r.json() as { error: { code: string } };
+        expect(j.error.code).toBe('MISSING_COLUMN');
+      });
+
+      it('structured option without --csv is MISSING_COLUMN with a --csv hint', () => {
+        const file = tmpFile('n.txt', `${OLD}\n`);
+        const r = run(['--json', 'address', 'convert-file', file, '--province-column', 'province']);
+        expect(r.code).toBe(1);
+        const j = r.json() as { error: { code: string; hint: string } };
+        expect(j.error.code).toBe('MISSING_COLUMN');
+        expect(j.error.hint).toContain('--csv');
+      });
+
+      it('unknown structured column is COLUMN_NOT_FOUND listing available columns', () => {
+        const file = tmpFile('u.csv', `province,ward\n${P},"${W}"\n`);
+        const r = run([
+          '--json',
+          'address',
+          'convert-file',
+          file,
+          '--csv',
+          '--province-column',
+          'province',
+          '--district-column',
+          'nope',
+        ]);
+        expect(r.code).toBe(1);
+        const j = r.json() as { error: { code: string; hint: string } };
+        expect(j.error.code).toBe('COLUMN_NOT_FOUND');
+        expect(j.error.hint).toContain('province');
+        expect(j.error.hint).toContain('ward');
+      });
     });
   });
   it('address provinces lists 34', () => {
