@@ -23,7 +23,7 @@ export function registerTaxid(program: Command): void {
             ['Checksum', r.checksumValid === null ? 'n/a' : 'valid'],
           ]) + '\n',
         );
-      for (const w of r.warnings) process.stderr.write(`warning: ${w}\n`);
+      if (!wantsJson(c)) for (const w of r.warnings) process.stderr.write(`warning: ${w}\n`);
     });
   cmd
     .command('check-digit <first9>')
