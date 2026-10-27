@@ -261,6 +261,17 @@ describe('vn-skills CLI', () => {
     const r = run(['lunar', 'to-solar', '30/2/2023']);
     expect(r.json().ok).toBe(true);
   });
+  it('lunar to-solar rejects day 31 with lunar wording and hint', () => {
+    const r = run(['--json', 'lunar', 'to-solar', '31/2/2024']);
+    expect(r.json()).toMatchObject({
+      ok: false,
+      error: {
+        code: 'INVALID_DATE',
+        message: 'Day 31 is out of range for lunar month 02/2024 (lunar months have 29 or 30 days)',
+        hint: 'Lunar dates use dd/mm/yyyy with day 1-30.',
+      },
+    });
+  });
   it('lunar holidays --public', () => {
     const r = run(['lunar', 'holidays', '2025', '--public']);
     expect(
