@@ -215,6 +215,22 @@ describe('vn-skills CLI', () => {
     expect(r.code).toBe(0);
     expect(r.json().kind).toBe('branch');
   });
+  it('--json id parse keeps warnings out of stderr', () => {
+    const r = run(['--json', 'id', 'parse', '001099012345']);
+    expect(r.err).toBe('');
+    expect((r.json().warnings as unknown[]).length).toBeGreaterThan(0);
+  });
+  it('--pretty id parse prints warnings to stderr', () => {
+    expect(run(['--pretty', 'id', 'parse', '001099012345']).err).toContain('warning: ');
+  });
+  it('--json taxid validate keeps warnings out of stderr', () => {
+    const r = run(['--json', 'taxid', 'validate', '001099012345']);
+    expect(r.err).toBe('');
+    expect((r.json().warnings as unknown[]).length).toBeGreaterThan(0);
+  });
+  it('--pretty taxid validate prints warnings to stderr', () => {
+    expect(run(['--pretty', 'taxid', 'validate', '001099012345']).err).toContain('warning: ');
+  });
   it('taxid validate empty', () => {
     const r = run(['taxid', 'validate', '']);
     expect(r.code).toBe(1);

@@ -158,6 +158,12 @@
         "expected": { "totalInWords": "Bảy triệu sáu trăm sáu mươi ngàn đồng" }
       }
     ],
+    "computeTotalsInvalid": [
+      { "name": "returns INVALID_INVOICE for null", "input": null, "expected": { "lines": [], "subtotal": 0, "discountTotal": 0, "vatTotal": 0, "grandTotal": 0, "byRate": [], "totalInWords": "", "totalInWordsError": { "code": "INVALID_INVOICE" } } },
+      { "name": "returns INVALID_INVOICE for a string", "input": "x", "expected": { "lines": [], "subtotal": 0, "discountTotal": 0, "vatTotal": 0, "grandTotal": 0, "byRate": [], "totalInWords": "", "totalInWordsError": { "code": "INVALID_INVOICE" } } },
+      { "name": "returns INVALID_INVOICE for an empty object", "input": {}, "expected": { "lines": [], "subtotal": 0, "discountTotal": 0, "vatTotal": 0, "grandTotal": 0, "byRate": [], "totalInWords": "", "totalInWordsError": { "code": "INVALID_INVOICE" } } },
+      { "name": "returns INVALID_INVOICE for a non-array lines", "input": { "lines": "x" }, "expected": { "lines": [], "subtotal": 0, "discountTotal": 0, "vatTotal": 0, "grandTotal": 0, "byRate": [], "totalInWords": "", "totalInWordsError": { "code": "INVALID_INVOICE" } } }
+    ],
     "roundVnd": [
       { "name": "half away from zero (positive)", "input": 0.5, "expected": 1 },
       { "name": "half away from zero (negative)", "input": -0.5, "expected": -1 },
