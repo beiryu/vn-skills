@@ -104,6 +104,16 @@
       { "name": "rejects 1001 digits", "input": "9", "repeat": 1001 },
       { "name": "rejects negative 1001 digits", "input": "9", "prefix": "-", "repeat": 1001 }
     ],
-    "numberToWords": [{ "input": 2024, "expected": "hai nghìn không trăm hai mươi tư" }]
+    "numberToWords": [
+      { "input": 2024, "expected": "hai nghìn không trăm hai mươi tư" },
+      { "input": 0, "expected": "không" },
+      { "input": 10, "expected": "mười" },
+      { "input": 15, "expected": "mười lăm" },
+      { "input": 21, "expected": "hai mươi mốt" },
+      { "input": 30, "expected": "ba mươi" },
+      { "input": 105, "expected": "một trăm lẻ năm" },
+      { "input": 1000000, "expected": "một triệu" },
+      { "input": -5, "expected": "âm năm" }
+    ]
   }
 }

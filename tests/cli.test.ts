@@ -270,6 +270,26 @@ describe('vn-skills CLI', () => {
     const r = run(['money', 'words', '1200000']);
     expect(r.json().words).toBe('một triệu hai trăm nghìn đồng');
   });
+  it('money words --plain reads without a unit', () => {
+    expect(run(['money', 'words', '30', '--plain', '--pretty']).out.trim()).toBe('ba mươi');
+    expect(run(['money', 'words', '105', '--plain', '--pretty']).out.trim()).toBe(
+      'một trăm lẻ năm',
+    );
+    expect(run(['money', 'words', '0', '--plain', '--pretty']).out.trim()).toBe('không');
+  });
+  it('money words --plain honours --thousand and negatives', () => {
+    expect(run(['money', 'words', '--plain', '--thousand', 'ngàn', '1500']).json().words).toBe(
+      'một ngàn năm trăm',
+    );
+    expect(run(['money', 'words', '--plain', '--', '-5']).json().words).toBe('âm năm');
+  });
+  it('money words --plain rejects unit and chan', () => {
+    for (const extra of [['--unit', 'USD'], ['-u', ''], ['--chan']]) {
+      const r = run(['money', 'words', '1000', '--plain', ...extra]);
+      expect(r.code).not.toBe(0);
+      expect(r.out + r.err).toContain('--plain');
+    }
+  });
   it('money words --pretty prints plain text', () => {
     expect(run(['money', 'words', '15', '--pretty']).out.trim()).toBe('mười lăm đồng');
   });
@@ -302,6 +322,16 @@ describe('vn-skills CLI', () => {
   it('lunar from-solar', () => {
     const r = run(['lunar', 'from-solar', '29/01/2025']);
     expect(r.json().text).toBe('Mùng 1 tháng Giêng năm Ất Tỵ');
+  });
+  it('lunar month', () => {
+    const j = run(['lunar', 'month', '02/2027']).json() as { days: Array<{ date: string }> };
+    expect(j.days).toHaveLength(28);
+    const iso = run(['lunar', 'month', '2027-02']).json() as typeof j & { month: number };
+    expect(iso.month).toBe(2);
+    expect(iso.days).toEqual(j.days);
+    const bad = run(['lunar', 'month', '13/2026']);
+    expect(bad.code).toBe(1);
+    expect(bad.json()).toMatchObject({ ok: false, error: { code: 'INVALID_DATE' } });
   });
   it('lunar to-solar', () => {
     const r = run(['lunar', 'to-solar', '1/1/2026']);
