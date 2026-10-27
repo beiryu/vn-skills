@@ -66,6 +66,7 @@ describe('vn-skills MCP server', () => {
         'vn_tax_id_validate',
         'vn_id_parse',
         'vn_money_to_words',
+        'vn_money_parse',
         'vn_number_format',
         'vn_lunar_from_solar',
         'vn_lunar_to_solar',
