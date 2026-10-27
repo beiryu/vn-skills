@@ -35,6 +35,7 @@ import {
   publicHolidays,
   isWorkingDay,
   addWorkingDays,
+  countWorkingDays,
   parseDateInput,
   validateInvoice,
   computeTotals,
@@ -517,6 +518,24 @@ export function createServer(): McpServer {
     },
     async ({ day, month, year, n }) => {
       const r = addWorkingDays(day, month, year, n);
+      return r.ok ? json(r) : json(r, true);
+    },
+  );
+
+  server.registerTool(
+    'vn_holidays_count_working_days',
+    {
+      title: 'Count Vietnamese working days',
+      description:
+        'Number of working days in (from, to]: the start date is not counted, the end date is; negative if to is before from. Skips weekends, holidays and nghỉ bù. certain: false if unannounced Tết or National Day days were crossed.',
+      inputSchema: { from: z.string(), to: z.string() },
+    },
+    async ({ from, to }) => {
+      const a = parseDateInput(from);
+      if (!a.ok) return json({ ok: false, error: a.error }, true);
+      const b = parseDateInput(to);
+      if (!b.ok) return json({ ok: false, error: b.error }, true);
+      const r = countWorkingDays(a.day, a.month, a.year, b.day, b.month, b.year);
       return r.ok ? json(r) : json(r, true);
     },
   );

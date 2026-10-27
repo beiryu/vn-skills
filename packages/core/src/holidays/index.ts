@@ -272,3 +272,68 @@ export function addWorkingDays(
   }
   return { ok: true, date: iso(jd), certain };
 }
+
+export interface CountWorkingDaysResult {
+  /** yyyy-mm-dd */
+  from: string;
+  /** yyyy-mm-dd */
+  to: string;
+  workingDays: number;
+  /** false when an unannounced Tết or National Day window was crossed (same meaning as in addWorkingDays). */
+  certain: boolean;
+}
+
+const MAX_COUNT_SPAN_DAYS = 3660;
+
+/**
+ * Working days in (from, to]: the start date is not counted, the end date is (the inverse of addWorkingDays).
+ * When `to` is before `from` it counts [to, from) and negates the total.
+ */
+export function countWorkingDays(
+  fromDd: number,
+  fromMm: number,
+  fromYy: number,
+  toDd: number,
+  toMm: number,
+  toYy: number,
+): Result<CountWorkingDaysResult> {
+  if (!isValidSolarDate(fromDd, fromMm, fromYy))
+    return fail('INVALID_DATE', `Invalid from date ${fromDd}/${fromMm}/${fromYy}`);
+  if (!isValidSolarDate(toDd, toMm, toYy))
+    return fail('INVALID_DATE', `Invalid to date ${toDd}/${toMm}/${toYy}`);
+  const ends: Array<[string, number, number, number]> = [
+    ['from', fromDd, fromMm, fromYy],
+    ['to', toDd, toMm, toYy],
+  ];
+  for (const [label, d, m, y] of ends)
+    if (y < FIRST_HOLIDAY_YEAR || y > LAST_HOLIDAY_YEAR)
+      return fail(
+        'OUT_OF_RANGE',
+        `The ${label} date ${d}/${m}/${y} is outside the supported range ${FIRST_HOLIDAY_YEAR}-${LAST_HOLIDAY_YEAR}`,
+      );
+  const a = jdFromDate(fromDd, fromMm, fromYy);
+  const b = jdFromDate(toDd, toMm, toYy);
+  if (Math.abs(b - a) > MAX_COUNT_SPAN_DAYS)
+    return fail(
+      'RANGE_TOO_LARGE',
+      `The dates are more than ${MAX_COUNT_SPAN_DAYS} calendar days apart`,
+      `Split the range into spans of at most ${MAX_COUNT_SPAN_DAYS} days`,
+    );
+  const lo = b >= a ? a + 1 : b;
+  const hi = b >= a ? b : a - 1;
+  let count = 0;
+  let certain = true;
+  for (let jd = lo; jd <= hi; jd++) {
+    const info = infoFor(jd);
+    if (!info.ok) return info;
+    if (!info.certain) certain = false;
+    if (info.working) count++;
+  }
+  return {
+    ok: true,
+    from: iso(a),
+    to: iso(b),
+    workingDays: b >= a ? count : -count,
+    certain,
+  };
+}

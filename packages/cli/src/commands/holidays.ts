@@ -1,5 +1,11 @@
 import { Command } from 'commander';
-import { addWorkingDays, isWorkingDay, parseDateInput, publicHolidays } from '@vn-skills/core';
+import {
+  addWorkingDays,
+  countWorkingDays,
+  isWorkingDay,
+  parseDateInput,
+  publicHolidays,
+} from '@vn-skills/core';
 import { failExit, kv, printJson, wantsJson } from '../output.js';
 
 export function registerHolidays(program: Command): void {
@@ -58,6 +64,22 @@ export function registerHolidays(program: Command): void {
       if (wantsJson(c)) return printJson(r);
       process.stdout.write(
         `${r.date}${r.certain ? '' : '  (uncertain: crosses days not announced yet)'}\n`,
+      );
+    });
+
+  cmd
+    .command('count <from> <to>')
+    .description('Working days in (from, to]: the start date is not counted, the end date is')
+    .action((from: string, to: string, _o, c: Command) => {
+      const a = parseDateInput(from);
+      if (!a.ok) failExit(c, a.error);
+      const b = parseDateInput(to);
+      if (!b.ok) failExit(c, b.error);
+      const r = countWorkingDays(a.day, a.month, a.year, b.day, b.month, b.year);
+      if (!r.ok) failExit(c, r.error);
+      if (wantsJson(c)) return printJson(r);
+      process.stdout.write(
+        `${r.workingDays} working days (${r.from} → ${r.to})${r.certain ? '' : '  (uncertain: crosses days not announced yet)'}\n`,
       );
     });
 }

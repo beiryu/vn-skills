@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { addWorkingDays, isWorkingDay, publicHolidays } from '@vn-skills/core';
+import { addWorkingDays, countWorkingDays, isWorkingDay, publicHolidays } from '@vn-skills/core';
 
 describe('vn-holidays: invalid input (non-JSON inputs; the rest is in tests/golden/vn-holidays.json)', () => {
   it('publicHolidays rejects NaN', () => {
@@ -112,5 +112,76 @@ describe('vn-holidays: OUT_OF_RANGE messages', () => {
     expect(r.error.code).toBe('OUT_OF_RANGE');
     expect(r.error.message).toContain('30/12/2199');
     expect(r.error.message).toMatch(/outside/);
+  });
+});
+
+describe('vn-holidays: countWorkingDays', () => {
+  const starts: Array<[number, number, number]> = [
+    [10, 2, 2025],
+    [25, 1, 2026],
+    [10, 2, 2026],
+    [28, 8, 2026],
+    [20, 1, 2027],
+    [1, 9, 2025],
+  ];
+  const ymd = (d: string) => d.split('-').map(Number) as [number, number, number];
+  const count = (a: string, b: string) => {
+    const [ay, am, ad] = ymd(a);
+    const [by, bm, bd] = ymd(b);
+    return countWorkingDays(ad, am, ay, bd, bm, by);
+  };
+
+  it.each(starts.flatMap((s) => [1, 5, 20, 60, -5, -20].map((n) => [s, n] as const)))(
+    'round trip %j n=%i',
+    ([d, m, y], n) => {
+      const added = addWorkingDays(d, m, y, n);
+      if (!added.ok) throw new Error('add failed');
+      const [ty, tm, td] = ymd(added.date);
+      const r = countWorkingDays(d, m, y, td, tm, ty);
+      expect(r.ok && r.workingDays).toBe(n);
+    },
+  );
+
+  it('matches isWorkingDay over a range containing Tết', () => {
+    const r = count('2026-02-10', '2026-03-02');
+    let expected = 0;
+    for (let t = Date.UTC(2026, 1, 11); t <= Date.UTC(2026, 2, 2); t += 86400000) {
+      const x = new Date(t);
+      const w = isWorkingDay(x.getUTCDate(), x.getUTCMonth() + 1, x.getUTCFullYear());
+      if (w.ok && w.working) expected++;
+    }
+    expect(r.ok && r.workingDays).toBe(expected);
+    expect(r.ok && r.certain).toBe(true);
+  });
+
+  it('is 0 for equal dates and negates when swapped', () => {
+    const z = count('2026-02-10', '2026-02-10');
+    expect(z.ok && z.workingDays).toBe(0);
+    const f = count('2026-02-10', '2026-03-02');
+    const b = count('2026-03-02', '2026-02-10');
+    expect(f.ok && b.ok && b.workingDays).toBe(f.ok ? -f.workingDays : NaN);
+  });
+
+  it('certain is false across an unannounced Tết window, true in an announced year', () => {
+    const u = count('2030-01-15', '2030-03-15');
+    expect(u.ok && u.certain).toBe(false);
+    const k = count('2026-03-10', '2026-03-20');
+    expect(k.ok && k.certain).toBe(true);
+  });
+
+  it('returns structured errors', () => {
+    const bad = countWorkingDays(31, 2, 2026, 1, 3, 2026);
+    expect(bad.ok === false && bad.error.code).toBe('INVALID_DATE');
+    const oor = count('2020-01-01', '2026-01-01');
+    expect(oor.ok === false && oor.error.code).toBe('OUT_OF_RANGE');
+    const big = count('2025-01-01', '2036-01-01');
+    expect(big.ok === false && big.error.code).toBe('RANGE_TOO_LARGE');
+  });
+
+  it('does not throw on null or non-number arguments', () => {
+    const f = countWorkingDays as unknown as (...a: unknown[]) => { ok: boolean };
+    expect(f(null, 1, 2026, 1, 2, 2026).ok).toBe(false);
+    expect(f('a', 1, 2026, 1, 2, 2026).ok).toBe(false);
+    expect(f(1, 1, 2026, undefined, 2, 2026).ok).toBe(false);
   });
 });
