@@ -1,6 +1,6 @@
 {
  "version": 1,
- "exported_at": "2026-10-27T05:05:35.348Z",
+ "exported_at": "2026-10-27T06:08:20.028Z",
  "tables": {
   "repos": [
    {
@@ -10,7 +10,7 @@
     "policy_status": null,
     "policy_excerpts": null,
     "block_reason": null,
-    "last_scanned": "2026-10-27T05:05:10.160Z"
+    "last_scanned": "2026-10-27T06:07:52.831Z"
    }
   ],
   "issues": [
@@ -1819,7 +1819,7 @@
     "title": "vietqr: when --amount is shorthand like '50k', say the exact amount to pass instead of a bare INVALID_AMOUNT",
     "body": "## Problem\nThe README suggests asking for \"tạo QR chuyển 500k…\", and `skills/vietqr/SKILL.md:70` says `\"500k\" means 500000`. But the CLI rejects the shorthand without saying what to pass instead:\n\n```\n$ node packages/cli/dist/index.js --json vietqr build --bank VCB --account 123 --amount 50k\n{\"ok\":false,\"error\":{\"code\":\"INVALID_AMOUNT\",\"message\":\"Amount \\\"50k\\\" must be a positive integer in VND\",\"hint\":\"VND has no decimals; pass e.g. 500000.\"}}\n```\n\n`vn-skills numfmt parse 50k` already reads it as `50000` (`parseAmount` in `packages/core/src/numfmt/index.ts`). The error comes from `buildVietQR` (`packages/core/src/vietqr/build.ts:92-96`).\n\nA payment amount should not be converted silently, so `buildVietQR` stays strict. The error should say which value to pass.\n\n## Acceptance\n- [ ] When `parseAmountString` rejects the amount but `parseAmount` reads it as a positive integer, the `INVALID_AMOUNT` hint names that value, e.g. `\"50k\" looks like 50000 VND; pass --amount 50000` (for the library: `amount: 50000`).\n- [ ] Amounts that `parseAmount` cannot read, or reads as non-integer or ≤ 0, keep today's hint.\n- [ ] `buildVietQR` still never builds a QR from shorthand (no silent conversion). Valid amounts behave exactly as before.\n- [ ] Tests in `tests/vietqr.test.ts` for `50k`, `1tr2`, `1,5 triệu` (hint names 1500000) and `abc` (old hint).\n- [ ] `skills/vietqr/SKILL.md` \"Amount is integer VND\" says to convert shorthand first (e.g. with `vn-skills numfmt parse`) before passing `--amount`.\n- [ ] `pnpm build && pnpm typecheck && pnpm lint && pnpm exec vitest run && pnpm format:check` pass.",
     "url": "https://github.com/beiryu/vn-skills/issues/227",
-    "state": "pr_open",
+    "state": "done",
     "score": 1,
     "triage_reason": "VietQR is the headline skill and \"500k\" is the README's own example, so newcomers who type it hit this error first. Telling them the exact value fixes it without risking a wrong payment amount.",
     "attempts": 0,
@@ -1835,7 +1835,7 @@
     "pr_body": "Closes #227\n\n## What & why\n\n`buildVietQR` rejects shorthand amounts such as `50k` with a generic hint. When `parseAmount` reads the rejected amount as a positive integer, the `INVALID_AMOUNT` hint now names that value, e.g. `\"50k\" looks like 50000 VND; pass --amount 50000 (library: amount: 50000).` Other amounts keep the old hint (`VND has no decimals; pass e.g. 500000.`).\n\n`buildVietQR` stays strict: it never builds a QR from shorthand, and valid amounts behave as before. `skills/vietqr/SKILL.md` now says to convert shorthand first (e.g. `vn-skills numfmt parse 500k`) and then pass the plain integer to `--amount`.\n\nAcceptance checklist from the issue:\n\n- [x] The hint names the value when `parseAmountString` rejects the amount but `parseAmount` reads a positive integer.\n- [x] Amounts `parseAmount` cannot read, or reads as non-integer or <= 0, keep the old hint.\n- [x] No silent conversion; valid amounts unchanged.\n- [x] Tests in `tests/vietqr.test.ts` for `50k`, `1tr2`, `1,5 triệu` (hint names 1500000) and `abc` (old hint).\n- [x] `skills/vietqr/SKILL.md` \"Amount is integer VND\" says to convert shorthand first.\n- [ ] `pnpm build && pnpm typecheck && pnpm lint && pnpm exec vitest run && pnpm format:check` pass. I did not run these; CI will.\n\n## Testing\n\nAdded to `tests/vietqr.test.ts`:\n\n- `names the exact amount to pass for shorthand` for `50k`, `1tr2` and `1,5 triệu`. It checks the `INVALID_AMOUNT` code, the value, and the quoted input in the hint.\n- `keeps the old hint when the amount is unreadable` for `abc`.\n\n## Checklist\n\n- [x] Title follows Conventional Commits (`feat|fix|docs|data|test|refactor|perf|build|ci|chore(scope): …`)\n- [x] Tests added or updated (golden test for every bug fix)\n- [ ] `pnpm build && pnpm typecheck && pnpm lint && pnpm test && pnpm format:check` pass locally\n- [x] Core stays offline (no `fetch`/HTTP in `packages/core`)\n- [x] Data changes go through `scripts/build-data.ts` and `SOURCES.md` (source + license)\n- [x] SKILL.md / README updated if behaviour changed\n",
     "dry": 0,
     "claimed_at": null,
-    "updated_at": "2026-10-26T15:42:41.931Z",
+    "updated_at": "2026-10-27T06:07:44.999Z",
     "blocked": null,
     "patch": "diff --git a/packages/core/src/vietqr/build.ts b/packages/core/src/vietqr/build.ts\nindex 1c47e34..7104a05 100644\n--- a/packages/core/src/vietqr/build.ts\n+++ b/packages/core/src/vietqr/build.ts\n@@ -2,6 +2,7 @@ import { tlvEncode } from '../shared/tlv.js';\n import { removeDiacritics } from '../shared/diacritics.js';\n import { fail, type Result } from '../shared/result.js';\n import { crc16CcittFalse } from './crc16.js';\n+import { parseAmount } from '../numfmt/index.js';\n import { findBank, type Bank } from './banks.js';\n \n export const VIETQR_GUID = 'A000000727';\n@@ -91,10 +92,15 @@ export function buildVietQR(opts: BuildVietQROptions): Result<BuildVietQRData> {\n   if (opts.amount !== undefined && opts.amount !== null && String(opts.amount).trim() !== '') {\n     const raw = parseAmountString(String(opts.amount));\n     if (raw === null || !/^\\d+$/.test(raw)) {\n+      const parsed = parseAmount(String(opts.amount));\n+      const hint =\n+        parsed.ok && Number.isInteger(parsed.value) && parsed.value > 0\n+          ? `\"${opts.amount}\" looks like ${parsed.value} VND; pass --amount ${parsed.value} (library: amount: ${parsed.value}).`\n+          : 'VND has no decimals; pass e.g. 500000.';\n       return fail(\n         'INVALID_AMOUNT',\n         `Amount \"${opts.amount}\" must be a positive integer in VND`,\n-        'VND has no decimals; pass e.g. 500000.',\n+        hint,\n       );\n     }\n     amount = Number(raw);\ndiff --git a/skills/vietqr/SKILL.md b/skills/vietqr/SKILL.md\nindex 076955b..89f55f7 100644\n--- a/skills/vietqr/SKILL.md\n+++ b/skills/vietqr/SKILL.md\n@@ -67,7 +67,7 @@ Library use (TypeScript): `import { buildVietQR, parseVietQR, findBank } from '@\n \n ## Rules and gotchas\n \n-- **Amount is integer VND.** \"500k\" means 500000; \"1,5 triệu\" means 1500000. The CLI rejects decimals.\n+- **Amount is integer VND.** \"500k\" means 500000; \"1,5 triệu\" means 1500000. The CLI rejects decimals and shorthand: convert first (e.g. `vn-skills numfmt parse 500k`), then pass the plain integer to `--amount`.\n - **Note is sanitized**: diacritics removed, only `A-Z a-z 0-9` and spaces, max 25 characters. Tell the user if it was changed (see `warnings`).\n - **Do not invent BINs.** If the bank is unknown, run `vietqr banks <query>` and ask the user to pick.\n - The CRC (tag 63) is CRC-16/CCITT-FALSE over the payload up to and including `6304`. The tool computes it; do not edit the payload after building.\ndiff --git a/tests/vietqr.test.ts b/tests/vietqr.test.ts\nindex 149fffe..1d6f8d1 100644\n--- a/tests/vietqr.test.ts\n+++ b/tests/vietqr.test.ts\n@@ -180,6 +180,25 @@ describe('buildVietQR', () => {\n     if (r.ok) return;\n     expect(r.error.code).toBe('INVALID_AMOUNT');\n   });\n+  it.each([\n+    ['50k', '50000'],\n+    ['1tr2', '1200000'],\n+    ['1,5 triệu', '1500000'],\n+  ])('names the exact amount to pass for shorthand \"%s\"', (amount, value) => {\n+    const r = buildVietQR({ bank: 'VCB', account: '123', amount });\n+    expect(r.ok).toBe(false);\n+    if (r.ok) return;\n+    expect(r.error.code).toBe('INVALID_AMOUNT');\n+    expect(r.error.hint).toContain(value);\n+    expect(r.error.hint).toContain(`\"${amount}\"`);\n+  });\n+  it('keeps the old hint when the amount is unreadable', () => {\n+    const r = buildVietQR({ bank: 'VCB', account: '123', amount: 'abc' });\n+    expect(r.ok).toBe(false);\n+    if (r.ok) return;\n+    expect(r.error.code).toBe('INVALID_AMOUNT');\n+    expect(r.error.hint).toBe('VND has no decimals; pass e.g. 500000.');\n+  });\n   it('round-trips through parse', () => {\n     const r = buildVietQR({\n       bank: 'MB',\n",
     "repro_patch": "diff --git a/tests/vietqr.test.ts b/tests/vietqr.test.ts\nindex 149fffe..1d6f8d1 100644\n--- a/tests/vietqr.test.ts\n+++ b/tests/vietqr.test.ts\n@@ -180,6 +180,25 @@ describe('buildVietQR', () => {\n     if (r.ok) return;\n     expect(r.error.code).toBe('INVALID_AMOUNT');\n   });\n+  it.each([\n+    ['50k', '50000'],\n+    ['1tr2', '1200000'],\n+    ['1,5 triệu', '1500000'],\n+  ])('names the exact amount to pass for shorthand \"%s\"', (amount, value) => {\n+    const r = buildVietQR({ bank: 'VCB', account: '123', amount });\n+    expect(r.ok).toBe(false);\n+    if (r.ok) return;\n+    expect(r.error.code).toBe('INVALID_AMOUNT');\n+    expect(r.error.hint).toContain(value);\n+    expect(r.error.hint).toContain(`\"${amount}\"`);\n+  });\n+  it('keeps the old hint when the amount is unreadable', () => {\n+    const r = buildVietQR({ bank: 'VCB', account: '123', amount: 'abc' });\n+    expect(r.ok).toBe(false);\n+    if (r.ok) return;\n+    expect(r.error.code).toBe('INVALID_AMOUNT');\n+    expect(r.error.hint).toBe('VND has no decimals; pass e.g. 500000.');\n+  });\n   it('round-trips through parse', () => {\n     const r = buildVietQR({\n       bank: 'MB',\n",
@@ -2644,12 +2644,12 @@
     "last_seen_at": "2026-10-26T15:42:55.445Z",
     "opened_at": "2026-10-26T15:42:55.445Z",
     "head_sha": "14f27d3fdabd77205e24b596ec97ce04f967376f",
-    "mergeable": "MERGEABLE",
+    "mergeable": "UNKNOWN",
     "ci_state": "success",
     "review_decision": "REVIEW_REQUIRED",
-    "snapshot_at": "2026-10-27T05:04:57.098Z",
+    "snapshot_at": "2026-10-27T06:07:40.130Z",
     "ci_seen_sha": null,
-    "merge_state": "BEHIND"
+    "merge_state": "UNKNOWN"
    },
    {
     "issue_id": 62,
@@ -2659,27 +2659,27 @@
     "last_seen_at": "2026-10-26T15:42:49.035Z",
     "opened_at": "2026-10-26T15:42:49.035Z",
     "head_sha": "0a4534e48bd4cfd7914531a129c48c2117e604f7",
-    "mergeable": "MERGEABLE",
+    "mergeable": "UNKNOWN",
     "ci_state": "success",
     "review_decision": "REVIEW_REQUIRED",
-    "snapshot_at": "2026-10-27T05:04:59.536Z",
+    "snapshot_at": "2026-10-27T06:07:42.541Z",
     "ci_seen_sha": null,
-    "merge_state": "BEHIND"
+    "merge_state": "UNKNOWN"
    },
    {
     "issue_id": 63,
     "url": "https://github.com/beiryu/vn-skills/pull/229",
     "number": 229,
-    "state": "open",
+    "state": "merged",
     "last_seen_at": "2026-10-26T15:42:41.931Z",
     "opened_at": "2026-10-26T15:42:41.931Z",
-    "head_sha": "3ba8ac4ec4427139b095616da13aabf691965642",
-    "mergeable": "MERGEABLE",
-    "ci_state": "success",
+    "head_sha": "ec2577310a956a3fca1e7307e9b7422d800d1742",
+    "mergeable": "UNKNOWN",
+    "ci_state": "pending",
     "review_decision": "REVIEW_REQUIRED",
-    "snapshot_at": "2026-10-27T05:05:02.008Z",
+    "snapshot_at": "2026-10-27T06:07:44.998Z",
     "ci_seen_sha": null,
-    "merge_state": "BEHIND"
+    "merge_state": "UNKNOWN"
    },
    {
     "issue_id": 65,
@@ -2689,12 +2689,12 @@
     "last_seen_at": "2026-10-27T05:04:15.514Z",
     "opened_at": "2026-10-27T05:04:15.514Z",
     "head_sha": "c32c4a9fea1e65174c288879d1664b746ccad72a",
-    "mergeable": "MERGEABLE",
-    "ci_state": "pending",
+    "mergeable": "UNKNOWN",
+    "ci_state": "success",
     "review_decision": "REVIEW_REQUIRED",
-    "snapshot_at": "2026-10-27T05:05:03.964Z",
+    "snapshot_at": "2026-10-27T06:07:45.998Z",
     "ci_seen_sha": null,
-    "merge_state": "BLOCKED"
+    "merge_state": "UNKNOWN"
    }
   ],
   "pending_actions": [
