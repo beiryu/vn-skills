@@ -1,6 +1,6 @@
 {
  "version": 1,
- "exported_at": "2026-10-27T08:10:29.745Z",
+ "exported_at": "2026-10-27T08:20:45.263Z",
  "tables": {
   "repos": [
    {
@@ -10,7 +10,7 @@
     "policy_status": null,
     "policy_excerpts": null,
     "block_reason": null,
-    "last_scanned": "2026-10-27T08:10:01.428Z"
+    "last_scanned": "2026-10-27T08:20:16.683Z"
    }
   ],
   "issues": [
@@ -3041,7 +3041,7 @@
     "mergeable": "MERGEABLE",
     "ci_state": "success",
     "review_decision": "REVIEW_REQUIRED",
-    "snapshot_at": "2026-10-27T08:09:40.678Z",
+    "snapshot_at": "2026-10-27T08:19:56.301Z",
     "ci_seen_sha": null,
     "merge_state": "BLOCKED"
    },
@@ -3056,7 +3056,7 @@
     "mergeable": "MERGEABLE",
     "ci_state": "success",
     "review_decision": "REVIEW_REQUIRED",
-    "snapshot_at": "2026-10-27T08:09:43.007Z",
+    "snapshot_at": "2026-10-27T08:19:58.878Z",
     "ci_seen_sha": null,
     "merge_state": "BLOCKED"
    },
@@ -3071,7 +3071,7 @@
     "mergeable": "MERGEABLE",
     "ci_state": "success",
     "review_decision": "REVIEW_REQUIRED",
-    "snapshot_at": "2026-10-27T08:09:45.471Z",
+    "snapshot_at": "2026-10-27T08:20:01.321Z",
     "ci_seen_sha": null,
     "merge_state": "BLOCKED"
    },
@@ -3086,7 +3086,7 @@
     "mergeable": "MERGEABLE",
     "ci_state": "success",
     "review_decision": "REVIEW_REQUIRED",
-    "snapshot_at": "2026-10-27T08:09:48.777Z",
+    "snapshot_at": "2026-10-27T08:20:03.980Z",
     "ci_seen_sha": null,
     "merge_state": "BLOCKED"
    },
@@ -3101,7 +3101,7 @@
     "mergeable": "MERGEABLE",
     "ci_state": "success",
     "review_decision": "REVIEW_REQUIRED",
-    "snapshot_at": "2026-10-27T08:09:51.426Z",
+    "snapshot_at": "2026-10-27T08:20:06.285Z",
     "ci_seen_sha": null,
     "merge_state": "BLOCKED"
    },
@@ -3114,9 +3114,9 @@
     "opened_at": "2026-10-27T08:09:00.937Z",
     "head_sha": "209cc5272de829e9018897c1a06ca9369766b670",
     "mergeable": "MERGEABLE",
-    "ci_state": "pending",
+    "ci_state": "success",
     "review_decision": "REVIEW_REQUIRED",
-    "snapshot_at": "2026-10-27T08:09:53.390Z",
+    "snapshot_at": "2026-10-27T08:20:08.586Z",
     "ci_seen_sha": null,
     "merge_state": "BLOCKED"
    }
