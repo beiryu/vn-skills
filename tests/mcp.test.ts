@@ -37,6 +37,17 @@ describe('vn-skills MCP server', () => {
     expect(bad.isError).toBe(true);
   });
 
+  it('vn_holidays_ics', async () => {
+    const ok = await client.callTool({ name: 'vn_holidays_ics', arguments: { year: 2026 } });
+    expect(ok.isError).toBeFalsy();
+    const j = text(ok);
+    expect(j).toMatchObject({ year: 2026, announced: true });
+    expect(String(j.ics)).toContain('BEGIN:VCALENDAR');
+    expect(typeof j.events).toBe('number');
+    const bad = await client.callTool({ name: 'vn_holidays_ics', arguments: { year: 1999 } });
+    expect(bad.isError).toBe(true);
+  });
+
   it('declares a title and read-only, closed-world annotations on every tool', async () => {
     const { tools } = await client.listTools();
     expect(tools.length).toBeGreaterThan(0);
@@ -84,6 +95,7 @@ describe('vn-skills MCP server', () => {
         'vn_holidays_count_working_days',
         'vn_holidays_is_working_day',
         'vn_holidays_year',
+        'vn_holidays_ics',
         'vn_phone',
       ].sort(),
     );
