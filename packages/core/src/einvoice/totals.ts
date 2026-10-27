@@ -37,10 +37,29 @@ export function vatPercent(rate: VatRate): number {
   return typeof rate === 'number' ? rate : 0;
 }
 
+/**
+ * Never throws. A non-object invoice or one without a `lines` array yields zero totals and
+ * `totalInWordsError` with code INVALID_INVOICE. Null or non-object line entries are skipped.
+ */
 export function computeTotals(
   invoice: Invoice,
   options: { thousand?: 'nghìn' | 'ngàn'; capitalize?: boolean } = {},
 ): InvoiceTotals {
+  if (typeof invoice !== 'object' || invoice === null || !Array.isArray(invoice.lines))
+    return {
+      lines: [],
+      subtotal: 0,
+      discountTotal: 0,
+      vatTotal: 0,
+      grandTotal: 0,
+      byRate: [],
+      totalInWords: '',
+      totalInWordsError: {
+        code: 'INVALID_INVOICE',
+        message: 'Invoice must be an object with a lines array',
+        hint: 'Run validateInvoice first to see what is wrong with the invoice',
+      },
+    };
   const lines: LineTotals[] = [];
   const byRateMap = new Map<VatRate, VatBreakdown>();
   let subtotal = 0;
@@ -48,6 +67,7 @@ export function computeTotals(
   let vatTotal = 0;
 
   for (const line of invoice.lines) {
+    if (typeof line !== 'object' || line === null) continue;
     if (line.isNote) {
       lines.push({ ...line, amount: 0, vatAmount: 0, total: 0 });
       continue;

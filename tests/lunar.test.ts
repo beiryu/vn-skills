@@ -120,6 +120,29 @@ describe('parseDateInput range validation', () => {
   });
 
   it.each([
+    [
+      '31/2/2024',
+      'Day 31 is out of range for lunar month 02/2024 (lunar months have 29 or 30 days)',
+    ],
+    ['0/2/2024', 'Day 0 is out of range for lunar month 02/2024'],
+    ['1/13/2024', 'Month 13 is out of range (1-12)'],
+    ['abc', 'Cannot parse date'],
+  ])('rejects lunar %s with a lunar hint', (input, message) => {
+    const r = parseDateInput(input, { lunar: true });
+    expect(r).toMatchObject({ ok: false, error: { code: 'INVALID_DATE' } });
+    expect(JSON.stringify(r)).toContain(message);
+    expect(JSON.stringify(r)).toContain('Lunar dates use dd/mm/yyyy with day 1-30.');
+    expect(JSON.stringify(r)).not.toContain('Use dd/mm/yyyy or yyyy-mm-dd.');
+  });
+
+  it('keeps the Gregorian message and hint for day 31 of February', () => {
+    const r = parseDateInput('31/2/2024');
+    expect(JSON.stringify(r)).toContain('Day 31 is out of range for 02/2024');
+    expect(JSON.stringify(r)).toContain('Use dd/mm/yyyy or yyyy-mm-dd.');
+    expect(JSON.stringify(r)).not.toContain('lunar');
+  });
+
+  it.each([
     ['29/2/2024', { day: 29, month: 2, year: 2024 }],
     ['2024-2-3', { day: 3, month: 2, year: 2024 }],
     ['1-2-2024', { day: 1, month: 2, year: 2024 }],
