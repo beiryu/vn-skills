@@ -180,6 +180,25 @@ describe('buildVietQR', () => {
     if (r.ok) return;
     expect(r.error.code).toBe('INVALID_AMOUNT');
   });
+  it.each([
+    ['50k', '50000'],
+    ['1tr2', '1200000'],
+    ['1,5 triệu', '1500000'],
+  ])('names the exact amount to pass for shorthand "%s"', (amount, value) => {
+    const r = buildVietQR({ bank: 'VCB', account: '123', amount });
+    expect(r.ok).toBe(false);
+    if (r.ok) return;
+    expect(r.error.code).toBe('INVALID_AMOUNT');
+    expect(r.error.hint).toContain(value);
+    expect(r.error.hint).toContain(`"${amount}"`);
+  });
+  it('keeps the old hint when the amount is unreadable', () => {
+    const r = buildVietQR({ bank: 'VCB', account: '123', amount: 'abc' });
+    expect(r.ok).toBe(false);
+    if (r.ok) return;
+    expect(r.error.code).toBe('INVALID_AMOUNT');
+    expect(r.error.hint).toBe('VND has no decimals; pass e.g. 500000.');
+  });
   it('round-trips through parse', () => {
     const r = buildVietQR({
       bank: 'MB',
