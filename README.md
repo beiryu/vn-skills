@@ -88,7 +88,7 @@ Setup for other clients is in [MCP client setup](#mcp-client-setup). Or in any M
 { "mcpServers": { "vn-skills": { "command": "npx", "args": ["-y", "@vn-skills/mcp"] } } }
 ```
 
-The server exposes 30 tools, grouped by skill:
+The server exposes 31 tools, grouped by skill. All tools are declared read-only and offline (`readOnlyHint: true`, `openWorldHint: false`).
 
 | Skill              | Tools                                                                                                                                          |
 | ------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -99,7 +99,7 @@ The server exposes 30 tools, grouped by skill:
 | `vn-phone`         | `vn_phone`                                                                                                                                     |
 | `vn-holidays`      | `vn_holidays_year`, `vn_holidays_is_working_day`, `vn_holidays_add_working_days`, `vn_holidays_count_working_days`                             |
 | `vn-money-words`   | `vn_money_to_words`                                                                                                                            |
-| `vn-lunar`         | `vn_lunar_from_solar`, `vn_lunar_to_solar`, `vn_lunar_holidays`, `vn_lunar_tet`, `vn_lunar_canchi`                                             |
+| `vn-lunar`         | `vn_lunar_from_solar`, `vn_lunar_to_solar`, `vn_lunar_month`, `vn_lunar_holidays`, `vn_lunar_tet`, `vn_lunar_canchi`                           |
 | `vn-einvoice`      | `vn_einvoice_validate`, `vn_einvoice_totals`, `vn_einvoice_mock_issue`, `vn_einvoice_example`                                                  |
 | `vn-name`          | `vn_name`                                                                                                                                      |
 | `vn-number-format` | `vn_number_format`                                                                                                                             |
@@ -167,6 +167,16 @@ Then point your client at it (it runs `docker run -i --rm vn-skills-mcp`):
 ```
 
 Other clients: use the generic `mcpServers` block above. AI agents (e.g. Cline) can follow [llms-install.md](llms-install.md).
+
+### HTTP mode
+
+For a shared or remote server, run the opt-in Streamable HTTP transport (stateless, `POST /mcp`):
+
+```bash
+npx -y @vn-skills/mcp --http --port 3000   # http://127.0.0.1:3000/mcp
+```
+
+It binds to `127.0.0.1` by default; use `--host 0.0.0.0` to expose it (e.g. `docker run -p 3000:3000 vn-skills-mcp --http --host 0.0.0.0`). Requests with a non-localhost `Origin` header get 403 unless you pass `--allow-origin <origin>` (repeatable). Without `--http` the server uses stdio.
 
 ## Library
 

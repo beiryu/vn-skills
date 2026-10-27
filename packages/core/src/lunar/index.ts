@@ -10,6 +10,8 @@ import {
   CHI,
 } from './canchi.js';
 import { fail, type Result } from '../shared/result.js';
+import { holidays } from './holidays.js';
+import { publicHolidays } from '../holidays/index.js';
 
 export { jdFromDate, jdToDate, newMoon, sunLongitude } from './astro.js';
 export {
@@ -33,7 +35,8 @@ export {
   CHI_ANIMALS_EN,
   SOLAR_TERMS,
 } from './canchi.js';
-export { holidays, type Holiday } from './holidays.js';
+export { type Holiday } from './holidays.js';
+export { holidays };
 
 export interface LunarInfo extends LunarDate {
   solar: { day: number; month: number; year: number; date: string; weekday: string };
@@ -81,6 +84,63 @@ export function lunarInfo(
     solarTerm: SOLAR_TERMS[getSolarTermIndex(jd, timeZone)]!,
     text: `${dayLabel} ${monthLabel} năm ${yc}`,
   };
+}
+
+export interface LunarMonthDay {
+  date: string;
+  weekday: string;
+  lunar: { day: number; month: number; year: number; leap: boolean };
+  text: string;
+  dayCanChi: string;
+  /** Mùng 1 of a lunar month. */
+  firstOfLunarMonth: boolean;
+  /** Rằm: lunar day 15. */
+  fullMoon: boolean;
+  /** Only on the day a new solar term starts. */
+  solarTerm?: string;
+  holidays: string[];
+}
+
+/** Every day of a solar month with lunar date, can chi, solar term starts and holidays/days off. */
+export function lunarMonthCalendar(
+  month: number,
+  year: number,
+): Result<{ month: number; year: number; days: LunarMonthDay[] }> {
+  if (!Number.isInteger(month) || month < 1 || month > 12)
+    return fail('INVALID_DATE', `Month ${month} is out of range (1-12)`, 'Use mm/yyyy or yyyy-mm.');
+  if (!Number.isInteger(year))
+    return fail('INVALID_DATE', `Invalid year "${year}"`, 'Use mm/yyyy or yyyy-mm.');
+  const dim = month === 2 ? (isLeap(year) ? 29 : 28) : [4, 6, 9, 11].includes(month) ? 30 : 31;
+  const names = new Map<string, string[]>();
+  const add = (date: string, name: string) => {
+    const list = names.get(date) ?? [];
+    if (!list.includes(name)) list.push(name);
+    names.set(date, list);
+  };
+  for (const h of holidays(year)) add(h.date, h.name);
+  const pub = publicHolidays(year);
+  if (pub.ok) for (const d of pub.daysOff) add(d.date, d.name);
+  const days: LunarMonthDay[] = [];
+  let prevTerm = -1;
+  for (let d = 1; d <= dim; d++) {
+    const r = lunarInfo(d, month, year);
+    if (!r.ok) return r;
+    const idx = getSolarTermIndex(jdFromDate(d, month, year), VN_TIMEZONE);
+    if (d === 1) prevTerm = getSolarTermIndex(jdFromDate(d, month, year) - 1, VN_TIMEZONE);
+    days.push({
+      date: r.solar.date,
+      weekday: r.solar.weekday,
+      lunar: { day: r.day, month: r.month, year: r.year, leap: r.leap },
+      text: r.text,
+      dayCanChi: r.dayCanChi,
+      firstOfLunarMonth: r.day === 1,
+      fullMoon: r.day === 15,
+      ...(idx !== prevTerm ? { solarTerm: SOLAR_TERMS[idx]! } : {}),
+      holidays: names.get(r.solar.date) ?? [],
+    });
+    prevTerm = idx;
+  }
+  return { ok: true, month, year, days };
 }
 
 /**
