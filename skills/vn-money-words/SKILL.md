@@ -1,6 +1,6 @@
 ---
 name: vn-money-words
-description: Convert VND amounts to Vietnamese words ("1.200.000 đồng" -> "một triệu hai trăm nghìn đồng") with correct rules for mốt/lăm/tư, lẻ/linh, nghìn/ngàn, zero groups and very large numbers (tỷ tỷ). Use for invoices, contracts, receipts, bank transfer forms, "số tiền bằng chữ", "đọc số tiền thành chữ", "viết bằng chữ", or any time an amount must be spelled out in Vietnamese.
+description: Convert VND amounts to Vietnamese words ("1.200.000 đồng" -> "một triệu hai trăm nghìn đồng") with correct rules for mốt/lăm/tư, lẻ/linh, nghìn/ngàn, zero groups and very large numbers (tỷ tỷ). Use for invoices, contracts, receipts, bank transfer forms, "số tiền bằng chữ", "đọc số tiền thành chữ", "viết bằng chữ", "đọc số", "số bằng chữ", "viết số thành chữ", or any time an amount must be spelled out in Vietnamese.
 license: MIT
 compatibility: Requires Node.js 22+ (runs npx -y @vn-skills/cli).
 metadata:
@@ -32,6 +32,9 @@ npx -y @vn-skills/cli money words 2500000 --thousand ngàn --odd linh
 # hai triệu năm trăm ngàn đồng
 ```
 
+Plain numbers (not money, e.g. "ba mươi (30) ngày"): `money words 30 --plain` → `ba mươi`. `--plain` cannot be combined
+with `--unit` or `--chan`. MCP: `vn_money_to_words` with `plain: true`.
+
 JSON output: `{ "ok": true, "amount": "1200000", "words": "một triệu hai trăm nghìn đồng" }`.
 
 Options:
@@ -44,6 +47,7 @@ Options:
 | `-u, --unit ""`    | change/remove the unit word (default "đồng")             |
 | `-c, --capitalize` | capital first letter (invoice style)                     |
 | `--chan`           | append "chẵn" when the amount is a round thousand        |
+| `--plain`          | read a plain number without "đồng" (30 → ba mươi)        |
 
 Library: `moneyToWords(1200000, { capitalize: true })` and `numberToWords(2024)` from `@vn-skills/core`.
 

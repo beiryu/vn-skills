@@ -149,6 +149,16 @@ describe('vn-skills MCP server', () => {
     );
     expect(j.words).toBe('một triệu hai trăm nghìn đồng');
   });
+  it('vn_money_to_words plain', async () => {
+    const call = async (args: Record<string, unknown>) =>
+      text(await client.callTool({ name: 'vn_money_to_words', arguments: args }));
+    expect((await call({ amount: 105, plain: true })).words).toBe('một trăm lẻ năm');
+    expect((await call({ amount: 1500, plain: true, thousand: 'ngàn' })).words).toBe(
+      'một ngàn năm trăm',
+    );
+    expect((await call({ amount: 30, plain: false })).words).toBe('ba mươi đồng');
+    expect((await call({ amount: 30, plain: true, unit: 'đồng' })).ok).toBe(false);
+  });
   it('vn_tax_id_validate', async () => {
     const j = text(
       await client.callTool({ name: 'vn_tax_id_validate', arguments: { taxId: '0100233488' } }),
