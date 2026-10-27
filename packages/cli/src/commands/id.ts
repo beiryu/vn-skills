@@ -32,6 +32,6 @@ export function registerId(program: Command): void {
             ['Birth year', r.birthYear],
           ]) + '\n',
         );
-      for (const w of r.warnings) process.stderr.write(`warning: ${w}\n`);
+      if (!wantsJson(c)) for (const w of r.warnings) process.stderr.write(`warning: ${w}\n`);
     });
 }
