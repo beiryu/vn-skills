@@ -1,5 +1,6 @@
-import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
+import { McpServer, ResourceTemplate } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
+import { registerPrompts } from './prompts.js';
 import QRCode from 'qrcode';
 import { decodeQrPng } from '@vn-skills/cli/decode';
 import {
@@ -18,18 +19,24 @@ import {
   validateTaxId,
   parseCitizenId,
   moneyToWords,
+  numberToWords,
+  wordsToNumber,
   formatNumber,
   formatVnd,
   formatCompactVnd,
   formatDate,
   parseAmount,
   lunarInfo,
+  lunarMonthCalendar,
   lunarToSolar,
   tetInfo,
   canChiOfYear,
   taxIdCheckDigitResult,
   lookupProvince,
   provincesList,
+  provinceInfo,
+  provinceByCode,
+  PROVINCES,
   exampleInvoice,
   holidays,
   publicHolidays,
@@ -63,6 +70,13 @@ const json = (data: unknown, isError = false): ToolResult => ({
 
 const mock = new MockProvider();
 
+const OFFLINE_READ_ONLY = {
+  readOnlyHint: true,
+  destructiveHint: false,
+  idempotentHint: true,
+  openWorldHint: false,
+};
+
 export function createServer(): McpServer {
   const server = new McpServer({ name: 'vn-skills', version: VERSION });
 
@@ -70,6 +84,7 @@ export function createServer(): McpServer {
     'vietqr_build',
     {
       title: 'Build VietQR',
+      annotations: OFFLINE_READ_ONLY,
       description:
         'Create a VietQR (NAPAS 247) bank-transfer QR payload. Returns the EMVCo string, CRC and optionally a PNG image. Bank accepts BIN (970436), code (VCB) or name (Vietcombank). Amount is integer VND; note is sanitized (no diacritics, max 25 chars).',
       inputSchema: {
@@ -114,6 +129,7 @@ export function createServer(): McpServer {
     'vietqr_parse',
     {
       title: 'Parse VietQR',
+      annotations: OFFLINE_READ_ONLY,
       description:
         'Decode a VietQR / EMVCo QR payload string: bank, account, amount, note, and whether the CRC is valid.',
       inputSchema: { payload: z.string().describe('The decoded QR text, starting with 000201') },
@@ -128,6 +144,7 @@ export function createServer(): McpServer {
     'vietqr_decode',
     {
       title: 'Decode VietQR image',
+      annotations: OFFLINE_READ_ONLY,
       description:
         'Read the QR code in a PNG image file and decode it like vietqr_parse: bank, account, amount, note, CRC validity. Returns READ_ERROR for an unreadable/non-PNG file and NO_QR when no QR code is found.',
       inputSchema: { path: z.string().describe('Path to a PNG image containing a VietQR code') },
@@ -146,6 +163,7 @@ export function createServer(): McpServer {
     'vietqr_banks',
     {
       title: 'Search banks',
+      annotations: OFFLINE_READ_ONLY,
       description:
         'Search the NAPAS bank list by BIN, code, short name or full name. Empty query lists all banks.',
       inputSchema: { query: z.string().optional().describe('e.g. "vietcombank", "VCB", "9704"') },
@@ -157,6 +175,7 @@ export function createServer(): McpServer {
     'vn_address_parse',
     {
       title: 'Parse Vietnamese address',
+      annotations: OFFLINE_READ_ONLY,
       description:
         'Parse a free-text Vietnamese address into province / ward / street using the post-01/07/2025 catalogue (34 provinces, no districts). Handles missing diacritics and abbreviations (TP.HCM, Q.1, P. Bến Nghé). Set mode "legacy" for pre-2025 addresses with districts.',
       inputSchema: {
@@ -202,6 +221,7 @@ export function createServer(): McpServer {
     'vn_address_convert_batch',
     {
       title: 'Convert many old addresses to new (2025)',
+      annotations: OFFLINE_READ_ONLY,
       description:
         'Convert up to 1000 pre-July-2025 Vietnamese free-text addresses (63 provinces, districts, wards) into the new 2-level structure (34 provinces, wards) in one call. Returns per-row results plus a summary of converted and failed rows. Null, empty or non-string entries do not fail the call: they come back as failed rows (ok:false with an error code) and are counted in summary.failed.',
       inputSchema: {
@@ -221,6 +241,7 @@ export function createServer(): McpServer {
     'vn_address_convert',
     {
       title: 'Convert old address to new (2025)',
+      annotations: OFFLINE_READ_ONLY,
       description:
         'Convert a pre-July-2025 Vietnamese address (63 provinces, districts, wards) into the new 2-level structure (34 provinces, wards). Returns the new ward/province, mapping type (unchanged/merged/divided) and all candidates when the old ward was split.',
       inputSchema: {
@@ -276,6 +297,7 @@ export function createServer(): McpServer {
     'vn_address_search_wards',
     {
       title: 'Search wards',
+      annotations: OFFLINE_READ_ONLY,
       description: 'Find current (post-2025) wards by name, optionally within a province.',
       inputSchema: {
         query: z.string(),
@@ -300,6 +322,7 @@ export function createServer(): McpServer {
     'vn_tax_id_validate',
     {
       title: 'Validate tax ID',
+      annotations: OFFLINE_READ_ONLY,
       description:
         'Offline validation of a Vietnamese tax ID (mã số thuế): 10 digits (enterprise), 13 digits (branch, e.g. 0100233488-001) with check-digit verification, or 12-digit personal ID (format only). Does not query the tax authority.',
       inputSchema: { taxId: z.string() },
@@ -316,6 +339,7 @@ export function createServer(): McpServer {
     'vn_id_parse',
     {
       title: 'Parse citizen ID',
+      annotations: OFFLINE_READ_ONLY,
       description:
         'Offline validation and decoding of a 12-digit CCCD (province, sex, birth year; legacy province mapped to 2025 province) or format check of a 9-digit CMND. Format validity does not prove the identity exists.',
       inputSchema: { id: z.string() },
@@ -330,6 +354,7 @@ export function createServer(): McpServer {
     'vn_phone',
     {
       title: 'Vietnamese phone number',
+      annotations: OFFLINE_READ_ONLY,
       description:
         'Normalise a Vietnamese phone number (0/84/+84, old 11-digit 01xx mobile prefixes) to national and E.164 forms and classify it: mobile (original carrier) or landline (area code, province). Offline.',
       inputSchema: { phone: z.string() },
@@ -344,6 +369,7 @@ export function createServer(): McpServer {
     'vn_name',
     {
       title: 'Vietnamese name tools',
+      annotations: OFFLINE_READ_ONLY,
       description:
         'Split a Vietnamese full name into họ / tên đệm / tên (handles Tôn Thất, Nguyễn Phúc), plus slug and initials; or sort a list of names by tên with Vietnamese collation.',
       inputSchema: {
@@ -370,8 +396,9 @@ export function createServer(): McpServer {
     'vn_money_to_words',
     {
       title: 'Amount in Vietnamese words',
+      annotations: OFFLINE_READ_ONLY,
       description:
-        'Read an integer VND amount in Vietnamese words, e.g. 1200000 -> "một triệu hai trăm nghìn đồng". Options: thousand "nghìn"/"ngàn", odd "lẻ"/"linh", capitalize, unit.',
+        'Read an integer VND amount in Vietnamese words, e.g. 1200000 -> "một triệu hai trăm nghìn đồng". Also reads plain numbers without a unit with plain: true, e.g. 30 -> "ba mươi". Options: thousand "nghìn"/"ngàn", odd "lẻ"/"linh", capitalize, unit.',
       inputSchema: {
         amount: z.union([z.number(), z.string()]),
         thousand: z.enum(['nghìn', 'ngàn']).optional(),
@@ -379,12 +406,46 @@ export function createServer(): McpServer {
         unit: z.string().optional().describe('Default "đồng"; "" for none'),
         capitalize: z.boolean().optional(),
         chan: z.boolean().optional().describe('Append "chẵn" for round amounts'),
+        plain: z
+          .boolean()
+          .optional()
+          .describe('Read a plain number without a unit (default false); not with unit/chan'),
       },
     },
-    async ({ amount, ...opts }) => {
-      const r = moneyToWords(amount, opts);
+    async ({ amount, plain, ...opts }) => {
+      if (plain && (opts.unit !== undefined || opts.chan)) {
+        return json(
+          {
+            ok: false,
+            error: {
+              code: 'INVALID_OPTIONS',
+              message: 'plain cannot be combined with unit or chan',
+            },
+          },
+          true,
+        );
+      }
+      const { unit: _u, chan: _c, ...rest } = opts;
+      const r = plain ? numberToWords(amount, rest) : moneyToWords(amount, opts);
       return r.ok
         ? json({ ok: true, amount: r.amount, words: r.words })
+        : json({ ok: false, error: r.error }, true);
+    },
+  );
+
+  server.registerTool(
+    'vn_money_parse',
+    {
+      title: 'Vietnamese number words to digits',
+      annotations: OFFLINE_READ_ONLY,
+      description:
+        'Parse an amount written in Vietnamese words back to digits, e.g. "một triệu hai trăm nghìn đồng" -> "1200000". Returns value (digit string), negative, unit, chan.',
+      inputSchema: { text: z.string() },
+    },
+    async ({ text }) => {
+      const r = wordsToNumber(text);
+      return r.ok
+        ? json({ ok: true, value: r.value, negative: r.negative, unit: r.unit, chan: r.chan })
         : json({ ok: false, error: r.error }, true);
     },
   );
@@ -393,6 +454,7 @@ export function createServer(): McpServer {
     'vn_number_format',
     {
       title: 'Vietnamese number formatting and parsing',
+      annotations: OFFLINE_READ_ONLY,
       description:
         'Format numbers/VND/dates the Vietnamese way (1.234.567,89; 1.200.000 ₫; 1,2 triệu; dd/MM/yyyy) or parse typed amounts ("1tr2", "500k", "1,5 tỷ"; "1.500" = 1500).',
       inputSchema: {
@@ -424,6 +486,7 @@ export function createServer(): McpServer {
     'vn_lunar_from_solar',
     {
       title: 'Solar to lunar date',
+      annotations: OFFLINE_READ_ONLY,
       description:
         'Convert a Gregorian date (dd/mm/yyyy or yyyy-mm-dd) to the Vietnamese lunar date with can chi (e.g. Ất Tỵ), zodiac, leap-month flag and solar term.',
       inputSchema: { date: z.string() },
@@ -440,6 +503,7 @@ export function createServer(): McpServer {
     'vn_lunar_to_solar',
     {
       title: 'Lunar to solar date',
+      annotations: OFFLINE_READ_ONLY,
       description:
         'Convert a Vietnamese lunar date to the Gregorian date. Set leap=true for the leap (nhuận) month.',
       inputSchema: {
@@ -464,9 +528,25 @@ export function createServer(): McpServer {
   );
 
   server.registerTool(
+    'vn_lunar_month',
+    {
+      title: 'Lunar month calendar',
+      annotations: OFFLINE_READ_ONLY,
+      description:
+        'Calendar of a Gregorian month: each day with lunar date (leap flag, mùng 1, rằm), day can chi, solar term starts and holidays/days off.',
+      inputSchema: { month: z.number().int(), year: z.number().int() },
+    },
+    async ({ month, year }) => {
+      const r = lunarMonthCalendar(month, year);
+      return r.ok ? json(r) : json({ ok: false, error: r.error }, true);
+    },
+  );
+
+  server.registerTool(
     'vn_lunar_holidays',
     {
       title: 'Vietnamese holidays',
+      annotations: OFFLINE_READ_ONLY,
       description:
         'List Vietnamese holidays for a solar year (Tết, Giỗ Tổ Hùng Vương, 30/4, 1/5, 2/9, Trung thu...). Lunar holidays are resolved to solar dates. publicOnly limits to official days off.',
       inputSchema: { year: z.number().int(), publicOnly: z.boolean().optional() },
@@ -479,6 +559,7 @@ export function createServer(): McpServer {
     'vn_holidays_year',
     {
       title: 'Vietnam official days off for a year',
+      annotations: OFFLINE_READ_ONLY,
       description:
         'Official days off for public-sector staff in a year (2023-2199): Tết Dương lịch, Tết Âm lịch, Giỗ Tổ Hùng Vương, 30/4, 1/5, Quốc khánh, Ngày Văn hóa Việt Nam 24/11 (from 2026), with nghỉ bù and swapped working Saturdays from the Government notice. Unannounced years return the statutory days, announced: false and the pending Tết / National Day days.',
       inputSchema: { year: z.number().int() },
@@ -493,6 +574,7 @@ export function createServer(): McpServer {
     'vn_holidays_is_working_day',
     {
       title: 'Is it a working day in Vietnam?',
+      annotations: OFFLINE_READ_ONLY,
       description:
         'Whether a date is a working day for public-sector staff (Monday-Friday minus holidays and nghỉ bù, plus swapped Saturdays). certain: false when the year is not announced and the date may still become a Tết or National Day day off.',
       inputSchema: { day: z.number().int(), month: z.number().int(), year: z.number().int() },
@@ -507,6 +589,7 @@ export function createServer(): McpServer {
     'vn_holidays_add_working_days',
     {
       title: 'Add Vietnamese working days',
+      annotations: OFFLINE_READ_ONLY,
       description:
         'The date n working days after (or before, n < 0) a date, skipping weekends, holidays and nghỉ bù; the start date is not counted. certain: false if unannounced days were crossed.',
       inputSchema: {
@@ -526,6 +609,7 @@ export function createServer(): McpServer {
     'vn_holidays_count_working_days',
     {
       title: 'Count Vietnamese working days',
+      annotations: OFFLINE_READ_ONLY,
       description:
         'Number of working days in (from, to]: the start date is not counted, the end date is; negative if to is before from. Skips weekends, holidays and nghỉ bù. certain: false if unannounced Tết or National Day days were crossed.',
       inputSchema: { from: z.string(), to: z.string() },
@@ -550,6 +634,7 @@ export function createServer(): McpServer {
     'vn_einvoice_validate',
     {
       title: 'Validate e-invoice',
+      annotations: OFFLINE_READ_ONLY,
       description:
         'Validate an e-invoice (hóa đơn điện tử) object against the mandatory contents of Decree 123/2020 (series, date, seller tax ID, lines, VAT rates 0/5/8/10/KCT/KKKNT).',
       inputSchema: { invoice: invoiceSchema },
@@ -564,6 +649,7 @@ export function createServer(): McpServer {
     'vn_einvoice_totals',
     {
       title: 'Compute e-invoice totals',
+      annotations: OFFLINE_READ_ONLY,
       description:
         'Validate an invoice and compute line amounts, VAT per rate, grand total and the total in Vietnamese words.',
       inputSchema: { invoice: invoiceSchema, thousand: z.enum(['nghìn', 'ngàn']).optional() },
@@ -581,6 +667,7 @@ export function createServer(): McpServer {
     'vn_einvoice_mock_issue',
     {
       title: 'Issue invoice (mock)',
+      annotations: OFFLINE_READ_ONLY,
       description:
         'Issue an invoice through the in-memory MOCK provider (no real API, nothing persisted). Useful for testing integrations before wiring MISA/Viettel/VNPT sandbox adapters.',
       inputSchema: { invoice: invoiceSchema },
@@ -603,6 +690,7 @@ export function createServer(): McpServer {
     'vn_lunar_tet',
     {
       title: 'Date of Tết',
+      annotations: OFFLINE_READ_ONLY,
       description: 'Solar date of Tết (lunar new year) for a year, with can chi and leap month.',
       inputSchema: { year: z.number().int().describe('Year, e.g. 2026') },
     },
@@ -616,6 +704,7 @@ export function createServer(): McpServer {
     'vn_lunar_canchi',
     {
       title: 'Can chi of a year',
+      annotations: OFFLINE_READ_ONLY,
       description: 'Can chi (e.g. Giáp Thìn) of a lunar year, with its leap month if any.',
       inputSchema: { year: z.number().int().describe('Year, e.g. 2024') },
     },
@@ -629,6 +718,7 @@ export function createServer(): McpServer {
     'vn_tax_id_check_digit',
     {
       title: 'Tax ID check digit',
+      annotations: OFFLINE_READ_ONLY,
       description: 'Compute the 10th check digit of a Vietnamese tax ID from its first 9 digits.',
       inputSchema: { first9: z.string().describe('Exactly 9 digits') },
     },
@@ -642,6 +732,7 @@ export function createServer(): McpServer {
     'vn_address_provinces',
     {
       title: 'List provinces',
+      annotations: OFFLINE_READ_ONLY,
       description: 'List the 34 current Vietnamese provinces (since 01/07/2025) with ward counts.',
       inputSchema: {},
     },
@@ -652,6 +743,7 @@ export function createServer(): McpServer {
     'vn_address_province',
     {
       title: 'Look up a province',
+      annotations: OFFLINE_READ_ONLY,
       description: 'Look up one current province by name, alias (e.g. "TP.HCM") or 2-digit code.',
       inputSchema: { query: z.string().describe('Province name, alias or code') },
     },
@@ -665,10 +757,92 @@ export function createServer(): McpServer {
     'vn_einvoice_example',
     {
       title: 'Example e-invoice',
+      annotations: OFFLINE_READ_ONLY,
       description: 'Return a valid example invoice object to start from.',
       inputSchema: {},
     },
     async () => json(exampleInvoice()),
+  );
+
+  registerPrompts(server);
+
+  const asResource = (uri: URL, data: unknown) => ({
+    contents: [
+      {
+        uri: uri.href,
+        mimeType: 'application/json',
+        text: JSON.stringify(data, null, 2),
+      },
+    ],
+  });
+  const fail = (e: VnError): never => {
+    throw new Error(e.hint ? `${e.message} (${e.hint})` : e.message);
+  };
+  const one = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v) ?? '';
+
+  server.registerResource(
+    'provinces',
+    'vn-skills://provinces',
+    {
+      title: 'Danh sách 34 tỉnh, thành (2025) / The 34 provinces',
+      description: 'The 34 current Vietnamese provinces (since 01/07/2025) with ward counts.',
+      mimeType: 'application/json',
+    },
+    (uri) => asResource(uri, provincesList()),
+  );
+
+  server.registerResource(
+    'banks',
+    'vn-skills://banks',
+    {
+      title: 'Danh sách ngân hàng VietQR / VietQR bank list',
+      description: 'The NAPAS bank list used by VietQR: BIN, code, short and full names.',
+      mimeType: 'application/json',
+    },
+    (uri) => asResource(uri, { ok: true, banks: searchBanks('') }),
+  );
+
+  server.registerResource(
+    'province-wards',
+    new ResourceTemplate('vn-skills://province/{code}/wards', {
+      list: () => ({
+        resources: PROVINCES.map((p) => ({
+          uri: `vn-skills://province/${p.code}/wards`,
+          name: `wards-${p.code}`,
+          title: `Phường/xã của ${p.fullName} / Wards of ${p.nameEn ?? p.fullName}`,
+          mimeType: 'application/json',
+        })),
+      }),
+    }),
+    {
+      title: 'Phường/xã theo tỉnh / Wards of a province',
+      description: 'A province (2-digit code) with its list of wards.',
+      mimeType: 'application/json',
+    },
+    (uri, { code }) => {
+      const p = provinceByCode.get(one(code));
+      if (!p)
+        return fail({
+          code: 'PROVINCE_NOT_FOUND',
+          message: `No province with code "${one(code)}"`,
+          hint: 'Use a 2-digit code from vn-skills://provinces',
+        });
+      return asResource(uri, { ok: true, ...provinceInfo(p), wards: p.wards });
+    },
+  );
+
+  server.registerResource(
+    'holidays-year',
+    new ResourceTemplate('vn-skills://holidays/{year}', { list: undefined }),
+    {
+      title: 'Ngày nghỉ lễ trong năm / Official days off of a year',
+      description: 'Official days off for public-sector staff in a year (2023-2199).',
+      mimeType: 'application/json',
+    },
+    (uri, { year }) => {
+      const r = publicHolidays(Number(one(year)));
+      return r.ok ? asResource(uri, r) : fail(r.error);
+    },
   );
 
   return server;

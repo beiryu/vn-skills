@@ -87,7 +87,7 @@ Hoặc trong cấu hình MCP bất kỳ:
 { "mcpServers": { "vn-skills": { "command": "npx", "args": ["-y", "@vn-skills/mcp"] } } }
 ```
 
-Server cung cấp 30 tool, nhóm theo skill:
+Server cung cấp 32 tool, nhóm theo skill. Mọi tool đều được khai báo chỉ đọc và offline (`readOnlyHint: true`, `openWorldHint: false`).
 
 | Skill              | Tool                                                                                                                                           |
 | ------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -97,11 +97,19 @@ Server cung cấp 30 tool, nhóm theo skill:
 | `vn-id`            | `vn_id_parse`                                                                                                                                  |
 | `vn-phone`         | `vn_phone`                                                                                                                                     |
 | `vn-holidays`      | `vn_holidays_year`, `vn_holidays_is_working_day`, `vn_holidays_add_working_days`, `vn_holidays_count_working_days`                             |
-| `vn-money-words`   | `vn_money_to_words`                                                                                                                            |
-| `vn-lunar`         | `vn_lunar_from_solar`, `vn_lunar_to_solar`, `vn_lunar_holidays`, `vn_lunar_tet`, `vn_lunar_canchi`                                             |
+| `vn-money-words`   | `vn_money_to_words`, `vn_money_parse`                                                                                                          |
+| `vn-lunar`         | `vn_lunar_from_solar`, `vn_lunar_to_solar`, `vn_lunar_month`, `vn_lunar_holidays`, `vn_lunar_tet`, `vn_lunar_canchi`                           |
 | `vn-einvoice`      | `vn_einvoice_validate`, `vn_einvoice_totals`, `vn_einvoice_mock_issue`, `vn_einvoice_example`                                                  |
 | `vn-name`          | `vn_name`                                                                                                                                      |
 | `vn-number-format` | `vn_number_format`                                                                                                                             |
+
+### Prompts
+
+Server cũng cung cấp prompt mẫu, hiển thị dạng lệnh `/` trong các client hỗ trợ MCP prompts: `tao-vietqr`, `doi-dia-chi-moi`, `kiem-tra-mst`, `doc-cccd`, `so-tien-bang-chu`, `ngay-lam-viec`, `doi-am-duong`, `kiem-tra-hoa-don`.
+
+### Resources
+
+Dữ liệu chỉ đọc mà client có thể đính kèm không cần gọi tool (đều là `application/json`):
 
 ### Cài đặt MCP theo client
 
@@ -162,6 +170,16 @@ Sau đó trỏ client tới image (chạy `docker run -i --rm vn-skills-mcp`):
 ```
 
 Client khác: dùng khối `mcpServers` chung ở trên. Agent AI (ví dụ Cline) có thể làm theo [llms-install.md](llms-install.md).
+
+### Chế độ HTTP
+
+Để dùng chung hoặc từ xa, chạy transport Streamable HTTP (tùy chọn, không lưu session, `POST /mcp`):
+
+```bash
+npx -y @vn-skills/mcp --http --port 3000   # http://127.0.0.1:3000/mcp
+```
+
+Mặc định chỉ lắng nghe trên `127.0.0.1`; dùng `--host 0.0.0.0` để mở ra ngoài (ví dụ `docker run -p 3000:3000 vn-skills-mcp --http --host 0.0.0.0`). Request có header `Origin` không phải localhost sẽ bị từ chối (403) trừ khi thêm `--allow-origin <origin>` (có thể lặp lại). Không có `--http` thì server dùng stdio.
 
 ## Thư viện
 

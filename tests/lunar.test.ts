@@ -14,6 +14,9 @@ import {
   jdFromDate,
   jdToDate,
   lunarMonthLength,
+  lunarMonthCalendar,
+  publicHolidays,
+  tetInfo,
 } from '@vn-skills/core';
 import { loadGolden, title } from './golden.js';
 
@@ -207,5 +210,102 @@ const r = ${call}; console.log(r.ok === false ? r.error.code : 'ok');`;
       encoding: 'utf8',
     });
     expect(out.stdout.trim()).toBe('INVALID_TIMEZONE');
+  });
+});
+
+describe('lunarMonthCalendar', () => {
+  const cal = (m: number, y: number) => {
+    const r = lunarMonthCalendar(m, y);
+    if (!r.ok) throw new Error(r.error.message);
+    return r.days;
+  };
+  it.each([
+    [2, 2023, 28],
+    [2, 2024, 29],
+    [4, 2026, 30],
+    [1, 2026, 31],
+  ])('has the right day count for %i/%i', (m, y, n) => {
+    expect(cal(m, y)).toHaveLength(n);
+  });
+  it('matches lunarInfo for each day', () => {
+    for (const d of cal(8, 2025)) {
+      const [y, m, dd] = d.date.split('-').map(Number);
+      const i = lunarInfo(dd!, m!, y!);
+      if (!i.ok) throw new Error('x');
+      expect(d.lunar).toEqual({ day: i.day, month: i.month, year: i.year, leap: i.leap });
+      expect(d.dayCanChi).toBe(i.dayCanChi);
+      expect(d.text).toBe(i.text);
+      expect(d.weekday).toBe(i.solar.weekday);
+    }
+  });
+  it('flags Tết 2027', () => {
+    const d = cal(2, 2027).find((x) => x.date === '2027-02-06')!;
+    expect(d.lunar).toMatchObject({ day: 1, month: 1, leap: false });
+    expect(d.firstOfLunarMonth).toBe(true);
+    expect(d.holidays.some((h) => h.includes('Tết'))).toBe(true);
+  });
+  it('flags rằm and mùng 1 exactly where the lunar day is 15 and 1', () => {
+    const days = cal(3, 2026);
+    expect(days.filter((d) => d.fullMoon)).toHaveLength(1);
+    expect(days.filter((d) => d.firstOfLunarMonth)).toHaveLength(1);
+    expect(days.every((d) => d.fullMoon === (d.lunar.day === 15))).toBe(true);
+    expect(days.every((d) => d.firstOfLunarMonth === (d.lunar.day === 1))).toBe(true);
+  });
+  it('marks leap-month days', () => {
+    const ly = 2025;
+    const lm = leapMonthOf(ly)!;
+    const s = lunarToSolar(1, lm, ly, true);
+    if (!s.ok) throw new Error('x');
+    const days = cal(s.month, s.year);
+    const d = days.find(
+      (x) =>
+        x.date ===
+        `${s.year}-${String(s.month).padStart(2, '0')}-${String(s.day).padStart(2, '0')}`,
+    )!;
+    expect(d.lunar.leap).toBe(true);
+    expect(days.some((x) => !x.lunar.leap)).toBe(true);
+  });
+  it('carries solarTerm exactly where the term changes', () => {
+    const days = cal(5, 2026);
+    const withTerm = days.filter((d) => d.solarTerm).map((d) => d.date);
+    expect(withTerm).toHaveLength(2);
+    const info = (s: string) => {
+      const [y, m, dd] = s.split('-').map(Number);
+      const r = lunarInfo(dd!, m!, y!);
+      if (!r.ok) throw new Error('x');
+      return r.solarTerm;
+    };
+    days.forEach((d, i) => {
+      if (i > 0) expect(!!d.solarTerm).toBe(info(d.date) !== info(days[i - 1]!.date));
+      if (d.solarTerm) expect(d.solarTerm).toBe(info(d.date));
+    });
+  });
+  it('lists public days off', () => {
+    expect(cal(9, 2025).find((d) => d.date === '2025-09-02')!.holidays.length).toBeGreaterThan(0);
+  });
+  it('skips only public days off for years outside the holiday data', () => {
+    expect(publicHolidays(1900).ok).toBe(false);
+    const t = tetInfo(1900);
+    if (!t.ok) throw new Error('x');
+    const month = Number(t.date.slice(5, 7));
+    const days = cal(month, 1900);
+    const tet = days.find((d) => d.date === t.date);
+    expect(tet?.holidays.some((h) => h.includes('Tết'))).toBe(true);
+  });
+  it.each([
+    [13, 2026],
+    [0, 2026],
+    [1.5, 2026],
+  ])('rejects month %s', (m, y) => {
+    const r = lunarMonthCalendar(m, y);
+    expect(r.ok).toBe(false);
+    if (!r.ok) expect(r.error.code).toBe('INVALID_DATE');
+  });
+  it('rejects unsupported lunar years', () => {
+    const r = lunarMonthCalendar(6, 1500);
+    const info = lunarInfo(1, 6, 1500);
+    expect(r.ok).toBe(false);
+    expect(info.ok).toBe(false);
+    if (!r.ok && !info.ok) expect(r.error.code).toBe(info.error.code);
   });
 });

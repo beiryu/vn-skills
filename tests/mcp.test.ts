@@ -3,6 +3,7 @@ import { mkdtempSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { PNG } from 'pngjs';
+import { PROVINCES } from '@vn-skills/core';
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js';
 
@@ -37,6 +38,19 @@ describe('vn-skills MCP server', () => {
     expect(bad.isError).toBe(true);
   });
 
+  it('declares a title and read-only, closed-world annotations on every tool', async () => {
+    const { tools } = await client.listTools();
+    expect(tools.length).toBeGreaterThan(0);
+    for (const t of tools) {
+      expect(typeof t.title, `${t.name} title`).toBe('string');
+      expect(t.title!.trim().length, `${t.name} title`).toBeGreaterThan(0);
+      expect(t.annotations?.readOnlyHint, `${t.name} readOnlyHint`).toBe(true);
+      expect(t.annotations?.destructiveHint, `${t.name} destructiveHint`).toBe(false);
+      expect(t.annotations?.idempotentHint, `${t.name} idempotentHint`).toBe(true);
+      expect(t.annotations?.openWorldHint, `${t.name} openWorldHint`).toBe(false);
+    }
+  });
+
   it('lists the expected tools', async () => {
     const { tools } = await client.listTools();
     const names = tools.map((t) => t.name).sort();
@@ -53,9 +67,11 @@ describe('vn-skills MCP server', () => {
         'vn_tax_id_validate',
         'vn_id_parse',
         'vn_money_to_words',
+        'vn_money_parse',
         'vn_number_format',
         'vn_lunar_from_solar',
         'vn_lunar_to_solar',
+        'vn_lunar_month',
         'vn_lunar_holidays',
         'vn_einvoice_validate',
         'vn_einvoice_totals',
@@ -149,6 +165,16 @@ describe('vn-skills MCP server', () => {
     );
     expect(j.words).toBe('một triệu hai trăm nghìn đồng');
   });
+  it('vn_money_to_words plain', async () => {
+    const call = async (args: Record<string, unknown>) =>
+      text(await client.callTool({ name: 'vn_money_to_words', arguments: args }));
+    expect((await call({ amount: 105, plain: true })).words).toBe('một trăm lẻ năm');
+    expect((await call({ amount: 1500, plain: true, thousand: 'ngàn' })).words).toBe(
+      'một ngàn năm trăm',
+    );
+    expect((await call({ amount: 30, plain: false })).words).toBe('ba mươi đồng');
+    expect((await call({ amount: 30, plain: true, unit: 'đồng' })).ok).toBe(false);
+  });
   it('vn_tax_id_validate', async () => {
     const j = text(
       await client.callTool({ name: 'vn_tax_id_validate', arguments: { taxId: '0100233488' } }),
@@ -166,6 +192,19 @@ describe('vn-skills MCP server', () => {
       await client.callTool({ name: 'vn_lunar_from_solar', arguments: { date: '2025-01-29' } }),
     );
     expect(j.yearCanChi).toBe('Ất Tỵ');
+  });
+  it('vn_lunar_month', async () => {
+    const j = text(
+      await client.callTool({ name: 'vn_lunar_month', arguments: { month: 2, year: 2027 } }),
+    );
+    const days = j.days as Array<{ date: string; lunar: { day: number; month: number } }>;
+    expect(days).toHaveLength(28);
+    expect(days.find((d) => d.date === '2027-02-06')?.lunar).toMatchObject({ day: 1, month: 1 });
+    const bad = await client.callTool({
+      name: 'vn_lunar_month',
+      arguments: { month: 13, year: 2026 },
+    });
+    expect(bad.isError).toBe(true);
   });
   it('vn_lunar_to_solar', async () => {
     const j = text(
@@ -334,5 +373,118 @@ describe('vn-skills MCP server', () => {
     const invoice = text(await client.callTool({ name: 'vn_einvoice_example', arguments: {} }));
     const v = text(await client.callTool({ name: 'vn_einvoice_validate', arguments: { invoice } }));
     expect(v.ok).toBe(true);
+  });
+  describe('prompts', () => {
+    const PROMPTS: Record<string, string> = {
+      'tao-vietqr': 'vietqr_build',
+      'doi-dia-chi-moi': 'vn_address_convert',
+      'kiem-tra-mst': 'vn_tax_id_validate',
+      'doc-cccd': 'vn_id_parse',
+      'so-tien-bang-chu': 'vn_money_to_words',
+      'ngay-lam-viec': 'vn_holidays_add_working_days',
+      'doi-am-duong': 'vn_lunar_from_solar',
+      'kiem-tra-hoa-don': 'vn_einvoice_validate',
+    };
+
+    it('advertises the prompts capability', () => {
+      expect(client.getServerCapabilities()?.prompts).toBeDefined();
+    });
+    it('prompts/list returns every prompt with title and description', async () => {
+      const { prompts } = await client.listPrompts();
+      expect(prompts.map((p) => p.name).sort()).toEqual(Object.keys(PROMPTS).sort());
+      for (const p of prompts) {
+        expect(p.title).toBeTruthy();
+        expect(p.description).toBeTruthy();
+      }
+    });
+    it('each prompt names a tool that exists in tools/list', async () => {
+      const tools = new Set((await client.listTools()).tools.map((t) => t.name));
+      for (const tool of Object.values(PROMPTS)) expect(tools.has(tool)).toBe(true);
+      const { prompts } = await client.listPrompts();
+      for (const p of prompts) {
+        const args: Record<string, string> = {};
+        for (const a of p.arguments ?? []) if (a.required) args[a.name] = '1';
+        const r = await client.getPrompt({ name: p.name, arguments: args });
+        expect(r.messages).toHaveLength(1);
+        expect(r.messages[0]!.role).toBe('user');
+        const c = r.messages[0]!.content as { type: string; text: string };
+        expect(c.text).toContain(PROMPTS[p.name]!);
+      }
+    });
+    it('tao-vietqr embeds the given arguments', async () => {
+      const r = await client.getPrompt({
+        name: 'tao-vietqr',
+        arguments: { bank: 'VCB', account: '0123456789', amount: '50000', note: 'cafe' },
+      });
+      const c = r.messages[0]!.content as { type: string; text: string };
+      for (const v of ['vietqr_build', 'VCB', '0123456789', '50000', 'cafe'])
+        expect(c.text).toContain(v);
+    });
+    it('missing required argument is an error', async () => {
+      await expect(
+        client.getPrompt({ name: 'tao-vietqr', arguments: { bank: 'VCB' } }),
+      ).rejects.toThrow();
+    });
+  });
+
+  describe('resources', () => {
+    const readJson = async (uri: string) => {
+      const r = await client.readResource({ uri });
+      const c = r.contents[0] as { mimeType?: string; text?: string };
+      expect(c.mimeType).toBe('application/json');
+      return JSON.parse(c.text!) as Record<string, unknown>;
+    };
+
+    it('declares the resources capability and lists static resources', async () => {
+      expect(client.getServerCapabilities()?.resources).toBeDefined();
+      const { resources } = await client.listResources();
+      const uris = resources.map((x) => x.uri);
+      expect(uris).toContain('vn-skills://provinces');
+      expect(uris).toContain('vn-skills://banks');
+    });
+
+    it('lists both resource templates', async () => {
+      const { resourceTemplates } = await client.listResourceTemplates();
+      const t = resourceTemplates.map((x) => x.uriTemplate);
+      expect(t).toContain('vn-skills://province/{code}/wards');
+      expect(t).toContain('vn-skills://holidays/{year}');
+    });
+
+    it('reads vn-skills://provinces', async () => {
+      const j = await readJson('vn-skills://provinces');
+      expect((j.provinces as unknown[]).length).toBe(34);
+    });
+
+    it('reads vn-skills://banks with the vietqr_banks count', async () => {
+      const j = await readJson('vn-skills://banks');
+      const tool = text(await client.callTool({ name: 'vietqr_banks', arguments: {} }));
+      expect((j.banks as unknown[]).length).toBe((tool.banks as unknown[]).length);
+    });
+
+    it('reads the wards of a province', async () => {
+      const p = PROVINCES[0]!;
+      const j = await readJson(`vn-skills://province/${p.code}/wards`);
+      expect((j.wards as unknown[]).length).toBe(p.wards.length);
+    });
+
+    it('reads vn-skills://holidays/2026 equal to vn_holidays_year', async () => {
+      const j = await readJson('vn-skills://holidays/2026');
+      const tool = text(
+        await client.callTool({ name: 'vn_holidays_year', arguments: { year: 2026 } }),
+      );
+      expect(j).toEqual(tool);
+    });
+
+    it('errors on an unknown province code', async () => {
+      await expect(client.readResource({ uri: 'vn-skills://province/zzz/wards' })).rejects.toThrow(
+        /zzz|province|tỉnh/i,
+      );
+    });
+
+    it('errors on an out-of-range year', async () => {
+      await expect(client.readResource({ uri: 'vn-skills://holidays/1900' })).rejects.toThrow(
+        /Supported years: 2023-2199/,
+      );
+    });
   });
 });

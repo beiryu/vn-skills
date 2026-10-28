@@ -1,6 +1,6 @@
 ---
 name: vn-lunar
-description: Vietnamese lunar calendar (âm lịch) - convert solar to lunar dates and back, leap months (tháng nhuận), can chi (Giáp Thìn, Ất Tỵ), zodiac, 24 solar terms, Tết date for any year, and Vietnamese public holidays (Tết, Giỗ Tổ Hùng Vương, 30/4, 1/5, 2/9). Uses astronomical new-moon and solar-term calculations at UTC+7, which differs from the Chinese calendar on some dates. Use for "hôm nay là ngày mấy âm lịch", "Tết năm 2027 ngày nào", "ngày lễ", "mùng 1", "rằm", scheduling around holidays, or any lunar/solar conversion.
+description: Vietnamese lunar calendar (âm lịch) - convert solar to lunar dates and back, leap months (tháng nhuận), can chi (Giáp Thìn, Ất Tỵ), zodiac, 24 solar terms, Tết date for any year, and Vietnamese public holidays (Tết, Giỗ Tổ Hùng Vương, 30/4, 1/5, 2/9). Uses astronomical new-moon and solar-term calculations at UTC+7, which differs from the Chinese calendar on some dates. Use for "hôm nay là ngày mấy âm lịch", "Tết năm 2027 ngày nào", "lịch âm tháng", "lịch vạn niên", "rằm tháng này", "ngày lễ", "mùng 1", "rằm", scheduling around holidays, or any lunar/solar conversion.
 license: MIT
 compatibility: Requires Node.js 22+ (runs npx -y @vn-skills/cli).
 metadata:
@@ -52,9 +52,10 @@ npx -y @vn-skills/cli lunar to-solar 01/06/2025 --leap   # leap month 6 of Ất 
 npx -y @vn-skills/cli lunar tet 2027                     # 2027-02-06  Đinh Mùi (Goat)
 npx -y @vn-skills/cli lunar holidays 2026 --public       # official days off with solar dates
 npx -y @vn-skills/cli lunar canchi 2024                  # Giáp Thìn
+npx -y @vn-skills/cli lunar month 02/2027                # whole month: lunar dates, can chi, solar terms, holidays (also yyyy-mm)
 ```
 
-Library: `solarToLunar`, `lunarToSolar`, `lunarInfo`, `tetDate`, `holidays`, `yearCanChi`, `dayCanChi`, `leapMonthOf` from `@vn-skills/core`.
+Library: `solarToLunar`, `lunarToSolar`, `lunarInfo`, `tetDate`, `holidays`, `yearCanChi`, `dayCanChi`, `leapMonthOf`, `lunarMonthCalendar` from `@vn-skills/core`.
 
 ## Rules and gotchas
 
