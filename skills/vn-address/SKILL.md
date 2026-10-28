@@ -71,9 +71,15 @@ Inside this repo use `pnpm vn-skills` instead of `npx -y @vn-skills/cli`. Output
 
 4. **Look things up**: `address provinces`, `address province "Gia Lai"`, `address wards "Tân Thành" -p "Tây Ninh"`.
 
+5. **Former wards of a new ward** ("phường X gồm những phường cũ nào", "trước sáp nhập", "phường cũ nào nhập vào"): `address history <ward...> [-p <province>]` takes a new ward code or name and lists each old ward (with district and province) that maps to it, with the mapping flag `isDefault` and `otherNewWards` when the old ward was split. Errors: `EMPTY`, `NOT_FOUND` (add `--province`), `AMBIGUOUS` (same name in several provinces; add `--province`). MCP: `vn_address_history` (`{ ward, province? }`).
+
+   ```bash
+   npx -y @vn-skills/cli address history "Phường Sài Gòn" -p "Hồ Chí Minh"
+   ```
+
 MCP: `vn_address_convert_batch` converts up to 1000 addresses in one call (`{ addresses: string[] }`) and returns per-row results plus `summary: { total, converted, failed }`; null, empty or non-string entries come back as failed rows (`ok: false` with an error code) instead of failing the whole call; use `address convert-file` for larger inputs.
 
-Library: `parseAddress`, `convertAddress`, `convertAddresses`, `findProvince`, `searchWards`, `PROVINCES` from `@vn-skills/core`.
+Library: `parseAddress`, `convertAddress`, `convertAddresses`, `findProvince`, `searchWards`, `formerUnits`, `PROVINCES` from `@vn-skills/core`.
 
 ## Rules and gotchas
 

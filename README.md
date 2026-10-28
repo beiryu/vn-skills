@@ -89,21 +89,21 @@ Setup for other clients is in [MCP client setup](#mcp-client-setup). Or in any M
 { "mcpServers": { "vn-skills": { "command": "npx", "args": ["-y", "@vn-skills/mcp"] } } }
 ```
 
-The server exposes 32 tools, grouped by skill. All tools are declared read-only and offline (`readOnlyHint: true`, `openWorldHint: false`).
+The server exposes 33 tools, grouped by skill. All tools are declared read-only and offline (`readOnlyHint: true`, `openWorldHint: false`).
 
-| Skill              | Tools                                                                                                                                          |
-| ------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------- |
-| `vietqr`           | `vietqr_build`, `vietqr_parse`, `vietqr_decode`, `vietqr_banks`                                                                                |
-| `vn-address`       | `vn_address_parse`, `vn_address_convert`, `vn_address_convert_batch`, `vn_address_search_wards`, `vn_address_provinces`, `vn_address_province` |
-| `vn-tax-id`        | `vn_tax_id_validate`, `vn_tax_id_check_digit`                                                                                                  |
-| `vn-id`            | `vn_id_parse`                                                                                                                                  |
-| `vn-phone`         | `vn_phone`                                                                                                                                     |
-| `vn-holidays`      | `vn_holidays_year`, `vn_holidays_is_working_day`, `vn_holidays_add_working_days`, `vn_holidays_count_working_days`                             |
-| `vn-money-words`   | `vn_money_to_words`, `vn_money_parse`                                                                                                          |
-| `vn-lunar`         | `vn_lunar_from_solar`, `vn_lunar_to_solar`, `vn_lunar_month`, `vn_lunar_holidays`, `vn_lunar_tet`, `vn_lunar_canchi`                           |
-| `vn-einvoice`      | `vn_einvoice_validate`, `vn_einvoice_totals`, `vn_einvoice_mock_issue`, `vn_einvoice_example`                                                  |
-| `vn-name`          | `vn_name`                                                                                                                                      |
-| `vn-number-format` | `vn_number_format`                                                                                                                             |
+| Skill              | Tools                                                                                                                                                                |
+| ------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `vietqr`           | `vietqr_build`, `vietqr_parse`, `vietqr_decode`, `vietqr_banks`                                                                                                      |
+| `vn-address`       | `vn_address_parse`, `vn_address_convert`, `vn_address_convert_batch`, `vn_address_search_wards`, `vn_address_history`, `vn_address_provinces`, `vn_address_province` |
+| `vn-tax-id`        | `vn_tax_id_validate`, `vn_tax_id_check_digit`                                                                                                                        |
+| `vn-id`            | `vn_id_parse`                                                                                                                                                        |
+| `vn-phone`         | `vn_phone`                                                                                                                                                           |
+| `vn-holidays`      | `vn_holidays_year`, `vn_holidays_is_working_day`, `vn_holidays_add_working_days`, `vn_holidays_count_working_days`                                                   |
+| `vn-money-words`   | `vn_money_to_words`, `vn_money_parse`                                                                                                                                |
+| `vn-lunar`         | `vn_lunar_from_solar`, `vn_lunar_to_solar`, `vn_lunar_month`, `vn_lunar_holidays`, `vn_lunar_tet`, `vn_lunar_canchi`                                                 |
+| `vn-einvoice`      | `vn_einvoice_validate`, `vn_einvoice_totals`, `vn_einvoice_mock_issue`, `vn_einvoice_example`                                                                        |
+| `vn-name`          | `vn_name`                                                                                                                                                            |
+| `vn-number-format` | `vn_number_format`                                                                                                                                                   |
 
 ### Prompts
 

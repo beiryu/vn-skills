@@ -63,6 +63,7 @@ describe('vn-skills MCP server', () => {
         'vn_address_parse',
         'vn_address_convert',
         'vn_address_convert_batch',
+        'vn_address_history',
         'vn_address_search_wards',
         'vn_tax_id_validate',
         'vn_id_parse',

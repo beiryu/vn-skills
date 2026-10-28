@@ -110,3 +110,4 @@ export function formatAddress(parts: {
   const p = typeof parts.province === 'string' ? parts.province : parts.province.fullName;
   return [parts.street, w, p].filter(Boolean).join(', ');
 }
+export { formerUnits, type FormerUnit, type FormerUnitsResult } from './history.js';

@@ -3,6 +3,7 @@ import { Command } from 'commander';
 import {
   convertAddress,
   convertAddresses,
+  formerUnits,
   lookupProvince,
   provincesList,
   parseAddress,
@@ -335,6 +336,27 @@ export function registerAddress(program: Command): void {
           process.stdout.write(
             `${r.code}  ${r.fullName.padEnd(32)} ${r.province}  (${r.score.toFixed(2)})\n`,
           );
+    });
+
+  cmd
+    .command('history <ward...>')
+    .description('List the pre-2025 wards that became a current ward (code or name)')
+    .option('-p, --province <province>', 'restrict to a province')
+    .action((words: string[], opts, c: Command) => {
+      const r = formerUnits(words.join(' '), { province: opts.province });
+      if (!r.ok) failExit(c, r.error);
+      if (wantsJson(c)) printJson(r);
+      else {
+        process.stdout.write(`${r.ward.code}  ${r.ward.fullName}, ${r.province.fullName}\n`);
+        for (const f of r.former) {
+          const split = f.otherNewWards?.length
+            ? `  (split; also: ${f.otherNewWards.map((w) => w.fullName).join(', ')})`
+            : '';
+          process.stdout.write(
+            `  ${f.ward.code}  ${f.ward.fullName}, ${f.district.fullName}, ${f.province.fullName}${split}\n`,
+          );
+        }
+      }
     });
 
   cmd

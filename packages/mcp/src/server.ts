@@ -33,6 +33,7 @@ import {
   canChiOfYear,
   taxIdCheckDigitResult,
   lookupProvince,
+  formerUnits,
   provincesList,
   provinceInfo,
   provinceByCode,
@@ -737,6 +738,24 @@ export function createServer(): McpServer {
       inputSchema: {},
     },
     async () => json(provincesList()),
+  );
+
+  server.registerTool(
+    'vn_address_history',
+    {
+      title: 'Former wards of a current ward',
+      description:
+        'List the pre-01/07/2025 wards (with district and province) that became a current ward, by ward code or name.',
+      inputSchema: {
+        ward: z.string().describe('Current ward code or name'),
+        province: z.string().optional(),
+      },
+      annotations: OFFLINE_READ_ONLY,
+    },
+    async ({ ward, province }) => {
+      const r = formerUnits(ward, { province });
+      return json(r, !r.ok);
+    },
   );
 
   server.registerTool(

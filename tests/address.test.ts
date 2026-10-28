@@ -10,6 +10,7 @@ import {
   LEGACY_PROVINCES,
   MAPPING,
   formatAddress,
+  formerUnits,
   parseAddressLegacy,
   type ConvertInput,
 } from '@vn-skills/core';
@@ -28,6 +29,7 @@ const golden = loadGolden<{
   parseAddressLegacy: Case<string, Subset>[];
   parseAddress: Case<string, Subset>[];
   convertAddress: Case<string | ConvertInput, Subset>[];
+  formerUnits: Case<[query: string, province?: string], Subset>[];
   searchWardsFirst: Case<[query: string, province?: string], Subset>[];
   formatAddress: Case<Parameters<typeof formatAddress>[0], string>[];
 }>('vn-address');
@@ -72,6 +74,12 @@ describe('golden fixtures', () => {
   it.each(cases(golden.convertAddress))('convertAddress: %s', (_, c) =>
     expect(convertAddress(c.input)).toMatchObject(c.expected),
   );
+  it.each(cases(golden.formerUnits))('formerUnits: %s', (_, c) => {
+    const r = formerUnits(c.input[0], { province: c.input[1] }) as unknown as {
+      former: unknown[];
+    };
+    expect({ ...r, former: r.former.slice(0, 1) }).toMatchObject(c.expected);
+  });
   it.each(cases(golden.searchWardsFirst))('searchWards first: %s', (_, c) =>
     expect(searchWards(...c.input)[0]).toMatchObject(c.expected),
   );
