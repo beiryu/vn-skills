@@ -301,3 +301,34 @@ describe('parseVietQR lower-cased payloads', () => {
     expect(warnings.some((w) => /lower-?cased in transit/i.test(w))).toBe(false);
   });
 });
+
+describe('SWIFT/BIC lookup', () => {
+  it.each([
+    ['ASCBVNVX', '970416'],
+    ['ascbvnvx', '970416'],
+    ['BFTVVNVX', '970436'],
+    ['bftvvnvx', '970436'],
+    ['CIBBVNVN', '422589'],
+    ['ASCBVNVXABC', '970416'],
+    ['bftvvnvxxxx', '970436'],
+  ])('findBank(%s) -> %s', (q, bin) => {
+    expect(findBank(q)?.bin).toBe(bin);
+  });
+  it('returns undefined for an unknown BIC-like string', () => {
+    expect(findBank('ZZZZVNVX')).toBeUndefined();
+  });
+  it('keeps 8/11-letter aliases resolving', () => {
+    expect(findBank('vietcombank')?.bin).toBe('970436');
+    expect(findBank('techcombank')?.code).toBe('TCB');
+  });
+  it('BIC-shaped name queries still use the substring fallback', () => {
+    expect(findBank('vietinba')?.shortName).toBe('VietinBank');
+  });
+  it('searchBanks puts the SWIFT match first', () => {
+    expect(searchBanks('BFTVVNVX')[0]?.bin).toBe('970436');
+  });
+  it('buildVietQR accepts a SWIFT code as bank', () => {
+    const r = buildVietQR({ bank: 'BFTVVNVX', account: '0011001234567' });
+    expect(r.ok && r.payload.includes('970436')).toBe(true);
+  });
+});
