@@ -86,6 +86,11 @@ export default tseslint.config(
     },
   },
   {
+    // vm.createContext() hands back the sandbox typed loosely; the double cast reads the globals.
+    files: ['tests/sheets.test.ts'],
+    rules: { '@typescript-eslint/no-unnecessary-type-assertion': 'off' },
+  },
+  {
     // Upstream JSON fields are strings or numbers, read as `unknown`.
     files: ['scripts/**/*.ts'],
     rules: { '@typescript-eslint/no-base-to-string': 'off' },
