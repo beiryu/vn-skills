@@ -105,6 +105,8 @@ Server cung cấp 33 tool, nhóm theo skill. Mọi tool đều được khai bá
 
 Client hỗ trợ MCP Apps (Claude, ChatGPT, VS Code, …) hiển thị kết quả VietQR (tạo với `image: true`) dưới dạng thẻ VietQR gồm ngân hàng, số tài khoản, số tiền và nút sao chép; client khác vẫn thấy JSON và ảnh như cũ.
 
+Khi client khai báo capability `elicitation` của MCP, công cụ đổi địa chỉ sẽ hỏi người dùng chọn phường/xã mới nếu phường/xã cũ bị chia tách, và trả về `chosenBy` (`user` hoặc `default`).
+
 ### Prompts
 
 Server cũng cung cấp prompt mẫu, hiển thị dạng lệnh `/` trong các client hỗ trợ MCP prompts: `tao-vietqr`, `doi-dia-chi-moi`, `kiem-tra-mst`, `doc-cccd`, `so-tien-bang-chu`, `ngay-lam-viec`, `doi-am-duong`, `kiem-tra-hoa-don`.

@@ -251,7 +251,7 @@ export function createServer(): McpServer {
       title: 'Convert old address to new (2025)',
       annotations: OFFLINE_READ_ONLY,
       description:
-        'Convert a pre-July-2025 Vietnamese address (63 provinces, districts, wards) into the new 2-level structure (34 provinces, wards). Returns the new ward/province, mapping type (unchanged/merged/divided) and all candidates when the old ward was split.',
+        'Convert a pre-July-2025 Vietnamese address (63 provinces, districts, wards) into the new 2-level structure (34 provinces, wards). Returns the new ward/province, mapping type (unchanged/merged/divided) and all candidates when the old ward was split. When the client supports elicitation, the server may ask the user to pick the new ward for a split old ward (chosenBy: user|default).',
       inputSchema: {
         text: z.string().optional().describe('Free-text old address'),
         province: z.string().optional(),
@@ -269,7 +269,7 @@ export function createServer(): McpServer {
         );
       const r = convertAddress(input);
       if (!r.ok) return json({ ok: false, error: r.error }, true);
-      return json({
+      const out = {
         ok: true,
         mappingType: r.mappingType,
         old: {
@@ -297,6 +297,55 @@ export function createServer(): McpServer {
         })),
         confidence: r.confidence,
         warnings: r.warnings,
+      };
+      if (r.mappingType !== 'divided' || r.candidates.length < 2) return json(out);
+      if (!server.server.getClientCapabilities()?.elicitation) return json(out);
+      let chosen: (typeof r.candidates)[number] | undefined;
+      try {
+        const oldName = [r.old.ward?.fullName, r.old.district?.fullName, r.old.province?.fullName]
+          .filter(Boolean)
+          .join(', ');
+        const res = await server.server.elicitInput({
+          message:
+            `Phường/xã cũ "${oldName}" đã được chia thành nhiều phường/xã mới. Vui lòng chọn phường/xã mới phù hợp. ` +
+            `(The old ward "${oldName}" was split into several new wards. Please choose the new ward.)`,
+          requestedSchema: {
+            type: 'object',
+            properties: {
+              ward: {
+                type: 'string',
+                title: 'Ward / Phường xã',
+                enum: r.candidates.map((c) => c.ward.code),
+                enumNames: r.candidates.map((c) => `${c.ward.fullName}, ${c.province.fullName}`),
+              },
+            },
+            required: ['ward'],
+          },
+        });
+        if (res.action === 'accept') {
+          chosen = r.candidates.find((c) => c.ward.code === res.content?.ward);
+        }
+      } catch {
+        chosen = undefined;
+      }
+      if (!chosen) return json({ ...out, chosenBy: 'default' });
+      const pick = chosen;
+      return json({
+        ...out,
+        new: {
+          province: { code: pick.province.code, fullName: pick.province.fullName },
+          ward: {
+            code: pick.ward.code,
+            fullName: pick.ward.fullName,
+            postalCode: pick.ward.postalCode,
+          },
+          street: r.new.street,
+          formatted: [r.new.street, pick.ward.fullName, pick.province.fullName]
+            .filter(Boolean)
+            .join(', '),
+        },
+        candidates: out.candidates.map((c) => ({ ...c, isDefault: c.code === pick.ward.code })),
+        chosenBy: 'user',
       });
     },
   );
