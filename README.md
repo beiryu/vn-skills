@@ -40,6 +40,7 @@ Bulk-convert stored addresses (one per line → NDJSON, or a CSV column; exit co
 ```bash
 vn-skills address convert-file addresses.txt
 vn-skills address convert-file customers.csv --csv --column address > converted.csv
+vn-skills address convert-file customers.csv --csv --province-column province --district-column district --ward-column ward > converted.csv
 ```
 
 ## Install the skills
