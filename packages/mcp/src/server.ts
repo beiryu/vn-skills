@@ -20,6 +20,7 @@ import {
   parseCitizenId,
   moneyToWords,
   numberToWords,
+  wordsToNumber,
   formatNumber,
   formatVnd,
   formatCompactVnd,
@@ -428,6 +429,23 @@ export function createServer(): McpServer {
       const r = plain ? numberToWords(amount, rest) : moneyToWords(amount, opts);
       return r.ok
         ? json({ ok: true, amount: r.amount, words: r.words })
+        : json({ ok: false, error: r.error }, true);
+    },
+  );
+
+  server.registerTool(
+    'vn_money_parse',
+    {
+      title: 'Vietnamese number words to digits',
+      annotations: OFFLINE_READ_ONLY,
+      description:
+        'Parse an amount written in Vietnamese words back to digits, e.g. "một triệu hai trăm nghìn đồng" -> "1200000". Returns value (digit string), negative, unit, chan.',
+      inputSchema: { text: z.string() },
+    },
+    async ({ text }) => {
+      const r = wordsToNumber(text);
+      return r.ok
+        ? json({ ok: true, value: r.value, negative: r.negative, unit: r.unit, chan: r.chan })
         : json({ ok: false, error: r.error }, true);
     },
   );

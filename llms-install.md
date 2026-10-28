@@ -18,7 +18,7 @@ Add this to the MCP client config (runs over stdio):
 ## Check that it works
 
 - The server prints `vn-skills MCP server running on stdio` to stderr.
-- It lists 31 tools, grouped by skill (`vietqr`, `vn-address`, …).
+- It lists 32 tools, grouped by skill (`vietqr`, `vn-address`, …).
 
 Example prompt: _"tạo QR chuyển 500k vào VCB số tài khoản 0011001234567"_ calls the `vietqr_build` tool.
 

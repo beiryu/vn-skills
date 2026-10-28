@@ -104,6 +104,23 @@
       { "name": "rejects 1001 digits", "input": "9", "repeat": 1001 },
       { "name": "rejects negative 1001 digits", "input": "9", "prefix": "-", "repeat": 1001 }
     ],
+    "wordsToNumber": [
+      {
+        "name": "issue example",
+        "input": "một triệu hai trăm nghìn đồng",
+        "expected": { "ok": true, "value": "1200000", "negative": false, "unit": "đồng" }
+      },
+      {
+        "name": "round-trip of 10^18 words",
+        "roundTrip": "1000000000000000000",
+        "expected": { "ok": true, "value": "1000000000000000000", "negative": false }
+      },
+      {
+        "name": "round-trip with zero groups",
+        "roundTrip": "1000000000001000",
+        "expected": { "ok": true, "value": "1000000000001000", "negative": false }
+      }
+    ],
     "numberToWords": [
       { "input": 2024, "expected": "hai nghìn không trăm hai mươi tư" },
       { "input": 0, "expected": "không" },
