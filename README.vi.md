@@ -197,6 +197,27 @@ import {
 
 Mọi hàm trả về `{ ok: true, ... }` hoặc `{ ok: false, error: { code, message, hint } }`, không ném exception với input sai.
 
+## Google Sheets
+
+`packages/sheets` (private, không đăng lên npm) build các hàm tuỳ chỉnh Apps Script từ `@vn-skills/core`:
+`pnpm --filter ./packages/sheets build` tạo `packages/sheets/dist/vn-skills.gs`, `vn-skills-lite.gs` và `appsscript.json`.
+
+1. Trong Google Sheet mở **Tiện ích mở rộng → Apps Script**, dán nội dung một file `.gs`.
+2. Đặt múi giờ `Asia/Ho_Chi_Minh` (Cài đặt dự án, hoặc dùng `timeZone` trong `appsscript.json`).
+3. Lưu và dùng hàm trong ô. Mỗi hàm nhận một giá trị hoặc một vùng và trả về cùng kích thước; ô lỗi trả về nội dung lỗi.
+
+| Hàm                               | Ví dụ                                              |
+| --------------------------------- | -------------------------------------------------- |
+| `VN_TIEN_CHU(amount, [thousand])` | `=VN_TIEN_CHU(A2)`, `=VN_TIEN_CHU(A2:A9, "ngàn")`  |
+| `VN_SO_THANH_CHU(number)`         | `=VN_SO_THANH_CHU(A2)`                             |
+| `VN_MST(taxId)`                   | `=VN_MST(A2:A9)` → TRUE/FALSE                      |
+| `VN_AM_LICH(date)`                | `=VN_AM_LICH(A2)` hoặc `=VN_AM_LICH("29/01/2025")` |
+| `VN_NGAY_LAM_VIEC(date)`          | `=VN_NGAY_LAM_VIEC(A2)` → TRUE/FALSE               |
+| `VN_CONG_NGAY_LAM_VIEC(date, n)`  | `=VN_CONG_NGAY_LAM_VIEC(A2, 5)` (chuỗi yyyy-mm-dd) |
+| `VN_DIA_CHI_MOI(address)`         | `=VN_DIA_CHI_MOI(A2)` (chỉ bản đầy đủ)             |
+
+Kích thước (theo build): `vn-skills.gs` ≈ 2520 KiB (gồm dữ liệu địa chỉ), `vn-skills-lite.gs` ≈ 39 KiB (không có hàm địa chỉ). Nếu bản đầy đủ quá lớn với dự án của bạn, hãy dùng bản lite.
+
 ## Phát triển
 
 ```bash
