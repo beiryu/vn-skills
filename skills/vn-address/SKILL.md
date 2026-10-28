@@ -63,7 +63,7 @@ Inside this repo use `pnpm vn-skills` instead of `npx -y @vn-skills/cli`. Output
    Returns `province`, `ward`, `street`, `formatted`, `confidence`, `matches` (how each part matched: exact / alias / fuzzy / abbreviation).
    Add `--legacy` to parse with the pre-2025 catalogue (province/district/ward) or `--new` to force the current one.
 
-3. **Bulk convert** ("chuyển hàng loạt địa chỉ", "file CSV"): `address convert-file <file>` (`-` = stdin) reads one address per line and prints NDJSON (`line` is 1-based; failed lines give `{ ok: false, line, input, error }`). With `--csv --column <name>` it reads a CSV with a header and writes CSV with `new_address`, `new_ward_code`, `new_province_code`, `mapping_type`, `confidence`, `warnings` appended. Exit code 2 if any row failed (`converted N, failed M` on stderr).
+3. **Bulk convert** ("chuyển hàng loạt địa chỉ", "file CSV"): `address convert-file <file>` (`-` = stdin) reads one address per line and prints NDJSON (`line` is 1-based; failed lines give `{ ok: false, line, input, error }`). With `--csv --column <name>` it reads a CSV with a header and writes CSV with `new_address`, `new_ward_code`, `new_province_code`, `mapping_type`, `confidence`, `warnings` appended. For CSVs with separate columns use `--csv --province-column <name>` (required) plus optional `--district-column`, `--ward-column`, `--street-column` instead of `--column` (combining both gives `CONFLICTING_OPTIONS`); blank cells are left out and a blank province fails the row. Exit code 2 if any row failed (`converted N, failed M` on stderr).
 
    ```bash
    npx -y @vn-skills/cli address convert-file customers.csv --csv --column address > converted.csv
