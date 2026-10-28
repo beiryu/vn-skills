@@ -205,6 +205,18 @@
         "expected": { "ok": true, "new": { "ward": { "fullName": "Xã Tuy Phước" } } }
       }
     ],
+    "formerUnits": [
+      {
+        "name": "merged ward by code",
+        "input": ["09982"],
+        "expected": {
+          "ok": true,
+          "ward": { "code": "09982", "fullName": "Xã Hạ Bằng" },
+          "province": { "fullName": "Thành phố Hà Nội" },
+          "former": [{ "ward": { "code": "10000", "fullName": "Xã Tân Xã" } }]
+        }
+      }
+    ],
     "searchWardsFirst": [
       {
         "name": "restricts to a province",
