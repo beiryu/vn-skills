@@ -3,6 +3,7 @@ import { mkdtempSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { PNG } from 'pngjs';
+import { PROVINCES } from '@vn-skills/core';
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js';
 
@@ -62,10 +63,12 @@ describe('vn-skills MCP server', () => {
         'vn_address_parse',
         'vn_address_convert',
         'vn_address_convert_batch',
+        'vn_address_history',
         'vn_address_search_wards',
         'vn_tax_id_validate',
         'vn_id_parse',
         'vn_money_to_words',
+        'vn_money_parse',
         'vn_number_format',
         'vn_lunar_from_solar',
         'vn_lunar_to_solar',
@@ -422,6 +425,67 @@ describe('vn-skills MCP server', () => {
       await expect(
         client.getPrompt({ name: 'tao-vietqr', arguments: { bank: 'VCB' } }),
       ).rejects.toThrow();
+    });
+  });
+
+  describe('resources', () => {
+    const readJson = async (uri: string) => {
+      const r = await client.readResource({ uri });
+      const c = r.contents[0] as { mimeType?: string; text?: string };
+      expect(c.mimeType).toBe('application/json');
+      return JSON.parse(c.text!) as Record<string, unknown>;
+    };
+
+    it('declares the resources capability and lists static resources', async () => {
+      expect(client.getServerCapabilities()?.resources).toBeDefined();
+      const { resources } = await client.listResources();
+      const uris = resources.map((x) => x.uri);
+      expect(uris).toContain('vn-skills://provinces');
+      expect(uris).toContain('vn-skills://banks');
+    });
+
+    it('lists both resource templates', async () => {
+      const { resourceTemplates } = await client.listResourceTemplates();
+      const t = resourceTemplates.map((x) => x.uriTemplate);
+      expect(t).toContain('vn-skills://province/{code}/wards');
+      expect(t).toContain('vn-skills://holidays/{year}');
+    });
+
+    it('reads vn-skills://provinces', async () => {
+      const j = await readJson('vn-skills://provinces');
+      expect((j.provinces as unknown[]).length).toBe(34);
+    });
+
+    it('reads vn-skills://banks with the vietqr_banks count', async () => {
+      const j = await readJson('vn-skills://banks');
+      const tool = text(await client.callTool({ name: 'vietqr_banks', arguments: {} }));
+      expect((j.banks as unknown[]).length).toBe((tool.banks as unknown[]).length);
+    });
+
+    it('reads the wards of a province', async () => {
+      const p = PROVINCES[0]!;
+      const j = await readJson(`vn-skills://province/${p.code}/wards`);
+      expect((j.wards as unknown[]).length).toBe(p.wards.length);
+    });
+
+    it('reads vn-skills://holidays/2026 equal to vn_holidays_year', async () => {
+      const j = await readJson('vn-skills://holidays/2026');
+      const tool = text(
+        await client.callTool({ name: 'vn_holidays_year', arguments: { year: 2026 } }),
+      );
+      expect(j).toEqual(tool);
+    });
+
+    it('errors on an unknown province code', async () => {
+      await expect(client.readResource({ uri: 'vn-skills://province/zzz/wards' })).rejects.toThrow(
+        /zzz|province|tỉnh/i,
+      );
+    });
+
+    it('errors on an out-of-range year', async () => {
+      await expect(client.readResource({ uri: 'vn-skills://holidays/1900' })).rejects.toThrow(
+        /Supported years: 2023-2199/,
+      );
     });
   });
 });

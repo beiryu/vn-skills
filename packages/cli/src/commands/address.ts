@@ -3,13 +3,24 @@ import { Command } from 'commander';
 import {
   convertAddress,
   convertAddresses,
+  formerUnits,
   lookupProvince,
   provincesList,
   parseAddress,
   searchWards,
+  type ConvertInput,
 } from '@vn-skills/core';
 import { parseCsv, toCsv } from '../csv.js';
 import { failExit, kv, printJson, wantsJson } from '../output.js';
+
+interface ConvertFileOpts {
+  csv?: boolean;
+  column?: string;
+  provinceColumn?: string;
+  districtColumn?: string;
+  wardColumn?: string;
+  streetColumn?: string;
+}
 
 export function registerAddress(program: Command): void {
   const cmd = program
@@ -156,8 +167,32 @@ export function registerAddress(program: Command): void {
     )
     .option('--csv', 'input is CSV with a header row; output is CSV with result columns appended')
     .option('--column <name>', 'CSV column holding the address (required with --csv)')
-    .action((file: string, opts: { csv?: boolean; column?: string }, c: Command) => {
-      if (opts.csv && !opts.column)
+    .option('--province-column <name>', 'CSV column holding the province (structured input)')
+    .option('--district-column <name>', 'CSV column holding the district (optional)')
+    .option('--ward-column <name>', 'CSV column holding the ward (optional)')
+    .option('--street-column <name>', 'CSV column holding the street (optional)')
+    .action((file: string, opts: ConvertFileOpts, c: Command) => {
+      const structured =
+        opts.provinceColumn || opts.districtColumn || opts.wardColumn || opts.streetColumn;
+      if (structured && opts.column)
+        failExit(c, {
+          code: 'CONFLICTING_OPTIONS',
+          message: '--column cannot be combined with the structured column options',
+          hint: 'Use either --column <name> or --province-column/--district-column/--ward-column/--street-column, not both.',
+        });
+      if (structured && !opts.csv)
+        failExit(c, {
+          code: 'MISSING_COLUMN',
+          message: 'structured column options require --csv',
+          hint: 'Add --csv to read a CSV with a header row.',
+        });
+      if (structured && !opts.provinceColumn)
+        failExit(c, {
+          code: 'MISSING_COLUMN',
+          message: 'structured column options require --province-column <name>',
+          hint: 'Pass --province-column <name> with the CSV header of the province column.',
+        });
+      if (opts.csv && !opts.column && !structured)
         failExit(c, {
           code: 'MISSING_COLUMN',
           message: '--csv requires --column <name> (the address column)',
@@ -178,13 +213,26 @@ export function registerAddress(program: Command): void {
       if (opts.csv) {
         const rows = parseCsv(text);
         const header = rows[0] ?? [];
-        const idx = header.indexOf(opts.column as string);
-        if (idx < 0)
-          failExit(c, {
-            code: 'COLUMN_NOT_FOUND',
-            message: `column "${opts.column}" not found in CSV header`,
-            hint: `Available columns: ${header.join(', ')}`,
-          });
+        const find = (name: string | undefined): number => {
+          if (name === undefined) return -1;
+          const i = header.indexOf(name);
+          if (i < 0)
+            failExit(c, {
+              code: 'COLUMN_NOT_FOUND',
+              message: `column "${name}" not found in CSV header`,
+              hint: `Available columns: ${header.join(', ')}`,
+            });
+          return i;
+        };
+        const idx = find(opts.column);
+        const pIdx = find(opts.provinceColumn);
+        const dIdx = find(opts.districtColumn);
+        const wIdx = find(opts.wardColumn);
+        const sIdx = find(opts.streetColumn);
+        const cell = (row: string[], i: number): string | undefined => {
+          const v = i < 0 ? '' : (row[i] ?? '').trim();
+          return v === '' ? undefined : v;
+        };
         const out: string[][] = [
           [
             ...header,
@@ -197,7 +245,21 @@ export function registerAddress(program: Command): void {
           ],
         ];
         for (const row of rows.slice(1)) {
-          const r = convertAddress(row[idx] ?? '');
+          let r;
+          if (structured) {
+            const province = cell(row, pIdx);
+            if (province === undefined) r = convertAddress('');
+            else {
+              const input: ConvertInput = { province };
+              const district = cell(row, dIdx);
+              const ward = cell(row, wIdx);
+              const street = cell(row, sIdx);
+              if (district) input.district = district;
+              if (ward) input.ward = ward;
+              if (street) input.street = street;
+              r = convertAddress(input);
+            }
+          } else r = convertAddress(row[idx] ?? '');
           if (r.ok) {
             ok++;
             out.push([
@@ -274,6 +336,27 @@ export function registerAddress(program: Command): void {
           process.stdout.write(
             `${r.code}  ${r.fullName.padEnd(32)} ${r.province}  (${r.score.toFixed(2)})\n`,
           );
+    });
+
+  cmd
+    .command('history <ward...>')
+    .description('List the pre-2025 wards that became a current ward (code or name)')
+    .option('-p, --province <province>', 'restrict to a province')
+    .action((words: string[], opts, c: Command) => {
+      const r = formerUnits(words.join(' '), { province: opts.province });
+      if (!r.ok) failExit(c, r.error);
+      if (wantsJson(c)) printJson(r);
+      else {
+        process.stdout.write(`${r.ward.code}  ${r.ward.fullName}, ${r.province.fullName}\n`);
+        for (const f of r.former) {
+          const split = f.otherNewWards?.length
+            ? `  (split; also: ${f.otherNewWards.map((w) => w.fullName).join(', ')})`
+            : '';
+          process.stdout.write(
+            `  ${f.ward.code}  ${f.ward.fullName}, ${f.district.fullName}, ${f.province.fullName}${split}\n`,
+          );
+        }
+      }
     });
 
   cmd

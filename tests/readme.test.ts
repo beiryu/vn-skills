@@ -200,6 +200,7 @@ describe.each(['README.md', 'README.vi.md'])('%s MCP tools grouped by skill', (f
     ['vn_phone', 'vn-phone'],
     ['vn_holidays_', 'vn-holidays'],
     ['vn_money_to_words', 'vn-money-words'],
+    ['vn_money_parse', 'vn-money-words'],
     ['vn_lunar_', 'vn-lunar'],
     ['vn_einvoice_', 'vn-einvoice'],
     ['vn_name', 'vn-name'],

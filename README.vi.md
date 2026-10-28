@@ -40,6 +40,7 @@ Chuyển hàng loạt địa chỉ đã lưu (mỗi dòng một địa chỉ →
 ```bash
 vn-skills address convert-file addresses.txt
 vn-skills address convert-file customers.csv --csv --column address > converted.csv
+vn-skills address convert-file customers.csv --csv --province-column province --district-column district --ward-column ward > converted.csv
 ```
 
 ## Cài skill
@@ -86,25 +87,31 @@ Hoặc trong cấu hình MCP bất kỳ:
 { "mcpServers": { "vn-skills": { "command": "npx", "args": ["-y", "@vn-skills/mcp"] } } }
 ```
 
-Server cung cấp 31 tool, nhóm theo skill. Mọi tool đều được khai báo chỉ đọc và offline (`readOnlyHint: true`, `openWorldHint: false`).
+Server cung cấp 33 tool, nhóm theo skill. Mọi tool đều được khai báo chỉ đọc và offline (`readOnlyHint: true`, `openWorldHint: false`).
 
-| Skill              | Tool                                                                                                                                           |
-| ------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------- |
-| `vietqr`           | `vietqr_build`, `vietqr_parse`, `vietqr_decode`, `vietqr_banks`                                                                                |
-| `vn-address`       | `vn_address_parse`, `vn_address_convert`, `vn_address_convert_batch`, `vn_address_search_wards`, `vn_address_provinces`, `vn_address_province` |
-| `vn-tax-id`        | `vn_tax_id_validate`, `vn_tax_id_check_digit`                                                                                                  |
-| `vn-id`            | `vn_id_parse`                                                                                                                                  |
-| `vn-phone`         | `vn_phone`                                                                                                                                     |
-| `vn-holidays`      | `vn_holidays_year`, `vn_holidays_is_working_day`, `vn_holidays_add_working_days`, `vn_holidays_count_working_days`                             |
-| `vn-money-words`   | `vn_money_to_words`                                                                                                                            |
-| `vn-lunar`         | `vn_lunar_from_solar`, `vn_lunar_to_solar`, `vn_lunar_month`, `vn_lunar_holidays`, `vn_lunar_tet`, `vn_lunar_canchi`                           |
-| `vn-einvoice`      | `vn_einvoice_validate`, `vn_einvoice_totals`, `vn_einvoice_mock_issue`, `vn_einvoice_example`                                                  |
-| `vn-name`          | `vn_name`                                                                                                                                      |
-| `vn-number-format` | `vn_number_format`                                                                                                                             |
+| Skill              | Tool                                                                                                                                                                 |
+| ------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `vietqr`           | `vietqr_build`, `vietqr_parse`, `vietqr_decode`, `vietqr_banks`                                                                                                      |
+| `vn-address`       | `vn_address_parse`, `vn_address_convert`, `vn_address_convert_batch`, `vn_address_search_wards`, `vn_address_history`, `vn_address_provinces`, `vn_address_province` |
+| `vn-tax-id`        | `vn_tax_id_validate`, `vn_tax_id_check_digit`                                                                                                                        |
+| `vn-id`            | `vn_id_parse`                                                                                                                                                        |
+| `vn-phone`         | `vn_phone`                                                                                                                                                           |
+| `vn-holidays`      | `vn_holidays_year`, `vn_holidays_is_working_day`, `vn_holidays_add_working_days`, `vn_holidays_count_working_days`                                                   |
+| `vn-money-words`   | `vn_money_to_words`, `vn_money_parse`                                                                                                                                |
+| `vn-lunar`         | `vn_lunar_from_solar`, `vn_lunar_to_solar`, `vn_lunar_month`, `vn_lunar_holidays`, `vn_lunar_tet`, `vn_lunar_canchi`                                                 |
+| `vn-einvoice`      | `vn_einvoice_validate`, `vn_einvoice_totals`, `vn_einvoice_mock_issue`, `vn_einvoice_example`                                                                        |
+| `vn-name`          | `vn_name`                                                                                                                                                            |
+| `vn-number-format` | `vn_number_format`                                                                                                                                                   |
+
+Client hỗ trợ MCP Apps (Claude, ChatGPT, VS Code, …) hiển thị kết quả VietQR (tạo với `image: true`) dưới dạng thẻ VietQR gồm ngân hàng, số tài khoản, số tiền và nút sao chép; client khác vẫn thấy JSON và ảnh như cũ.
 
 ### Prompts
 
 Server cũng cung cấp prompt mẫu, hiển thị dạng lệnh `/` trong các client hỗ trợ MCP prompts: `tao-vietqr`, `doi-dia-chi-moi`, `kiem-tra-mst`, `doc-cccd`, `so-tien-bang-chu`, `ngay-lam-viec`, `doi-am-duong`, `kiem-tra-hoa-don`.
+
+### Resources
+
+Dữ liệu chỉ đọc mà client có thể đính kèm không cần gọi tool (đều là `application/json`):
 
 ### Cài đặt MCP theo client
 
