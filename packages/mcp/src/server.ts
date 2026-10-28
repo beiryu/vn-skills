@@ -1,6 +1,7 @@
 import { McpServer, ResourceTemplate } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
 import { registerPrompts } from './prompts.js';
+import { MCP_APP_MIME, VIETQR_APP_HTML, VIETQR_APP_URI } from './apps/vietqr.js';
 import QRCode from 'qrcode';
 import { decodeQrPng } from '@vn-skills/cli/decode';
 import {
@@ -84,6 +85,7 @@ export function createServer(): McpServer {
     {
       title: 'Build VietQR',
       annotations: OFFLINE_READ_ONLY,
+      _meta: { ui: { resourceUri: VIETQR_APP_URI } },
       description:
         'Create a VietQR (NAPAS 247) bank-transfer QR payload. Returns the EMVCo string, CRC and optionally a PNG image. Bank accepts BIN (970436), code (VCB) or name (Vietcombank). Amount is integer VND; note is sanitized (no diacritics, max 25 chars).',
       inputSchema: {
@@ -761,6 +763,26 @@ export function createServer(): McpServer {
     throw new Error(e.hint ? `${e.message} (${e.hint})` : e.message);
   };
   const one = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v) ?? '';
+
+  server.registerResource(
+    'vietqr-app',
+    VIETQR_APP_URI,
+    {
+      title: 'VietQR card (MCP Apps view)',
+      description: 'Interactive VietQR card shown by MCP Apps hosts for vietqr_build.',
+      mimeType: MCP_APP_MIME,
+    },
+    (uri) => ({
+      contents: [
+        {
+          uri: uri.href,
+          mimeType: MCP_APP_MIME,
+          text: VIETQR_APP_HTML,
+          _meta: { ui: { prefersBorder: true } },
+        },
+      ],
+    }),
+  );
 
   server.registerResource(
     'provinces',
