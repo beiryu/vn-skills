@@ -21,6 +21,7 @@ import {
   parseCitizenId,
   moneyToWords,
   numberToWords,
+  wordsToNumber,
   formatNumber,
   formatVnd,
   formatCompactVnd,
@@ -33,6 +34,7 @@ import {
   canChiOfYear,
   taxIdCheckDigitResult,
   lookupProvince,
+  formerUnits,
   provincesList,
   provinceInfo,
   provinceByCode,
@@ -435,6 +437,23 @@ export function createServer(): McpServer {
   );
 
   server.registerTool(
+    'vn_money_parse',
+    {
+      title: 'Vietnamese number words to digits',
+      annotations: OFFLINE_READ_ONLY,
+      description:
+        'Parse an amount written in Vietnamese words back to digits, e.g. "một triệu hai trăm nghìn đồng" -> "1200000". Returns value (digit string), negative, unit, chan.',
+      inputSchema: { text: z.string() },
+    },
+    async ({ text }) => {
+      const r = wordsToNumber(text);
+      return r.ok
+        ? json({ ok: true, value: r.value, negative: r.negative, unit: r.unit, chan: r.chan })
+        : json({ ok: false, error: r.error }, true);
+    },
+  );
+
+  server.registerTool(
     'vn_number_format',
     {
       title: 'Vietnamese number formatting and parsing',
@@ -721,6 +740,24 @@ export function createServer(): McpServer {
       inputSchema: {},
     },
     async () => json(provincesList()),
+  );
+
+  server.registerTool(
+    'vn_address_history',
+    {
+      title: 'Former wards of a current ward',
+      description:
+        'List the pre-01/07/2025 wards (with district and province) that became a current ward, by ward code or name.',
+      inputSchema: {
+        ward: z.string().describe('Current ward code or name'),
+        province: z.string().optional(),
+      },
+      annotations: OFFLINE_READ_ONLY,
+    },
+    async ({ ward, province }) => {
+      const r = formerUnits(ward, { province });
+      return json(r, !r.ok);
+    },
   );
 
   server.registerTool(

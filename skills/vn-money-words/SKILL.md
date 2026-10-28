@@ -51,6 +51,17 @@ Options:
 
 Library: `moneyToWords(1200000, { capitalize: true })` and `numberToWords(2024)` from `@vn-skills/core`.
 
+### Words to digits (chữ sang số)
+
+```bash
+npx -y @vn-skills/cli money parse "một triệu hai trăm nghìn đồng"
+# { "ok": true, "value": "1200000", "negative": false, "unit": "đồng", "chan": false }
+```
+
+Library: `wordsToNumber(text)`; MCP tool `vn_money_parse`. Inverse of `money words`: accepts every form it produces
+(nghìn/ngàn, lẻ/linh, mốt, tư/bốn, lăm/năm, `âm`, `chẵn`, trailing unit, capitalised). `value` is an exact digit string.
+Errors: `EMPTY` (blank/non-string), `INVALID_WORDS` (unknown word or impossible order, e.g. colloquial "trăm rưỡi").
+
 ## Rules implemented
 
 See [references/reading-rules.md](references/reading-rules.md). Summary:

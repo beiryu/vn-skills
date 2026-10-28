@@ -63,7 +63,7 @@ Inside this repo use `pnpm vn-skills` instead of `npx -y @vn-skills/cli`. Output
    Returns `province`, `ward`, `street`, `formatted`, `confidence`, `matches` (how each part matched: exact / alias / fuzzy / abbreviation).
    Add `--legacy` to parse with the pre-2025 catalogue (province/district/ward) or `--new` to force the current one.
 
-3. **Bulk convert** ("chuyển hàng loạt địa chỉ", "file CSV"): `address convert-file <file>` (`-` = stdin) reads one address per line and prints NDJSON (`line` is 1-based; failed lines give `{ ok: false, line, input, error }`). With `--csv --column <name>` it reads a CSV with a header and writes CSV with `new_address`, `new_ward_code`, `new_province_code`, `mapping_type`, `confidence`, `warnings` appended. Exit code 2 if any row failed (`converted N, failed M` on stderr).
+3. **Bulk convert** ("chuyển hàng loạt địa chỉ", "file CSV"): `address convert-file <file>` (`-` = stdin) reads one address per line and prints NDJSON (`line` is 1-based; failed lines give `{ ok: false, line, input, error }`). With `--csv --column <name>` it reads a CSV with a header and writes CSV with `new_address`, `new_ward_code`, `new_province_code`, `mapping_type`, `confidence`, `warnings` appended. For CSVs with separate columns use `--csv --province-column <name>` (required) plus optional `--district-column`, `--ward-column`, `--street-column` instead of `--column` (combining both gives `CONFLICTING_OPTIONS`); blank cells are left out and a blank province fails the row. Exit code 2 if any row failed (`converted N, failed M` on stderr).
 
    ```bash
    npx -y @vn-skills/cli address convert-file customers.csv --csv --column address > converted.csv
@@ -71,9 +71,15 @@ Inside this repo use `pnpm vn-skills` instead of `npx -y @vn-skills/cli`. Output
 
 4. **Look things up**: `address provinces`, `address province "Gia Lai"`, `address wards "Tân Thành" -p "Tây Ninh"`.
 
+5. **Former wards of a new ward** ("phường X gồm những phường cũ nào", "trước sáp nhập", "phường cũ nào nhập vào"): `address history <ward...> [-p <province>]` takes a new ward code or name and lists each old ward (with district and province) that maps to it, with the mapping flag `isDefault` and `otherNewWards` when the old ward was split. Errors: `EMPTY`, `NOT_FOUND` (add `--province`), `AMBIGUOUS` (same name in several provinces; add `--province`). MCP: `vn_address_history` (`{ ward, province? }`).
+
+   ```bash
+   npx -y @vn-skills/cli address history "Phường Sài Gòn" -p "Hồ Chí Minh"
+   ```
+
 MCP: `vn_address_convert_batch` converts up to 1000 addresses in one call (`{ addresses: string[] }`) and returns per-row results plus `summary: { total, converted, failed }`; null, empty or non-string entries come back as failed rows (`ok: false` with an error code) instead of failing the whole call; use `address convert-file` for larger inputs.
 
-Library: `parseAddress`, `convertAddress`, `convertAddresses`, `findProvince`, `searchWards`, `PROVINCES` from `@vn-skills/core`.
+Library: `parseAddress`, `convertAddress`, `convertAddresses`, `findProvince`, `searchWards`, `formerUnits`, `PROVINCES` from `@vn-skills/core`.
 
 ## Rules and gotchas
 

@@ -167,3 +167,163 @@ export function numberToWords(
 ): Result<MoneyWords> {
   return moneyToWords(n, { ...options, unit: '', chan: false });
 }
+
+export interface ParsedWords {
+  value: string;
+  negative: boolean;
+  unit: string | null;
+  chan: boolean;
+}
+
+const UNIT_WORDS: Record<string, number> = {
+  một: 1,
+  mốt: 1,
+  hai: 2,
+  ba: 3,
+  bốn: 4,
+  tư: 4,
+  năm: 5,
+  lăm: 5,
+  sáu: 6,
+  bảy: 7,
+  tám: 8,
+  chín: 9,
+};
+const SCALE_BASE: Record<string, number> = { nghìn: 1, ngàn: 1, triệu: 2 };
+const NUMBER_WORDS = new Set([
+  'không',
+  'mười',
+  'mươi',
+  'trăm',
+  'lẻ',
+  'linh',
+  'tỷ',
+  ...Object.keys(UNIT_WORDS),
+  ...Object.keys(SCALE_BASE),
+]);
+
+class BadWord extends Error {}
+
+/** Parse one 3-digit group (inverse of readGroup). Throws BadWord naming the offending word. */
+function parseGroup(t: string[]): number {
+  const digit = (w: string | undefined): number | undefined =>
+    w === 'không'
+      ? 0
+      : w === undefined || w === 'mốt' || w === 'tư' || w === 'lăm'
+        ? undefined
+        : UNIT_WORDS[w];
+  const bad = (i: number): never => {
+    throw new BadWord(t[i] ?? t[t.length - 1]);
+  };
+  const unit = (i: number): number => UNIT_WORDS[t[i]!] ?? bad(i);
+  let i = 0;
+  let hundreds: number | null = null;
+  if (t[1] === 'trăm') {
+    hundreds = digit(t[0]) ?? bad(0);
+    i = 2;
+  }
+  let value = (hundreds ?? 0) * 100;
+  if (i === t.length) return hundreds ? value : bad(i - 1);
+  if (hundreds !== null && (t[i] === 'lẻ' || t[i] === 'linh')) {
+    if (i + 2 !== t.length) bad(i + 2);
+    return value + unit(i + 1);
+  }
+  if (t[i] === 'mười') {
+    value += 10;
+    if (i + 1 === t.length) return value;
+    if (i + 2 !== t.length) bad(i + 2);
+    return value + unit(i + 1);
+  }
+  const d = digit(t[i]);
+  if (d !== undefined && d >= 2 && t[i + 1] === 'mươi') {
+    value += d * 10;
+    if (i + 2 === t.length) return value;
+    if (i + 3 !== t.length) bad(i + 3);
+    return value + unit(i + 2);
+  }
+  if (hundreds === null && i + 1 === t.length) return unit(i);
+  return bad(i);
+}
+
+/**
+ * Parse Vietnamese number words back to digits, e.g. "một triệu hai trăm nghìn đồng" -> "1200000".
+ * Inverse of moneyToWords; colloquial short forms ("trăm rưỡi") are rejected with INVALID_WORDS.
+ */
+export function wordsToNumber(text: string): Result<ParsedWords> {
+  if (typeof text !== 'string') return fail('EMPTY', 'Text must be a non-empty string');
+  const tokens = text
+    .normalize('NFC')
+    .toLowerCase()
+    .split(/[\s,]+/)
+    .filter(Boolean);
+  if (tokens.length === 0) return fail('EMPTY', 'Text is empty');
+  const invalid = (w: string, why = 'Unexpected word'): Result<ParsedWords> =>
+    fail<ParsedWords>('INVALID_WORDS', `${why} "${w}"`, 'Use words as produced by moneyToWords.');
+
+  let pos = 0;
+  const negative = tokens[0] === 'âm';
+  if (negative) pos = 1;
+  let end = pos;
+  while (end < tokens.length && NUMBER_WORDS.has(tokens[end]!)) end++;
+  if (end === pos) return invalid(tokens[pos] ?? 'âm');
+  const num = tokens.slice(pos, end);
+
+  let total = 0n;
+  try {
+    if (num.length === 1 && num[0] === 'không') {
+      // zero
+    } else {
+      let prev = Infinity;
+      let i = 0;
+      while (i < num.length) {
+        const start = i;
+        while (i < num.length && !(num[i]! in SCALE_BASE) && num[i] !== 'tỷ') i++;
+        if (i === start) throw new BadWord(num[i]);
+        const group = parseGroup(num.slice(start, i));
+        let rem = 0;
+        let k = 0;
+        if (i < num.length && num[i]! in SCALE_BASE) rem = SCALE_BASE[num[i++]!]!;
+        while (i < num.length && num[i] === 'tỷ') {
+          k++;
+          i++;
+        }
+        const index = 3 * k + rem;
+        if (index >= prev || (index === 0 && i < num.length)) throw new BadWord(num[start]);
+        prev = index;
+        if (group > 0 && String(group).length + 3 * index > MAX_MONEY_DIGITS)
+          return fail<ParsedWords>(
+            'INVALID_AMOUNT',
+            `Amount has more than ${MAX_MONEY_DIGITS} digits`,
+            `Amounts are limited to ${MAX_MONEY_DIGITS} digits.`,
+          );
+        total += BigInt(group) * 1000n ** BigInt(index);
+      }
+    }
+  } catch (e) {
+    if (e instanceof BadWord) return invalid(e.message);
+    throw e;
+  }
+
+  const rest = tokens.slice(end);
+  const bad = rest.find((w, j) => j > 0 && NUMBER_WORDS.has(w));
+  if (rest.length > 0 && (bad !== undefined || rest[0] === 'âm')) return invalid(rest[0]!);
+  let chan = false;
+  if (rest.length > 0 && rest[rest.length - 1] === 'chẵn') {
+    chan = true;
+    rest.pop();
+  }
+  const digits = total.toString();
+  if (digits.length > MAX_MONEY_DIGITS)
+    return fail<ParsedWords>(
+      'INVALID_AMOUNT',
+      `Amount has more than ${MAX_MONEY_DIGITS} digits`,
+      `Amounts are limited to ${MAX_MONEY_DIGITS} digits.`,
+    );
+  return {
+    ok: true,
+    value: digits,
+    negative,
+    unit: rest.length > 0 ? rest.join(' ') : null,
+    chan,
+  };
+}
