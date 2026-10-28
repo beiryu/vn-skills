@@ -8,7 +8,7 @@
     "en": ["address", "administrative", "shipping"]
   },
   "vn-einvoice": {
-    "vi": ["hóa đơn điện tử", "xuất hóa đơn", "tính thuế GTGT", "ký hiệu"],
+    "vi": ["hóa đơn điện tử", "xuất hóa đơn", "tính thuế GTGT", "ký hiệu", "giá đã gồm VAT", "tách thuế VAT", "giá chưa VAT"],
     "en": ["e-invoice", "VAT", "invoice"]
   },
   "vn-holidays": {
