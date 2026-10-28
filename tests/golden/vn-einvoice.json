@@ -164,6 +164,15 @@
       { "name": "returns INVALID_INVOICE for an empty object", "input": {}, "expected": { "lines": [], "subtotal": 0, "discountTotal": 0, "vatTotal": 0, "grandTotal": 0, "byRate": [], "totalInWords": "", "totalInWordsError": { "code": "INVALID_INVOICE" } } },
       { "name": "returns INVALID_INVOICE for a non-array lines", "input": { "lines": "x" }, "expected": { "lines": [], "subtotal": 0, "discountTotal": 0, "vatTotal": 0, "grandTotal": 0, "byRate": [], "totalInWords": "", "totalInWordsError": { "code": "INVALID_INVOICE" } } }
     ],
+    "vat": [
+      { "name": "split 1 080 000 @8", "fn": "splitVatInclusive", "input": [1080000, 8], "expected": { "ok": true, "net": 1000000, "vat": 80000, "gross": 1080000 } },
+      { "name": "split 110 000 @10", "fn": "splitVatInclusive", "input": [110000, 10], "expected": { "net": 100000, "vat": 10000 } },
+      { "name": "split 100 000 @8 puts the leftover in VAT", "fn": "splitVatInclusive", "input": [100000, 8], "expected": { "net": 92593, "vat": 7407 } },
+      { "name": "split KCT", "fn": "splitVatInclusive", "input": [500000, "KCT"], "expected": { "net": 500000, "vat": 0 } },
+      { "name": "split invalid rate", "fn": "splitVatInclusive", "input": [1000, 7], "expected": { "ok": false, "error": { "code": "INVALID_VAT_RATE" } } },
+      { "name": "split fractional amount", "fn": "splitVatInclusive", "input": [1.5, 10], "expected": { "ok": false, "error": { "code": "INVALID_AMOUNT" } } },
+      { "name": "apply 1 000 000 @8", "fn": "applyVat", "input": [1000000, 8], "expected": { "net": 1000000, "vat": 80000, "gross": 1080000 } }
+    ],
     "roundVnd": [
       { "name": "half away from zero (positive)", "input": 0.5, "expected": 1 },
       { "name": "half away from zero (negative)", "input": -0.5, "expected": -1 },

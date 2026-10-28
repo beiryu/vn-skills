@@ -76,6 +76,7 @@ describe('vn-skills MCP server', () => {
         'vn_lunar_holidays',
         'vn_einvoice_validate',
         'vn_einvoice_totals',
+        'vn_einvoice_vat',
         'vn_einvoice_mock_issue',
         'vn_lunar_tet',
         'vn_lunar_canchi',

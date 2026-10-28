@@ -53,6 +53,14 @@ totalInWords   = moneyToWords(grandTotal, { capitalize: true })
 byRate[]       = { rate, taxable, vat } per distinct rate
 ```
 
+## VAT-inclusive prices (`splitVatInclusive`, `applyVat`)
+
+```
+net = round(gross × 100 / (100 + rate))   // convention of this library, not a legal rule
+vat = gross − net                         // leftover đồng goes to VAT; net + vat = gross
+applyVat: vat = round(net × rate / 100)   // same as the line formula above
+```
+
 ## Series pattern (TT78/2021 art. 4)
 
 `N C YY T XX` → `1` form number (1 = VAT invoice, 2 = sales invoice, …), `C`/`K` with/without tax-authority code,
