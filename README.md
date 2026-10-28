@@ -107,6 +107,8 @@ The server exposes 34 tools, grouped by skill. All tools are declared read-only 
 
 MCP Apps hosts (Claude, ChatGPT, VS Code, …) show VietQR results (built with `image: true`) as an inline VietQR card with bank, account, amount and copy buttons; other clients see the usual JSON and image.
 
+When a client declares the MCP `elicitation` capability, the address converter asks the user to pick the new ward if the old ward was split, and reports `chosenBy` (`user` or `default`).
+
 ### Prompts
 
 The server also offers prompt templates, shown as `/` commands in clients that support MCP prompts: `tao-vietqr`, `doi-dia-chi-moi`, `kiem-tra-mst`, `doc-cccd`, `so-tien-bang-chu`, `ngay-lam-viec`, `doi-am-duong`, `kiem-tra-hoa-don`.

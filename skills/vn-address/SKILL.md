@@ -77,6 +77,8 @@ Inside this repo use `pnpm vn-skills` instead of `npx -y @vn-skills/cli`. Output
    npx -y @vn-skills/cli address history "Phường Sài Gòn" -p "Hồ Chí Minh"
    ```
 
+MCP: when the client supports elicitation, `vn_address_convert` asks the user to pick the new ward for a `divided` address and returns `chosenBy` (`user` or `default`).
+
 MCP: `vn_address_convert_batch` converts up to 1000 addresses in one call (`{ addresses: string[] }`) and returns per-row results plus `summary: { total, converted, failed }`; null, empty or non-string entries come back as failed rows (`ok: false` with an error code) instead of failing the whole call; use `address convert-file` for larger inputs.
 
 Library: `parseAddress`, `convertAddress`, `convertAddresses`, `findProvince`, `searchWards`, `formerUnits`, `PROVINCES` from `@vn-skills/core`.
