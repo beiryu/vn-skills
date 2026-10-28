@@ -103,6 +103,8 @@ Server cung cấp 33 tool, nhóm theo skill. Mọi tool đều được khai bá
 | `vn-name`          | `vn_name`                                                                                                                                                            |
 | `vn-number-format` | `vn_number_format`                                                                                                                                                   |
 
+Client hỗ trợ MCP Apps (Claude, ChatGPT, VS Code, …) hiển thị kết quả VietQR (tạo với `image: true`) dưới dạng thẻ VietQR gồm ngân hàng, số tài khoản, số tiền và nút sao chép; client khác vẫn thấy JSON và ảnh như cũ.
+
 ### Prompts
 
 Server cũng cung cấp prompt mẫu, hiển thị dạng lệnh `/` trong các client hỗ trợ MCP prompts: `tao-vietqr`, `doi-dia-chi-moi`, `kiem-tra-mst`, `doc-cccd`, `so-tien-bang-chu`, `ngay-lam-viec`, `doi-am-duong`, `kiem-tra-hoa-don`.
