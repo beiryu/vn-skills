@@ -148,7 +148,7 @@ const SOLAR_HOLIDAYS: Array<{
   { day: 24, month: 12, name: 'Lễ Giáng sinh', nameEn: 'Christmas Eve', publicHoliday: false },
 ];
 
-const LUNAR_HOLIDAYS: Array<{
+export const LUNAR_HOLIDAYS: Array<{
   day: number;
   month: number;
   name: string;

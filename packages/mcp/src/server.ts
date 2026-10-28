@@ -30,6 +30,7 @@ import {
   lunarInfo,
   lunarMonthCalendar,
   lunarToSolar,
+  parseVietnameseDate,
   tetInfo,
   canChiOfYear,
   taxIdCheckDigitResult,
@@ -584,6 +585,21 @@ export function createServer(): McpServer {
             date: `${r.year}-${String(r.month).padStart(2, '0')}-${String(r.day).padStart(2, '0')}`,
           })
         : json({ ok: false, error: r.error }, true);
+    },
+  );
+
+  server.registerTool(
+    'vn_lunar_parse_date',
+    {
+      title: 'Parse Vietnamese date phrase',
+      annotations: OFFLINE_READ_ONLY,
+      description:
+        'Turn a Vietnamese date phrase into a solar date: lunar ("rằm tháng Giêng năm sau", "mùng 1 Tết", "23 tháng Chạp"), relative ("ngày mai", "3 ngày nữa", "thứ Sáu tuần sau") or Gregorian. ref (yyyy-mm-dd) defaults to today in UTC+7.',
+      inputSchema: { text: z.string(), ref: z.string().optional() },
+    },
+    async ({ text, ref }) => {
+      const r = parseVietnameseDate(text, ref ? { ref } : {});
+      return r.ok ? json(r) : json({ ok: false, error: r.error }, true);
     },
   );
 

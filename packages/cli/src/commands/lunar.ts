@@ -4,6 +4,7 @@ import {
   lunarMonthCalendar,
   lunarToSolar,
   parseDateInput,
+  parseVietnameseDate,
   holidays,
   tetInfo,
   canChiOfYear,
@@ -37,6 +38,17 @@ export function registerLunar(program: Command): void {
             ['Solar term', r.solarTerm],
           ]) + '\n',
         );
+    });
+
+  cmd
+    .command('parse <text>')
+    .description('Vietnamese date phrase (e.g. "rằm tháng Giêng năm sau") -> solar date')
+    .option('--ref <date>', 'reference date yyyy-mm-dd (default: today, UTC+7)')
+    .action((text: string, opts, c: Command) => {
+      const r = parseVietnameseDate(text, { ref: opts.ref });
+      if (!r.ok) failExit(c, r.error);
+      if (wantsJson(c)) printJson(r);
+      else process.stdout.write(`${r.solar}\n`);
     });
 
   cmd

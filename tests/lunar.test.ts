@@ -11,6 +11,7 @@ import {
   dayCanChi,
   leapMonthOf,
   parseDateInput,
+  parseVietnameseDate,
   jdFromDate,
   jdToDate,
   lunarMonthLength,
@@ -39,6 +40,7 @@ const golden = loadGolden<{
   lunarInfo: Case<Dmy, Subset>[];
   holidays: Case<[year: number, options?: { publicOnly?: boolean }], Record<string, string>>[];
   parseDateInput: Case<string, Subset>[];
+  parseVietnameseDate: Case<[text: string, ref: string], Subset>[];
 }>('vn-lunar');
 
 const cases = <I, E>(list: Case<I, E>[]) => list.map((c) => [title(c), c] as const);
@@ -72,6 +74,9 @@ describe('golden fixtures', () => {
     const byName = Object.fromEntries(holidays(...c.input).map((x) => [x.name, x.date]));
     expect(byName).toMatchObject(c.expected);
   });
+  it.each(cases(golden.parseVietnameseDate))('parseVietnameseDate: %s', (_, c) =>
+    expect(parseVietnameseDate(c.input[0], { ref: c.input[1] })).toMatchObject(c.expected),
+  );
   it.each(cases(golden.parseDateInput))('parseDateInput: %s', (_, c) =>
     expect(parseDateInput(c.input)).toMatchObject(c.expected),
   );
