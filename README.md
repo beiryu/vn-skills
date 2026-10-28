@@ -108,6 +108,10 @@ The server exposes 32 tools, grouped by skill. All tools are declared read-only 
 
 The server also offers prompt templates, shown as `/` commands in clients that support MCP prompts: `tao-vietqr`, `doi-dia-chi-moi`, `kiem-tra-mst`, `doc-cccd`, `so-tien-bang-chu`, `ngay-lam-viec`, `doi-am-duong`, `kiem-tra-hoa-don`.
 
+### Resources
+
+Read-only data that clients can attach without a tool call (all `application/json`):
+
 ### MCP client setup
 
 Requires Node.js 22+. Each client has its own file and shape; check the linked docs for the exact location.
