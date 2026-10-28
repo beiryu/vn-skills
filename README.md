@@ -89,7 +89,7 @@ Setup for other clients is in [MCP client setup](#mcp-client-setup). Or in any M
 { "mcpServers": { "vn-skills": { "command": "npx", "args": ["-y", "@vn-skills/mcp"] } } }
 ```
 
-The server exposes 33 tools, grouped by skill. All tools are declared read-only and offline (`readOnlyHint: true`, `openWorldHint: false`).
+The server exposes 34 tools, grouped by skill. All tools are declared read-only and offline (`readOnlyHint: true`, `openWorldHint: false`).
 
 | Skill              | Tools                                                                                                                                                                |
 | ------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -101,7 +101,7 @@ The server exposes 33 tools, grouped by skill. All tools are declared read-only 
 | `vn-holidays`      | `vn_holidays_year`, `vn_holidays_is_working_day`, `vn_holidays_add_working_days`, `vn_holidays_count_working_days`                                                   |
 | `vn-money-words`   | `vn_money_to_words`, `vn_money_parse`                                                                                                                                |
 | `vn-lunar`         | `vn_lunar_from_solar`, `vn_lunar_to_solar`, `vn_lunar_month`, `vn_lunar_holidays`, `vn_lunar_tet`, `vn_lunar_canchi`                                                 |
-| `vn-einvoice`      | `vn_einvoice_validate`, `vn_einvoice_totals`, `vn_einvoice_mock_issue`, `vn_einvoice_example`                                                                        |
+| `vn-einvoice`      | `vn_einvoice_validate`, `vn_einvoice_totals`, `vn_einvoice_vat`, `vn_einvoice_mock_issue`, `vn_einvoice_example`                                                     |
 | `vn-name`          | `vn_name`                                                                                                                                                            |
 | `vn-number-format` | `vn_number_format`                                                                                                                                                   |
 
@@ -207,6 +207,27 @@ lunarInfo(29, 1, 2025).text; // "Mùng 1 tháng Giêng năm Ất Tỵ"
 ```
 
 Every function returns `{ ok: true, ... }` or `{ ok: false, error: { code, message, hint } }` — no exceptions for bad input.
+
+## Google Sheets
+
+`packages/sheets` (private, not on npm) builds Apps Script custom functions from `@vn-skills/core`:
+`pnpm --filter ./packages/sheets build` writes `packages/sheets/dist/vn-skills.gs`, `vn-skills-lite.gs` and `appsscript.json`.
+
+1. In a Google Sheet open **Extensions → Apps Script** and paste the contents of one `.gs` file.
+2. Set the time zone to `Asia/Ho_Chi_Minh` (Project Settings, or use the `timeZone` in `appsscript.json`).
+3. Save and use the functions in cells. Each accepts one value or a range and returns the same shape; a bad cell returns the error text.
+
+| Function                          | Example                                           |
+| --------------------------------- | ------------------------------------------------- |
+| `VN_TIEN_CHU(amount, [thousand])` | `=VN_TIEN_CHU(A2)`, `=VN_TIEN_CHU(A2:A9, "ngàn")` |
+| `VN_SO_THANH_CHU(number)`         | `=VN_SO_THANH_CHU(A2)`                            |
+| `VN_MST(taxId)`                   | `=VN_MST(A2:A9)` → TRUE/FALSE                     |
+| `VN_AM_LICH(date)`                | `=VN_AM_LICH(A2)` or `=VN_AM_LICH("29/01/2025")`  |
+| `VN_NGAY_LAM_VIEC(date)`          | `=VN_NGAY_LAM_VIEC(A2)` → TRUE/FALSE              |
+| `VN_CONG_NGAY_LAM_VIEC(date, n)`  | `=VN_CONG_NGAY_LAM_VIEC(A2, 5)` (yyyy-mm-dd text) |
+| `VN_DIA_CHI_MOI(address)`         | `=VN_DIA_CHI_MOI(A2)` (full bundle only)          |
+
+Bundle sizes (as measured by the build): `vn-skills.gs` ≈ 2520 KiB (includes the address data), `vn-skills-lite.gs` ≈ 39 KiB (no address functions). If the full bundle is too large for your project, use the lite bundle.
 
 ## Development
 

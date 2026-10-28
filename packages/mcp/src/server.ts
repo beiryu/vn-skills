@@ -48,6 +48,9 @@ import {
   parseDateInput,
   validateInvoice,
   computeTotals,
+  splitVatInclusive,
+  applyVat,
+  type VatRate,
   MockProvider,
   VERSION,
   type VnError,
@@ -717,6 +720,27 @@ export function createServer(): McpServer {
       const t = computeTotals(v.invoice!, { thousand });
       if (t.totalInWordsError) return json({ ok: false, error: t.totalInWordsError }, true);
       return json({ ok: true, ...t, warnings: v.warnings });
+    },
+  );
+
+  server.registerTool(
+    'vn_einvoice_vat',
+    {
+      title: 'Apply or split VAT',
+      annotations: OFFLINE_READ_ONLY,
+      description:
+        'Apply VAT to a net amount, or with inclusive=true split a VAT-inclusive price (giá đã gồm VAT) into net (tiền hàng) and VAT. Rates 0/5/8/10/KCT/KKKNT. Net is rounded half away from zero and the leftover đồng goes to VAT (library convention).',
+      inputSchema: {
+        amount: z.number().describe('Integer VND amount'),
+        rate: z.union([z.number(), z.string()]).describe('VAT rate: 0, 5, 8, 10, "KCT" or "KKKNT"'),
+        inclusive: z.boolean().optional().describe('true: amount already includes VAT'),
+      },
+    },
+    async ({ amount, rate, inclusive }) => {
+      const r = inclusive
+        ? splitVatInclusive(amount, rate as VatRate)
+        : applyVat(amount, rate as VatRate);
+      return json(r, !r.ok);
     },
   );
 
