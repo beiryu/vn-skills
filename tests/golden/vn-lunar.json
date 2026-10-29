@@ -189,6 +189,15 @@
       { "name": "rejects 29/2 in a non-leap year", "input": "29/2/2023", "expected": { "ok": false, "error": { "code": "INVALID_DATE" } } },
       { "name": "accepts 29/2 in a leap year", "input": "29/2/2024", "expected": { "day": 29, "month": 2, "year": 2024 } },
       { "name": "rejects junk", "input": "tomorrow", "expected": { "ok": false } }
+    ],
+    "parseVietnameseDate": [
+      { "name": "rằm tháng Giêng, next occurrence", "input": ["rằm tháng Giêng", "2026-10-28"], "expected": { "ok": true, "solar": "2027-02-20", "calendar": "lunar" } },
+      { "name": "rằm tháng 7 rolls to next year", "input": ["rằm tháng 7", "2026-10-28"], "expected": { "ok": true, "solar": "2027-08-16" } },
+      { "name": "mùng 1 Tết năm sau", "input": ["mùng 1 Tết năm sau", "2026-10-28"], "expected": { "ok": true, "solar": "2027-02-06" } },
+      { "name": "leap month 6 of 2025", "input": ["mùng 1 tháng 6 nhuận năm 2025", "2026-10-28"], "expected": { "ok": true, "solar": "2025-07-25", "lunar": { "leap": true } } },
+      { "name": "missing leap month", "input": ["mùng 1 tháng 6 nhuận năm 2026", "2026-10-28"], "expected": { "ok": false, "error": { "code": "INVALID_DATE" } } },
+      { "name": "3 ngày nữa", "input": ["3 ngày nữa", "2026-10-28"], "expected": { "ok": true, "solar": "2026-10-31", "calendar": "solar" } },
+      { "name": "thứ Sáu tuần sau (weeks Mon-Sun)", "input": ["thứ Sáu tuần sau", "2026-10-28"], "expected": { "ok": true, "solar": "2026-11-06" } }
     ]
   }
 }

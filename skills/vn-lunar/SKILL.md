@@ -1,6 +1,6 @@
 ---
 name: vn-lunar
-description: Vietnamese lunar calendar (âm lịch) - convert solar to lunar dates and back, leap months (tháng nhuận), can chi (Giáp Thìn, Ất Tỵ), zodiac, 24 solar terms, Tết date for any year, and Vietnamese public holidays (Tết, Giỗ Tổ Hùng Vương, 30/4, 1/5, 2/9). Uses astronomical new-moon and solar-term calculations at UTC+7, which differs from the Chinese calendar on some dates. Use for "hôm nay là ngày mấy âm lịch", "Tết năm 2027 ngày nào", "lịch âm tháng", "lịch vạn niên", "rằm tháng này", "ngày lễ", "mùng 1", "rằm", scheduling around holidays, or any lunar/solar conversion.
+description: Vietnamese lunar calendar (âm lịch) - convert solar to lunar dates and back, leap months (tháng nhuận), can chi (Giáp Thìn, Ất Tỵ), zodiac, 24 solar terms, Tết date for any year, and Vietnamese public holidays (Tết, Giỗ Tổ Hùng Vương, 30/4, 1/5, 2/9). Uses astronomical new-moon and solar-term calculations at UTC+7, which differs from the Chinese calendar on some dates. Use for "hôm nay là ngày mấy âm lịch", "Tết năm 2027 ngày nào", "lịch âm tháng", "lịch vạn niên", "rằm tháng này", "ngày lễ", "mùng 1", "rằm", "rằm tháng", "ngày âm", scheduling around holidays, or any lunar/solar conversion.
 license: MIT
 compatibility: Requires Node.js 22+ (runs npx -y @vn-skills/cli).
 metadata:
@@ -55,7 +55,23 @@ npx -y @vn-skills/cli lunar canchi 2024                  # Giáp Thìn
 npx -y @vn-skills/cli lunar month 02/2027                # whole month: lunar dates, can chi, solar terms, holidays (also yyyy-mm)
 ```
 
-Library: `solarToLunar`, `lunarToSolar`, `lunarInfo`, `tetDate`, `holidays`, `yearCanChi`, `dayCanChi`, `leapMonthOf`, `lunarMonthCalendar` from `@vn-skills/core`.
+### Date phrases
+
+```bash
+npx -y @vn-skills/cli lunar parse "rằm tháng Giêng năm sau" --ref 2026-10-28   # 2027-02-20
+```
+
+Supported (case-insensitive, diacritics optional):
+
+- Lunar: `ngày D tháng M âm`, `D/M âm`, `D/M âm lịch`, `mùng D tháng M`, `rằm tháng M` (day 15); month words `Giêng` (1), `Chạp` (12), `Một` (11); optional `nhuận` after the month.
+- Festivals by existing names: `Tết`, `mùng 1 Tết`, `Rằm tháng Giêng`, `Tết Trung thu`, `Vu Lan`, ...
+- Year: `năm nay`, `năm sau`, `năm ngoái`, `năm YYYY` (lunar year for lunar phrases, solar year otherwise).
+- Relative: `hôm nay`, `ngày mai`, `ngày kia`, `hôm qua`, `N ngày nữa|trước`, `N tuần nữa|trước`, `thứ Hai … Chủ nhật` + `này`/`tuần này`/`tuần sau`/`tuần trước`. Weeks run Monday–Sunday.
+- Gregorian: `ngày D tháng M năm Y`, `dd/mm/yyyy`, `yyyy-mm-dd`.
+
+Conventions: a lunar phrase without a year means the next occurrence on or after `ref` (default today, UTC+7). A leap month that does not exist in the target year, or day 30 in a 29-day month, returns `INVALID_DATE` with a hint; nothing is guessed.
+
+Library: `parseVietnameseDate`, `solarToLunar`, `lunarToSolar`, `lunarInfo`, `tetDate`, `holidays`, `yearCanChi`, `dayCanChi`, `leapMonthOf`, `lunarMonthCalendar` from `@vn-skills/core`.
 
 ## Rules and gotchas
 

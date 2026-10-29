@@ -37,6 +37,7 @@ export {
 } from './canchi.js';
 export { type Holiday } from './holidays.js';
 export { holidays };
+export { parseVietnameseDate, type PhraseResult } from './phrase.js';
 
 export interface LunarInfo extends LunarDate {
   solar: { day: number; month: number; year: number; date: string; weekday: string };

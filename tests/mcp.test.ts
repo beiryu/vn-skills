@@ -73,6 +73,7 @@ describe('vn-skills MCP server', () => {
         'vn_lunar_from_solar',
         'vn_lunar_to_solar',
         'vn_lunar_month',
+        'vn_lunar_parse_date',
         'vn_lunar_holidays',
         'vn_einvoice_validate',
         'vn_einvoice_totals',
