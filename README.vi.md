@@ -107,6 +107,8 @@ Client hỗ trợ MCP Apps (Claude, ChatGPT, VS Code, …) hiển thị kết qu
 
 Khi client khai báo capability `elicitation` của MCP, công cụ đổi địa chỉ sẽ hỏi người dùng chọn phường/xã mới nếu phường/xã cũ bị chia tách, và trả về `chosenBy` (`user` hoặc `default`).
 
+**Ngân hàng tùy chỉnh:** truyền `--banks <file.json>` (mảng JSON các mục `Bank`) cho `vn-skills-mcp` (stdio hoặc `--http`) hoặc `vn-skills vietqr build|parse|decode|banks` để thêm/ghi đè ngân hàng khi chạy; trong core dùng `registerBanks()` / `resetBanks()` / `listBanks()`. vn-skills không kiểm chứng các mục do người dùng cung cấp.
+
 ### Prompts
 
 Server cũng cung cấp prompt mẫu, hiển thị dạng lệnh `/` trong các client hỗ trợ MCP prompts: `tao-vietqr`, `doi-dia-chi-moi`, `kiem-tra-mst`, `doc-cccd`, `so-tien-bang-chu`, `ngay-lam-viec`, `doi-am-duong`, `kiem-tra-hoa-don`.

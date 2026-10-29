@@ -109,6 +109,8 @@ MCP Apps hosts (Claude, ChatGPT, VS Code, …) show VietQR results (built with `
 
 When a client declares the MCP `elicitation` capability, the address converter asks the user to pick the new ward if the old ward was split, and reports `chosenBy` (`user` or `default`).
 
+**Custom banks:** pass `--banks <file.json>` (a JSON array of `Bank` entries) to `vn-skills-mcp` (stdio or `--http`), or to `vn-skills vietqr build|parse|decode|banks`, to add or override banks at runtime; in core use `registerBanks()` / `resetBanks()` / `listBanks()`. vn-skills does not verify user-supplied entries.
+
 ### Prompts
 
 The server also offers prompt templates, shown as `/` commands in clients that support MCP prompts: `tao-vietqr`, `doi-dia-chi-moi`, `kiem-tra-mst`, `doc-cccd`, `so-tien-bang-chu`, `ngay-lam-viec`, `doi-am-duong`, `kiem-tra-hoa-don`.

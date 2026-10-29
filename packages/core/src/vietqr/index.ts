@@ -1,5 +1,13 @@
 export { crc16CcittFalse } from './crc16.js';
-export { BANKS, findBank, searchBanks, type Bank } from './banks.js';
+export {
+  BANKS,
+  findBank,
+  listBanks,
+  registerBanks,
+  resetBanks,
+  searchBanks,
+  type Bank,
+} from './banks.js';
 export {
   buildVietQR,
   sanitizeNote,
