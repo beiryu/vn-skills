@@ -243,17 +243,20 @@ Bundle sizes (as measured by the build): `vn-skills.gs` ≈ 2533 KiB (includes t
 2. Sideload `dist/manifest.xml` as described in [Microsoft's sideloading docs](https://learn.microsoft.com/en-us/office/dev/add-ins/testing/test-debug-office-add-ins#sideload-an-office-add-in-for-testing).
 3. Use the functions in cells. Each accepts one value or a range and returns the same shape; a bad cell returns the error text. Dates may be date cells (serial numbers) or `dd/mm/yyyy` text.
 
-| Function                          | Example                                           |
-| --------------------------------- | ------------------------------------------------- |
-| `VN.TIEN_CHU(amount, [thousand])` | `=VN.TIEN_CHU(A2)`, `=VN.TIEN_CHU(A2:A9, "ngàn")` |
-| `VN.SO_THANH_CHU(number)`         | `=VN.SO_THANH_CHU(A2)`                            |
-| `VN.MST(taxId)`                   | `=VN.MST(A2:A9)` → TRUE/FALSE                     |
-| `VN.AM_LICH(date)`                | `=VN.AM_LICH(A2)` or `=VN.AM_LICH("29/01/2025")`  |
-| `VN.NGAY_LAM_VIEC(date)`          | `=VN.NGAY_LAM_VIEC(A2)` → TRUE/FALSE              |
-| `VN.CONG_NGAY_LAM_VIEC(date, n)`  | `=VN.CONG_NGAY_LAM_VIEC(A2, 5)` (yyyy-mm-dd text) |
-| `VN.DIA_CHI_MOI(address)`         | `=VN.DIA_CHI_MOI(A2)`                             |
+| Function                          | Example                                                                        |
+| --------------------------------- | ------------------------------------------------------------------------------ |
+| `VN.TIEN_CHU(amount, [thousand])` | `=VN.TIEN_CHU(A2)`, `=VN.TIEN_CHU(A2:A9, "ngàn")`                              |
+| `VN.SO_THANH_CHU(number)`         | `=VN.SO_THANH_CHU(A2)`                                                         |
+| `VN.MST(taxId)`                   | `=VN.MST(A2:A9)` → TRUE/FALSE                                                  |
+| `VN.AM_LICH(date)`                | `=VN.AM_LICH(A2)` or `=VN.AM_LICH("29/01/2025")`                               |
+| `VN.NGAY_LAM_VIEC(date)`          | `=VN.NGAY_LAM_VIEC(A2)` → TRUE/FALSE                                           |
+| `VN.CONG_NGAY_LAM_VIEC(date, n)`  | `=VN.CONG_NGAY_LAM_VIEC(A2, 5)` (yyyy-mm-dd text)                              |
+| `VN.DIA_CHI_MOI(address)`         | `=VN.DIA_CHI_MOI(A2)`                                                          |
+| `VN.SDT(phone, [format])`         | `=VN.SDT(A2)`, `=VN.SDT(A2, "e164")`, `"carrier"`                              |
+| `VN.TACH_TEN(name, part)`         | `=VN.TACH_TEN(A2, "ten")` (`ho`, `dem`, `ten`)                                 |
+| `VN.CCCD(id, [field])`            | `=VN.CCCD(A2, "tinh")` (`hop_le`, `tinh`, `tinh_moi`, `gioi_tinh`, `nam_sinh`) |
 
-Bundle size (as measured by the build): `functions.js` ≈ 2520 KiB, including the address data, so `VN.DIA_CHI_MOI` is included.
+Bundle size (as measured by the build): `functions.js` ≈ 2531 KiB, including the address data, so `VN.DIA_CHI_MOI` is included.
 
 ## Development
 
