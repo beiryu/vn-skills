@@ -29,6 +29,8 @@ Inside this repo use `pnpm vn-skills` instead of `npx -y @vn-skills/cli`. Dates 
 npx -y @vn-skills/cli lunar from-solar 29/01/2025
 ```
 
+Add `--hour <0-23>` for the birth hour ("giờ sinh", "can chi giờ"): the output gains `hourCanChi`, `hourBranch` and `hourRange` (e.g. `Giáp Tý`, `Tý`, `23:00-01:00`). An hour outside 0-23 or a non-integer returns `INVALID_HOUR`. At 23:00 the can of the calendar date you pass is used (the late Tý hour is not moved to the next day). The MCP tool `vn_lunar_from_solar` takes the same optional `hour`.
+
 ```json
 {
   "ok": true,

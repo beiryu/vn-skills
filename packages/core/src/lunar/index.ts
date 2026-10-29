@@ -4,6 +4,7 @@ import {
   yearCanChi,
   monthCanChi,
   dayCanChi,
+  hourCanChi,
   lunarMonthName,
   SOLAR_TERMS,
   CHI_ANIMALS_EN,
@@ -52,6 +53,27 @@ export interface LunarInfo extends LunarDate {
 }
 
 const WEEKDAYS = ['Chủ nhật', 'Thứ hai', 'Thứ ba', 'Thứ tư', 'Thứ năm', 'Thứ sáu', 'Thứ bảy'];
+
+export interface HourInfo {
+  canChi: string;
+  branch: string;
+  range: string;
+}
+
+/** Can chi, earthly branch and 2-hour range of a birth hour (0-23). At 23:00 the can of the given date is used. */
+export function hourInfo(dd: number, mm: number, yy: number, hour: number): Result<HourInfo> {
+  if (!Number.isInteger(hour) || hour < 0 || hour > 23)
+    return fail('INVALID_HOUR', `Invalid hour "${hour}"`, 'Use an integer from 0 to 23.');
+  const index = Math.floor(((hour + 1) % 24) / 2);
+  const pad = (h: number) => `${String((h + 24) % 24).padStart(2, '0')}:00`;
+  const start = index * 2 - 1;
+  return {
+    ok: true,
+    canChi: hourCanChi(dd, mm, yy, hour),
+    branch: CHI[index]!,
+    range: `${pad(start)}-${pad(start + 2)}`,
+  };
+}
 
 /** Full lunar information for a solar date (conversion + can chi + solar term). */
 export function lunarInfo(
