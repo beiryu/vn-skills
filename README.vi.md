@@ -234,17 +234,20 @@ Kích thước (theo build): `vn-skills.gs` ≈ 2533 KiB (gồm dữ liệu đ�
 2. Sideload `dist/manifest.xml` theo [tài liệu sideload của Microsoft](https://learn.microsoft.com/en-us/office/dev/add-ins/testing/test-debug-office-add-ins#sideload-an-office-add-in-for-testing).
 3. Dùng hàm trong ô. Mỗi hàm nhận một giá trị hoặc một vùng và trả về cùng kích thước; ô lỗi trả về nội dung lỗi. Ngày có thể là ô ngày (số serial) hoặc chuỗi `dd/mm/yyyy`.
 
-| Hàm                               | Ví dụ                                              |
-| --------------------------------- | -------------------------------------------------- |
-| `VN.TIEN_CHU(amount, [thousand])` | `=VN.TIEN_CHU(A2)`, `=VN.TIEN_CHU(A2:A9, "ngàn")`  |
-| `VN.SO_THANH_CHU(number)`         | `=VN.SO_THANH_CHU(A2)`                             |
-| `VN.MST(taxId)`                   | `=VN.MST(A2:A9)` → TRUE/FALSE                      |
-| `VN.AM_LICH(date)`                | `=VN.AM_LICH(A2)` hoặc `=VN.AM_LICH("29/01/2025")` |
-| `VN.NGAY_LAM_VIEC(date)`          | `=VN.NGAY_LAM_VIEC(A2)` → TRUE/FALSE               |
-| `VN.CONG_NGAY_LAM_VIEC(date, n)`  | `=VN.CONG_NGAY_LAM_VIEC(A2, 5)` (chuỗi yyyy-mm-dd) |
-| `VN.DIA_CHI_MOI(address)`         | `=VN.DIA_CHI_MOI(A2)`                              |
+| Hàm                               | Ví dụ                                                                          |
+| --------------------------------- | ------------------------------------------------------------------------------ |
+| `VN.TIEN_CHU(amount, [thousand])` | `=VN.TIEN_CHU(A2)`, `=VN.TIEN_CHU(A2:A9, "ngàn")`                              |
+| `VN.SO_THANH_CHU(number)`         | `=VN.SO_THANH_CHU(A2)`                                                         |
+| `VN.MST(taxId)`                   | `=VN.MST(A2:A9)` → TRUE/FALSE                                                  |
+| `VN.AM_LICH(date)`                | `=VN.AM_LICH(A2)` hoặc `=VN.AM_LICH("29/01/2025")`                             |
+| `VN.NGAY_LAM_VIEC(date)`          | `=VN.NGAY_LAM_VIEC(A2)` → TRUE/FALSE                                           |
+| `VN.CONG_NGAY_LAM_VIEC(date, n)`  | `=VN.CONG_NGAY_LAM_VIEC(A2, 5)` (chuỗi yyyy-mm-dd)                             |
+| `VN.DIA_CHI_MOI(address)`         | `=VN.DIA_CHI_MOI(A2)`                                                          |
+| `VN.SDT(phone, [format])`         | `=VN.SDT(A2)`, `=VN.SDT(A2, "e164")`, `"carrier"`                              |
+| `VN.TACH_TEN(name, part)`         | `=VN.TACH_TEN(A2, "ten")` (`ho`, `dem`, `ten`)                                 |
+| `VN.CCCD(id, [field])`            | `=VN.CCCD(A2, "tinh")` (`hop_le`, `tinh`, `tinh_moi`, `gioi_tinh`, `nam_sinh`) |
 
-Kích thước (theo build): `functions.js` ≈ 2520 KiB, gồm dữ liệu địa chỉ nên có `VN.DIA_CHI_MOI`.
+Kích thước (theo build): `functions.js` ≈ 2531 KiB, gồm dữ liệu địa chỉ nên có `VN.DIA_CHI_MOI`.
 
 ## Phát triển
 

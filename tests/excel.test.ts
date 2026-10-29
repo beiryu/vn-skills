@@ -10,6 +10,9 @@ import {
   lunarInfo,
   moneyToWords,
   numberToWords,
+  parseCitizenId,
+  parsePhone,
+  splitName,
   validateTaxId,
 } from '@vn-skills/core';
 
@@ -208,5 +211,59 @@ describe('packages/excel add-in', () => {
     expect(r[0]![0]).toBe(formatted);
     expect(typeof r[1]![0]).toBe('string');
     expect(readFileSync(resolve(ROOT, 'README.md'), 'utf8')).toContain('DIA_CHI_MOI');
+  });
+
+  it('SDT, TACH_TEN and CCCD are in functions.json with description and optional params', () => {
+    for (const id of ['SDT', 'TACH_TEN', 'CCCD']) {
+      const f = meta.functions.find((x) => x.id === id);
+      expect(f, id).toBeTruthy();
+      expect(f!.description?.length).toBeGreaterThan(0);
+      expect(typeof fns[id]).toBe('function');
+    }
+    const opt = (id: string) =>
+      meta.functions
+        .find((x) => x.id === id)!
+        .parameters.some((p) => (p as { optional?: boolean }).optional === true);
+    expect(opt('SDT')).toBe(true);
+    expect(opt('CCCD')).toBe(true);
+  });
+
+  it('SDT: formats, range and error cell match core', () => {
+    const p = parsePhone('0912345678');
+    if (!p.ok) throw new Error('fixture');
+    expect(fns.SDT!('0912345678')).toBe(p.formatted);
+    expect(fns.SDT!('0912345678', 'e164')).toBe(p.e164);
+    expect(fns.SDT!('0912345678', [['carrier']])).toBe(p.carrier ?? '');
+    const r = fns.SDT!([['0912345678'], ['abc']]) as string[][];
+    expect(r[0]![0]).toBe(p.formatted);
+    expect(typeof r[1]![0]).toBe('string');
+    expect(r[1]![0]).not.toBe('');
+  });
+
+  it('TACH_TEN: ho, dem, ten, range, invalid part', () => {
+    const n = splitName('Nguyễn Văn An');
+    if (!n.ok) throw new Error('fixture');
+    expect(fns.TACH_TEN!('Nguyễn Văn An', 'ho')).toBe(n.family);
+    expect(fns.TACH_TEN!('Nguyễn Văn An', 'dem')).toBe(n.middle);
+    expect(fns.TACH_TEN!('Nguyễn Văn An', [['ten']])).toBe(n.given);
+    const r = fns.TACH_TEN!([['Nguyễn Văn An'], ['']], 'ten') as string[][];
+    expect(r[0]![0]).toBe(n.given);
+    expect(typeof r[1]![0]).toBe('string');
+    expect(fns.TACH_TEN!('Nguyễn Văn An', 'xyz')).toContain('ten');
+  });
+
+  it('CCCD: fields, range, error cell match core', () => {
+    const id = '048090123456';
+    const c = parseCitizenId(id);
+    if (!c.ok || c.kind !== 'cccd') throw new Error('fixture');
+    expect(fns.CCCD!(id)).toBe(true);
+    expect(fns.CCCD!(id, 'tinh')).toBe(c.province!.fullName);
+    expect(fns.CCCD!(id, 'tinh_moi')).toBe(c.newProvince?.fullName ?? '');
+    expect(fns.CCCD!(id, [['gioi_tinh']])).toBe(c.sex === 'male' ? 'Nam' : 'Nữ');
+    expect(fns.CCCD!(id, 'nam_sinh')).toBe(c.birthYear);
+    const r = fns.CCCD!([[id], ['abc']], 'nam_sinh') as unknown[][];
+    expect(r[0]![0]).toBe(c.birthYear);
+    expect(typeof r[1]![0]).toBe('string');
+    expect(fns.CCCD!('abc')).toBe(false);
   });
 });

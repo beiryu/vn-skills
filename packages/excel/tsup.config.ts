@@ -45,6 +45,35 @@ const DOCS: Record<string, Doc> = {
     desc: 'Chuyển địa chỉ cũ (3 cấp) sang địa chỉ mới (2 cấp, sau sáp nhập).',
     params: [{ name: 'address', desc: 'Địa chỉ, một ô hoặc một vùng.', matrix: true }],
   },
+  SDT: {
+    desc: 'Chuẩn hoá số điện thoại Việt Nam.',
+    params: [
+      { name: 'phone', desc: 'Số điện thoại, một ô hoặc một vùng.', matrix: true },
+      {
+        name: 'format',
+        desc: 'Tuỳ chọn: "formatted" (mặc định), "e164" hoặc "carrier" (nhà mạng).',
+        optional: true,
+      },
+    ],
+  },
+  TACH_TEN: {
+    desc: 'Tách họ tên thành họ, tên đệm hoặc tên.',
+    params: [
+      { name: 'name', desc: 'Họ và tên, một ô hoặc một vùng.', matrix: true },
+      { name: 'part', desc: '"ho" (họ), "dem" (tên đệm) hoặc "ten" (tên).' },
+    ],
+  },
+  CCCD: {
+    desc: 'Kiểm tra và đọc thông tin từ số CCCD (12 số) hoặc CMND (9 số).',
+    params: [
+      { name: 'id', desc: 'Số CCCD/CMND, một ô hoặc một vùng.', matrix: true },
+      {
+        name: 'field',
+        desc: 'Tuỳ chọn: "hop_le" (mặc định, TRUE/FALSE), "tinh", "tinh_moi", "gioi_tinh" hoặc "nam_sinh".',
+        optional: true,
+      },
+    ],
+  },
 };
 
 const baseUrl = (process.env.VN_EXCEL_BASE_URL ?? 'https://localhost:3000').replace(/\/+$/, '');
