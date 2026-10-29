@@ -210,17 +210,20 @@ Mọi hàm trả về `{ ok: true, ... }` hoặc `{ ok: false, error: { code, me
 2. Đặt múi giờ `Asia/Ho_Chi_Minh` (Cài đặt dự án, hoặc dùng `timeZone` trong `appsscript.json`).
 3. Lưu và dùng hàm trong ô. Mỗi hàm nhận một giá trị hoặc một vùng và trả về cùng kích thước; ô lỗi trả về nội dung lỗi.
 
-| Hàm                               | Ví dụ                                              |
-| --------------------------------- | -------------------------------------------------- |
-| `VN_TIEN_CHU(amount, [thousand])` | `=VN_TIEN_CHU(A2)`, `=VN_TIEN_CHU(A2:A9, "ngàn")`  |
-| `VN_SO_THANH_CHU(number)`         | `=VN_SO_THANH_CHU(A2)`                             |
-| `VN_MST(taxId)`                   | `=VN_MST(A2:A9)` → TRUE/FALSE                      |
-| `VN_AM_LICH(date)`                | `=VN_AM_LICH(A2)` hoặc `=VN_AM_LICH("29/01/2025")` |
-| `VN_NGAY_LAM_VIEC(date)`          | `=VN_NGAY_LAM_VIEC(A2)` → TRUE/FALSE               |
-| `VN_CONG_NGAY_LAM_VIEC(date, n)`  | `=VN_CONG_NGAY_LAM_VIEC(A2, 5)` (chuỗi yyyy-mm-dd) |
-| `VN_DIA_CHI_MOI(address)`         | `=VN_DIA_CHI_MOI(A2)` (chỉ bản đầy đủ)             |
+| Hàm                               | Ví dụ                                                                                          |
+| --------------------------------- | ---------------------------------------------------------------------------------------------- |
+| `VN_TIEN_CHU(amount, [thousand])` | `=VN_TIEN_CHU(A2)`, `=VN_TIEN_CHU(A2:A9, "ngàn")`                                              |
+| `VN_SO_THANH_CHU(number)`         | `=VN_SO_THANH_CHU(A2)`                                                                         |
+| `VN_MST(taxId)`                   | `=VN_MST(A2:A9)` → TRUE/FALSE                                                                  |
+| `VN_AM_LICH(date)`                | `=VN_AM_LICH(A2)` hoặc `=VN_AM_LICH("29/01/2025")`                                             |
+| `VN_NGAY_LAM_VIEC(date)`          | `=VN_NGAY_LAM_VIEC(A2)` → TRUE/FALSE                                                           |
+| `VN_CONG_NGAY_LAM_VIEC(date, n)`  | `=VN_CONG_NGAY_LAM_VIEC(A2, 5)` (chuỗi yyyy-mm-dd)                                             |
+| `VN_DIA_CHI_MOI(address)`         | `=VN_DIA_CHI_MOI(A2)` (chỉ bản đầy đủ)                                                         |
+| `VN_SDT(phone, [format])`         | `=VN_SDT(A2)`, `=VN_SDT(A2, "e164")`, `"carrier"`                                              |
+| `VN_TACH_TEN(name, part)`         | `=VN_TACH_TEN(A2, "ten")` (`ho`, `dem`, `ten`)                                                 |
+| `VN_CCCD(id, [field])`            | `=VN_CCCD(A2, "tinh")` (`hop_le`, `tinh`, `tinh_moi`, `gioi_tinh`, `nam_sinh`; chỉ bản đầy đủ) |
 
-Kích thước (theo build): `vn-skills.gs` ≈ 2520 KiB (gồm dữ liệu địa chỉ), `vn-skills-lite.gs` ≈ 39 KiB (không có hàm địa chỉ). Nếu bản đầy đủ quá lớn với dự án của bạn, hãy dùng bản lite.
+Kích thước (theo build): `vn-skills.gs` ≈ 2533 KiB (gồm dữ liệu địa chỉ và `VN_CCCD`), `vn-skills-lite.gs` ≈ 49 KiB (không có dữ liệu và hàm địa chỉ). Nếu bản đầy đủ quá lớn với dự án của bạn, hãy dùng bản lite.
 
 ## Phát triển
 
