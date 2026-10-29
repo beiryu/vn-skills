@@ -10,6 +10,9 @@ import {
   lunarInfo,
   moneyToWords,
   numberToWords,
+  parseCitizenId,
+  parsePhone,
+  splitName,
   validateTaxId,
 } from '@vn-skills/core';
 
@@ -133,6 +136,77 @@ describe('packages/sheets bundles', () => {
     const r = full.VN_DIA_CHI_MOI!([[input], ['???']]) as string[][];
     expect(r[0]![0]).toBe(formatted);
     expect(typeof r[1]![0]).toBe('string');
+  });
+
+  it('VN_SDT: default formatted, e164, carrier, range, bad cell', () => {
+    const p = parsePhone('0912345678');
+    if (!p.ok) throw new Error('fixture');
+    for (const b of [full, lite]) {
+      expect(b.VN_SDT!('0912345678')).toBe(p.formatted);
+      expect(b.VN_SDT!('0912345678', 'e164')).toBe(p.e164);
+      expect(b.VN_SDT!('0912345678', 'carrier')).toBe(p.carrier ?? '');
+      const r = b.VN_SDT!([['0912345678'], ['abc']]) as string[][];
+      expect(r[0]![0]).toBe(p.formatted);
+      expect(typeof r[1]![0]).toBe('string');
+      expect(r[1]![0]).not.toBe('');
+    }
+  });
+
+  it('VN_SDT: carrier is empty string when none', () => {
+    const p = parsePhone('02438251234');
+    if (!p.ok) throw new Error('fixture');
+    expect(p.carrier).toBeUndefined();
+    expect(full.VN_SDT!('02438251234', 'carrier')).toBe('');
+  });
+
+  it('VN_TACH_TEN: ho, dem, ten, range, invalid part', () => {
+    const n = splitName('Nguyễn Văn An');
+    if (!n.ok) throw new Error('fixture');
+    for (const b of [full, lite]) {
+      expect(b.VN_TACH_TEN!('Nguyễn Văn An', 'ho')).toBe(n.family);
+      expect(b.VN_TACH_TEN!('Nguyễn Văn An', 'dem')).toBe(n.middle);
+      expect(b.VN_TACH_TEN!('Nguyễn Văn An', 'ten')).toBe(n.given);
+      const r = b.VN_TACH_TEN!([['Nguyễn Văn An'], ['Trần Thị Bích Ngọc']], 'ten') as string[][];
+      expect(r[0]![0]).toBe(n.given);
+      expect(r[1]![0]).toBe('Ngọc');
+      const bad = b.VN_TACH_TEN!('Nguyễn Văn An', 'xyz') as string;
+      expect(bad).toContain('ho');
+      expect(bad).toContain('dem');
+      expect(bad).toContain('ten');
+    }
+  });
+
+  it('VN_CCCD: every field, range, invalid, CMND', () => {
+    const id = '048090123456';
+    const c = parseCitizenId(id);
+    if (!c.ok || c.kind !== 'cccd') throw new Error('fixture');
+    expect(full.VN_CCCD!(id)).toBe(true);
+    expect(full.VN_CCCD!(id, 'hop_le')).toBe(true);
+    expect(full.VN_CCCD!(id, 'tinh')).toBe(c.province!.fullName);
+    expect(full.VN_CCCD!(id, 'tinh_moi')).toBe(c.newProvince?.fullName ?? '');
+    expect(full.VN_CCCD!(id, 'gioi_tinh')).toBe(c.sex === 'male' ? 'Nam' : 'Nữ');
+    expect(full.VN_CCCD!(id, 'nam_sinh')).toBe(c.birthYear);
+    const r = full.VN_CCCD!([[id], ['abc']], 'nam_sinh') as unknown[][];
+    expect(r[0]![0]).toBe(c.birthYear);
+    expect(typeof r[1]![0]).toBe('string');
+    expect(full.VN_CCCD!('abc')).toBe(false);
+    expect(full.VN_CCCD!('123456789')).toBe(true);
+    for (const f of ['tinh', 'tinh_moi', 'gioi_tinh', 'nam_sinh'])
+      expect(full.VN_CCCD!('123456789', f)).toBe('');
+  });
+
+  it('VN_CCCD is only in the full bundle; lite has no address data', () => {
+    expect(typeof full.VN_CCCD).toBe('function');
+    expect(lite.VN_CCCD).toBeUndefined();
+    const src = readFileSync(resolve(DIST, 'vn-skills-lite.gs'), 'utf8');
+    expect(src).not.toContain('Đinh Tiên Hoàng');
+    expect(src).not.toContain('Hồ Chí Minh');
+    expect(src).not.toContain('VN_CCCD');
+  });
+
+  it('lite bundle stays small (no address data module)', () => {
+    const src = readFileSync(resolve(DIST, 'vn-skills-lite.gs'), 'utf8');
+    expect(src.length).toBeLessThan(200_000);
   });
 
   it('lite bundle has the other functions but not VN_DIA_CHI_MOI', () => {

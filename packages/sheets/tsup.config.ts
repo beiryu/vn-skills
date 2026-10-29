@@ -8,6 +8,8 @@ const BASE = [
   'VN_AM_LICH',
   'VN_NGAY_LAM_VIEC',
   'VN_CONG_NGAY_LAM_VIEC',
+  'VN_SDT',
+  'VN_TACH_TEN',
 ];
 
 const DOCS: Record<string, { desc: string; params: [string, string][] }> = {
@@ -39,6 +41,27 @@ const DOCS: Record<string, { desc: string; params: [string, string][] }> = {
     params: [
       ['date', 'Ngày (ô ngày hoặc dd/mm/yyyy), một ô hoặc một vùng.'],
       ['n', 'Số ngày làm việc cần cộng (âm để trừ).'],
+    ],
+  },
+  VN_SDT: {
+    desc: 'Chuẩn hoá số điện thoại Việt Nam.',
+    params: [
+      ['phone', 'Số điện thoại, một ô hoặc một vùng.'],
+      ['format', 'Tuỳ chọn: "formatted" (mặc định), "e164" hoặc "carrier" (nhà mạng).'],
+    ],
+  },
+  VN_TACH_TEN: {
+    desc: 'Tách họ tên thành họ, tên đệm hoặc tên.',
+    params: [
+      ['name', 'Họ và tên, một ô hoặc một vùng.'],
+      ['part', '"ho" (họ), "dem" (tên đệm) hoặc "ten" (tên).'],
+    ],
+  },
+  VN_CCCD: {
+    desc: 'Kiểm tra và đọc thông tin từ số CCCD (12 số) hoặc CMND (9 số).',
+    params: [
+      ['id', 'Số CCCD/CMND, một ô hoặc một vùng.'],
+      ['field', 'Tuỳ chọn: "hop_le" (mặc định), "tinh", "tinh_moi", "gioi_tinh" hoặc "nam_sinh".'],
     ],
   },
   VN_DIA_CHI_MOI: {
@@ -83,6 +106,6 @@ const variant = (file: string, entry: string, names: string[]) => ({
 });
 
 export default defineConfig([
-  variant('vn-skills', 'src/full.ts', [...BASE, 'VN_DIA_CHI_MOI']),
+  variant('vn-skills', 'src/full.ts', [...BASE, 'VN_DIA_CHI_MOI', 'VN_CCCD']),
   variant('vn-skills-lite', 'src/lite.ts', BASE),
 ]);

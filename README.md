@@ -219,17 +219,20 @@ Every function returns `{ ok: true, ... }` or `{ ok: false, error: { code, messa
 2. Set the time zone to `Asia/Ho_Chi_Minh` (Project Settings, or use the `timeZone` in `appsscript.json`).
 3. Save and use the functions in cells. Each accepts one value or a range and returns the same shape; a bad cell returns the error text.
 
-| Function                          | Example                                           |
-| --------------------------------- | ------------------------------------------------- |
-| `VN_TIEN_CHU(amount, [thousand])` | `=VN_TIEN_CHU(A2)`, `=VN_TIEN_CHU(A2:A9, "ngàn")` |
-| `VN_SO_THANH_CHU(number)`         | `=VN_SO_THANH_CHU(A2)`                            |
-| `VN_MST(taxId)`                   | `=VN_MST(A2:A9)` → TRUE/FALSE                     |
-| `VN_AM_LICH(date)`                | `=VN_AM_LICH(A2)` or `=VN_AM_LICH("29/01/2025")`  |
-| `VN_NGAY_LAM_VIEC(date)`          | `=VN_NGAY_LAM_VIEC(A2)` → TRUE/FALSE              |
-| `VN_CONG_NGAY_LAM_VIEC(date, n)`  | `=VN_CONG_NGAY_LAM_VIEC(A2, 5)` (yyyy-mm-dd text) |
-| `VN_DIA_CHI_MOI(address)`         | `=VN_DIA_CHI_MOI(A2)` (full bundle only)          |
+| Function                          | Example                                                                                          |
+| --------------------------------- | ------------------------------------------------------------------------------------------------ |
+| `VN_TIEN_CHU(amount, [thousand])` | `=VN_TIEN_CHU(A2)`, `=VN_TIEN_CHU(A2:A9, "ngàn")`                                                |
+| `VN_SO_THANH_CHU(number)`         | `=VN_SO_THANH_CHU(A2)`                                                                           |
+| `VN_MST(taxId)`                   | `=VN_MST(A2:A9)` → TRUE/FALSE                                                                    |
+| `VN_AM_LICH(date)`                | `=VN_AM_LICH(A2)` or `=VN_AM_LICH("29/01/2025")`                                                 |
+| `VN_NGAY_LAM_VIEC(date)`          | `=VN_NGAY_LAM_VIEC(A2)` → TRUE/FALSE                                                             |
+| `VN_CONG_NGAY_LAM_VIEC(date, n)`  | `=VN_CONG_NGAY_LAM_VIEC(A2, 5)` (yyyy-mm-dd text)                                                |
+| `VN_DIA_CHI_MOI(address)`         | `=VN_DIA_CHI_MOI(A2)` (full bundle only)                                                         |
+| `VN_SDT(phone, [format])`         | `=VN_SDT(A2)`, `=VN_SDT(A2, "e164")`, `"carrier"`                                                |
+| `VN_TACH_TEN(name, part)`         | `=VN_TACH_TEN(A2, "ten")` (`ho`, `dem`, `ten`)                                                   |
+| `VN_CCCD(id, [field])`            | `=VN_CCCD(A2, "tinh")` (`hop_le`, `tinh`, `tinh_moi`, `gioi_tinh`, `nam_sinh`; full bundle only) |
 
-Bundle sizes (as measured by the build): `vn-skills.gs` ≈ 2520 KiB (includes the address data), `vn-skills-lite.gs` ≈ 39 KiB (no address functions). If the full bundle is too large for your project, use the lite bundle.
+Bundle sizes (as measured by the build): `vn-skills.gs` ≈ 2533 KiB (includes the address data and `VN_CCCD`), `vn-skills-lite.gs` ≈ 49 KiB (no address data or address functions). If the full bundle is too large for your project, use the lite bundle.
 
 ## Excel
 
