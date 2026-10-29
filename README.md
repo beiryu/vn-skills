@@ -88,7 +88,7 @@ Setup for other clients is in [MCP client setup](#mcp-client-setup). Or in any M
 { "mcpServers": { "vn-skills": { "command": "npx", "args": ["-y", "@vn-skills/mcp"] } } }
 ```
 
-The server exposes 31 tools, grouped by skill. All tools are declared read-only and offline (`readOnlyHint: true`, `openWorldHint: false`).
+The server exposes 32 tools, grouped by skill. All tools are declared read-only and offline (`readOnlyHint: true`, `openWorldHint: false`).
 
 | Skill              | Tools                                                                                                                                          |
 | ------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------- |
