@@ -1,7 +1,18 @@
 import { createServer as createHttpServer } from 'node:http';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js';
+import { readFileSync } from 'node:fs';
+import { registerBanks, type Bank } from '@vn-skills/core';
 import { createServer } from './server.js';
+
+function loadBanksArg(argv: string[]): void {
+  const i = argv.indexOf('--banks');
+  if (i < 0) return;
+  const file = argv[i + 1];
+  if (file === undefined) throw new Error('--banks requires a file');
+  const r = registerBanks(JSON.parse(readFileSync(file, 'utf8')) as Bank[]);
+  if (!r.ok) throw new Error(`${r.error.code}: ${r.error.message}`);
+}
 
 interface HttpOptions {
   port: number;
@@ -72,6 +83,7 @@ function startHttp(opts: HttpOptions) {
 }
 
 async function main() {
+  loadBanksArg(process.argv.slice(2));
   const http = parseHttpArgs(process.argv.slice(2));
   if (http) return startHttp(http);
   const server = createServer();

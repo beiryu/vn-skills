@@ -63,6 +63,8 @@ All commands print JSON when piped (or with `--json`). Inside this repo use `pnp
 
 3. **Find a bank**: `npx -y @vn-skills/cli vietqr banks techcom` (empty query lists all 58 banks with BIN/code/name).
 
+4. **Custom banks**: add `--banks banks.json` (JSON array of `{bin, code, shortName, name, swift?, vietqr?, keywords?}`) to `vietqr build|parse|decode|banks`, or to `@vn-skills/mcp`, to add or override banks. vn-skills does not verify user-supplied entries. Errors: `READ_ERROR`, `INVALID_BANKS`.
+
 Library use (TypeScript): `import { buildVietQR, parseVietQR, findBank } from '@vn-skills/core'`.
 
 ## Rules and gotchas
