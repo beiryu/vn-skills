@@ -8,6 +8,7 @@ import type { EInvoiceProvider } from './provider.js';
 
 export * from './schema.js';
 export * from './totals.js';
+export * from './vat.js';
 export * from './provider.js';
 export { exampleInvoice } from './example.js';
 export { MockProvider } from './adapters/mock.js';

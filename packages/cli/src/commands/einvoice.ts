@@ -6,6 +6,9 @@ import {
   exampleInvoice,
   createProvider,
   PROVIDER_NAMES,
+  splitVatInclusive,
+  applyVat,
+  type VatRate,
   type ProviderName,
   type VnError,
 } from '@vn-skills/core';
@@ -66,6 +69,26 @@ export function registerEinvoice(program: Command): void {
         process.stdout.write(
           `Subtotal: ${t.subtotal.toLocaleString('vi-VN')}\nVAT: ${t.vatTotal.toLocaleString('vi-VN')}\nTotal: ${t.grandTotal.toLocaleString('vi-VN')}\nIn words: ${t.totalInWords}\n`,
         );
+      }
+    });
+
+  cmd
+    .command('vat <amount>')
+    .description('Apply VAT to a net amount, or split a VAT-inclusive price with --inclusive')
+    .requiredOption('--rate <rate>', 'VAT rate: 0 | 5 | 8 | 10 | KCT | KKKNT')
+    .option('--inclusive', 'amount already includes VAT: split into net and VAT')
+    .action((amount: string, opts, c: Command) => {
+      const rate = /^\d+$/.test(opts.rate) ? Number(opts.rate) : opts.rate;
+      const n = /^\d+$/.test(amount) ? Number(amount) : Number.NaN;
+      const r = opts.inclusive
+        ? splitVatInclusive(n, rate as VatRate)
+        : applyVat(n, rate as VatRate);
+      if (!r.ok) failExit(c, r.error);
+      if (wantsJson(c)) printJson(r);
+      else {
+        const f = (x: number) => x.toLocaleString('vi-VN');
+        if (r.ok)
+          process.stdout.write(`Net: ${f(r.net)}\nVAT: ${f(r.vat)}\nGross: ${f(r.gross)}\n`);
       }
     });
 

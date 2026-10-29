@@ -1,6 +1,6 @@
 ---
 name: vn-einvoice
-description: Vietnamese e-invoice (hóa đơn điện tử) helper - validate invoice data against Decree 123/2020 and Circular 78/2021 (series/ký hiệu, seller/buyer tax IDs, VAT rates 0/5/8/10/KCT/KKKNT), compute line amounts, VAT per rate, totals and "số tiền bằng chữ", and issue through a MOCK provider. Provider adapters for MISA meInvoice, Viettel S-Invoice and VNPT Invoice are interface-only skeletons (sandbox credentials from env, no real API calls yet). Use when building or testing invoice integrations, "xuất hóa đơn", "tính thuế GTGT", or validating invoice JSON.
+description: Vietnamese e-invoice (hóa đơn điện tử) helper - validate invoice data against Decree 123/2020 and Circular 78/2021 (series/ký hiệu, seller/buyer tax IDs, VAT rates 0/5/8/10/KCT/KKKNT), compute line amounts, VAT per rate, totals and "số tiền bằng chữ", and issue through a MOCK provider. Provider adapters for MISA meInvoice, Viettel S-Invoice and VNPT Invoice are interface-only skeletons (sandbox credentials from env, no real API calls yet). Use when building or testing invoice integrations, "xuất hóa đơn", "tính thuế GTGT", "giá đã gồm VAT", "tách thuế VAT", "giá chưa VAT", or validating invoice JSON.
 license: MIT
 compatibility: Requires Node.js 22+ (runs npx -y @vn-skills/cli). Mock provider only; no network.
 metadata:
@@ -48,7 +48,17 @@ Inside this repo use `pnpm vn-skills` instead of `npx -y @vn-skills/cli`.
      "totalInWords": "Bảy triệu sáu trăm sáu mươi nghìn đồng", "lines": [ ... ] }
    ```
 
-4. Issue through the mock provider (in-memory; number is sequential per series):
+4. Apply VAT to a net price, or split a VAT-inclusive price ("giá đã gồm VAT", "tách thuế VAT", "giá chưa VAT"):
+
+   ```bash
+   npx -y @vn-skills/cli einvoice vat 1080000 --rate 8 --inclusive   # net 1000000, vat 80000
+   npx -y @vn-skills/cli einvoice vat 1000000 --rate 8               # vat 80000, gross 1080000
+   ```
+
+   Rate is `0|5|8|10|KCT|KKKNT`. Rounding is this library's convention, not a legal rule: net is rounded half away
+   from zero and the leftover đồng goes to VAT, so net + vat = gross. MCP tool: `vn_einvoice_vat`.
+
+5. Issue through the mock provider (in-memory; number is sequential per series):
 
    ```bash
    npx -y @vn-skills/cli einvoice create invoice.json --provider mock
@@ -57,7 +67,7 @@ Inside this repo use `pnpm vn-skills` instead of `npx -y @vn-skills/cli`.
    `--provider misa|viettel|vnpt` only checks that the sandbox env vars exist and then reports `NotImplementedError`.
    Tell the user plainly that real provider calls are not implemented in this version.
 
-Library: `validateInvoice`, `computeTotals`, `MockProvider`, `createProvider`, `EInvoiceProvider` from `@vn-skills/core`.
+Library: `validateInvoice`, `computeTotals`, `splitVatInclusive`, `applyVat`, `MockProvider`, `createProvider`, `EInvoiceProvider` from `@vn-skills/core`.
 
 ## Rules and gotchas
 

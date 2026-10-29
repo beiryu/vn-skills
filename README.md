@@ -40,6 +40,7 @@ Bulk-convert stored addresses (one per line → NDJSON, or a CSV column; exit co
 ```bash
 vn-skills address convert-file addresses.txt
 vn-skills address convert-file customers.csv --csv --column address > converted.csv
+vn-skills address convert-file customers.csv --csv --province-column province --district-column district --ward-column ward > converted.csv
 ```
 
 ## Install the skills
@@ -88,25 +89,35 @@ Setup for other clients is in [MCP client setup](#mcp-client-setup). Or in any M
 { "mcpServers": { "vn-skills": { "command": "npx", "args": ["-y", "@vn-skills/mcp"] } } }
 ```
 
-The server exposes 32 tools, grouped by skill. All tools are declared read-only and offline (`readOnlyHint: true`, `openWorldHint: false`).
+The server exposes 36 tools, grouped by skill. All tools are declared read-only and offline (`readOnlyHint: true`, `openWorldHint: false`).
 
-| Skill              | Tools                                                                                                                                          |
-| ------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------- |
-| `vietqr`           | `vietqr_build`, `vietqr_parse`, `vietqr_decode`, `vietqr_banks`                                                                                |
-| `vn-address`       | `vn_address_parse`, `vn_address_convert`, `vn_address_convert_batch`, `vn_address_search_wards`, `vn_address_provinces`, `vn_address_province` |
-| `vn-tax-id`        | `vn_tax_id_validate`, `vn_tax_id_check_digit`                                                                                                  |
-| `vn-id`            | `vn_id_parse`                                                                                                                                  |
-| `vn-phone`         | `vn_phone`                                                                                                                                     |
-| `vn-holidays`      | `vn_holidays_year`, `vn_holidays_ics`, `vn_holidays_is_working_day`, `vn_holidays_add_working_days`, `vn_holidays_count_working_days`          |
-| `vn-money-words`   | `vn_money_to_words`                                                                                                                            |
-| `vn-lunar`         | `vn_lunar_from_solar`, `vn_lunar_to_solar`, `vn_lunar_month`, `vn_lunar_holidays`, `vn_lunar_tet`, `vn_lunar_canchi`                           |
-| `vn-einvoice`      | `vn_einvoice_validate`, `vn_einvoice_totals`, `vn_einvoice_mock_issue`, `vn_einvoice_example`                                                  |
-| `vn-name`          | `vn_name`                                                                                                                                      |
-| `vn-number-format` | `vn_number_format`                                                                                                                             |
+| Skill              | Tools                                                                                                                                                                |
+| ------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `vietqr`           | `vietqr_build`, `vietqr_parse`, `vietqr_decode`, `vietqr_banks`                                                                                                      |
+| `vn-address`       | `vn_address_parse`, `vn_address_convert`, `vn_address_convert_batch`, `vn_address_search_wards`, `vn_address_history`, `vn_address_provinces`, `vn_address_province` |
+| `vn-tax-id`        | `vn_tax_id_validate`, `vn_tax_id_check_digit`                                                                                                                        |
+| `vn-id`            | `vn_id_parse`                                                                                                                                                        |
+| `vn-phone`         | `vn_phone`                                                                                                                                                           |
+| `vn-holidays`      | `vn_holidays_year`, `vn_holidays_ics`, `vn_holidays_is_working_day`, `vn_holidays_add_working_days`, `vn_holidays_count_working_days`                                |
+| `vn-money-words`   | `vn_money_to_words`, `vn_money_parse`                                                                                                                                |
+| `vn-lunar`         | `vn_lunar_from_solar`, `vn_lunar_to_solar`, `vn_lunar_month`, `vn_lunar_parse_date`, `vn_lunar_holidays`, `vn_lunar_tet`, `vn_lunar_canchi`                          |
+| `vn-einvoice`      | `vn_einvoice_validate`, `vn_einvoice_totals`, `vn_einvoice_vat`, `vn_einvoice_mock_issue`, `vn_einvoice_example`                                                     |
+| `vn-name`          | `vn_name`                                                                                                                                                            |
+| `vn-number-format` | `vn_number_format`                                                                                                                                                   |
+
+MCP Apps hosts (Claude, ChatGPT, VS Code, …) show VietQR results (built with `image: true`) as an inline VietQR card with bank, account, amount and copy buttons; other clients see the usual JSON and image.
+
+When a client declares the MCP `elicitation` capability, the address converter asks the user to pick the new ward if the old ward was split, and reports `chosenBy` (`user` or `default`).
+
+**Custom banks:** pass `--banks <file.json>` (a JSON array of `Bank` entries) to `vn-skills-mcp` (stdio or `--http`), or to `vn-skills vietqr build|parse|decode|banks`, to add or override banks at runtime; in core use `registerBanks()` / `resetBanks()` / `listBanks()`. vn-skills does not verify user-supplied entries.
 
 ### Prompts
 
 The server also offers prompt templates, shown as `/` commands in clients that support MCP prompts: `tao-vietqr`, `doi-dia-chi-moi`, `kiem-tra-mst`, `doc-cccd`, `so-tien-bang-chu`, `ngay-lam-viec`, `doi-am-duong`, `kiem-tra-hoa-don`.
+
+### Resources
+
+Read-only data that clients can attach without a tool call (all `application/json`):
 
 ### MCP client setup
 
@@ -198,6 +209,51 @@ lunarInfo(29, 1, 2025).text; // "Mùng 1 tháng Giêng năm Ất Tỵ"
 ```
 
 Every function returns `{ ok: true, ... }` or `{ ok: false, error: { code, message, hint } }` — no exceptions for bad input.
+
+## Google Sheets
+
+`packages/sheets` (private, not on npm) builds Apps Script custom functions from `@vn-skills/core`:
+`pnpm --filter ./packages/sheets build` writes `packages/sheets/dist/vn-skills.gs`, `vn-skills-lite.gs` and `appsscript.json`.
+
+1. In a Google Sheet open **Extensions → Apps Script** and paste the contents of one `.gs` file.
+2. Set the time zone to `Asia/Ho_Chi_Minh` (Project Settings, or use the `timeZone` in `appsscript.json`).
+3. Save and use the functions in cells. Each accepts one value or a range and returns the same shape; a bad cell returns the error text.
+
+| Function                          | Example                                                                                          |
+| --------------------------------- | ------------------------------------------------------------------------------------------------ |
+| `VN_TIEN_CHU(amount, [thousand])` | `=VN_TIEN_CHU(A2)`, `=VN_TIEN_CHU(A2:A9, "ngàn")`                                                |
+| `VN_SO_THANH_CHU(number)`         | `=VN_SO_THANH_CHU(A2)`                                                                           |
+| `VN_MST(taxId)`                   | `=VN_MST(A2:A9)` → TRUE/FALSE                                                                    |
+| `VN_AM_LICH(date)`                | `=VN_AM_LICH(A2)` or `=VN_AM_LICH("29/01/2025")`                                                 |
+| `VN_NGAY_LAM_VIEC(date)`          | `=VN_NGAY_LAM_VIEC(A2)` → TRUE/FALSE                                                             |
+| `VN_CONG_NGAY_LAM_VIEC(date, n)`  | `=VN_CONG_NGAY_LAM_VIEC(A2, 5)` (yyyy-mm-dd text)                                                |
+| `VN_DIA_CHI_MOI(address)`         | `=VN_DIA_CHI_MOI(A2)` (full bundle only)                                                         |
+| `VN_SDT(phone, [format])`         | `=VN_SDT(A2)`, `=VN_SDT(A2, "e164")`, `"carrier"`                                                |
+| `VN_TACH_TEN(name, part)`         | `=VN_TACH_TEN(A2, "ten")` (`ho`, `dem`, `ten`)                                                   |
+| `VN_CCCD(id, [field])`            | `=VN_CCCD(A2, "tinh")` (`hop_le`, `tinh`, `tinh_moi`, `gioi_tinh`, `nam_sinh`; full bundle only) |
+
+Bundle sizes (as measured by the build): `vn-skills.gs` ≈ 2533 KiB (includes the address data and `VN_CCCD`), `vn-skills-lite.gs` ≈ 49 KiB (no address data or address functions). If the full bundle is too large for your project, use the lite bundle.
+
+## Excel
+
+`packages/excel` (private, not on npm) builds an Excel custom-functions add-in from the same wrappers as Google Sheets:
+`pnpm --filter ./packages/excel build` writes `packages/excel/dist/functions.js`, `functions.json`, `functions.html` and `manifest.xml`.
+
+1. Host `dist/` over HTTPS (the manifest points to `https://localhost:3000`; set `VN_EXCEL_BASE_URL` before the build to use another base URL).
+2. Sideload `dist/manifest.xml` as described in [Microsoft's sideloading docs](https://learn.microsoft.com/en-us/office/dev/add-ins/testing/test-debug-office-add-ins#sideload-an-office-add-in-for-testing).
+3. Use the functions in cells. Each accepts one value or a range and returns the same shape; a bad cell returns the error text. Dates may be date cells (serial numbers) or `dd/mm/yyyy` text.
+
+| Function                          | Example                                           |
+| --------------------------------- | ------------------------------------------------- |
+| `VN.TIEN_CHU(amount, [thousand])` | `=VN.TIEN_CHU(A2)`, `=VN.TIEN_CHU(A2:A9, "ngàn")` |
+| `VN.SO_THANH_CHU(number)`         | `=VN.SO_THANH_CHU(A2)`                            |
+| `VN.MST(taxId)`                   | `=VN.MST(A2:A9)` → TRUE/FALSE                     |
+| `VN.AM_LICH(date)`                | `=VN.AM_LICH(A2)` or `=VN.AM_LICH("29/01/2025")`  |
+| `VN.NGAY_LAM_VIEC(date)`          | `=VN.NGAY_LAM_VIEC(A2)` → TRUE/FALSE              |
+| `VN.CONG_NGAY_LAM_VIEC(date, n)`  | `=VN.CONG_NGAY_LAM_VIEC(A2, 5)` (yyyy-mm-dd text) |
+| `VN.DIA_CHI_MOI(address)`         | `=VN.DIA_CHI_MOI(A2)`                             |
+
+Bundle size (as measured by the build): `functions.js` ≈ 2520 KiB, including the address data, so `VN.DIA_CHI_MOI` is included.
 
 ## Development
 

@@ -1,6 +1,7 @@
-import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
+import { McpServer, ResourceTemplate } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
 import { registerPrompts } from './prompts.js';
+import { MCP_APP_MIME, VIETQR_APP_HTML, VIETQR_APP_URI } from './apps/vietqr.js';
 import QRCode from 'qrcode';
 import { decodeQrPng } from '@vn-skills/cli/decode';
 import {
@@ -20,6 +21,7 @@ import {
   parseCitizenId,
   moneyToWords,
   numberToWords,
+  wordsToNumber,
   formatNumber,
   formatVnd,
   formatCompactVnd,
@@ -28,11 +30,16 @@ import {
   lunarInfo,
   lunarMonthCalendar,
   lunarToSolar,
+  parseVietnameseDate,
   tetInfo,
   canChiOfYear,
   taxIdCheckDigitResult,
   lookupProvince,
+  formerUnits,
   provincesList,
+  provinceInfo,
+  provinceByCode,
+  PROVINCES,
   exampleInvoice,
   holidays,
   holidaysToICS,
@@ -43,6 +50,9 @@ import {
   parseDateInput,
   validateInvoice,
   computeTotals,
+  splitVatInclusive,
+  applyVat,
+  type VatRate,
   MockProvider,
   VERSION,
   type VnError,
@@ -82,6 +92,7 @@ export function createServer(): McpServer {
     {
       title: 'Build VietQR',
       annotations: OFFLINE_READ_ONLY,
+      _meta: { ui: { resourceUri: VIETQR_APP_URI } },
       description:
         'Create a VietQR (NAPAS 247) bank-transfer QR payload. Returns the EMVCo string, CRC and optionally a PNG image. Bank accepts BIN (970436), code (VCB) or name (Vietcombank). Amount is integer VND; note is sanitized (no diacritics, max 25 chars).',
       inputSchema: {
@@ -162,8 +173,13 @@ export function createServer(): McpServer {
       title: 'Search banks',
       annotations: OFFLINE_READ_ONLY,
       description:
-        'Search the NAPAS bank list by BIN, code, short name or full name. Empty query lists all banks.',
-      inputSchema: { query: z.string().optional().describe('e.g. "vietcombank", "VCB", "9704"') },
+        'Search the NAPAS bank list by BIN, code, short name, full name or SWIFT/BIC code. Empty query lists all banks.',
+      inputSchema: {
+        query: z
+          .string()
+          .optional()
+          .describe('e.g. "vietcombank", "VCB", "9704", "BFTVVNVX" (SWIFT/BIC)'),
+      },
     },
     async ({ query }) => json({ ok: true, banks: searchBanks(query ?? '') }),
   );
@@ -240,7 +256,7 @@ export function createServer(): McpServer {
       title: 'Convert old address to new (2025)',
       annotations: OFFLINE_READ_ONLY,
       description:
-        'Convert a pre-July-2025 Vietnamese address (63 provinces, districts, wards) into the new 2-level structure (34 provinces, wards). Returns the new ward/province, mapping type (unchanged/merged/divided) and all candidates when the old ward was split.',
+        'Convert a pre-July-2025 Vietnamese address (63 provinces, districts, wards) into the new 2-level structure (34 provinces, wards). Returns the new ward/province, mapping type (unchanged/merged/divided) and all candidates when the old ward was split. When the client supports elicitation, the server may ask the user to pick the new ward for a split old ward (chosenBy: user|default).',
       inputSchema: {
         text: z.string().optional().describe('Free-text old address'),
         province: z.string().optional(),
@@ -258,7 +274,7 @@ export function createServer(): McpServer {
         );
       const r = convertAddress(input);
       if (!r.ok) return json({ ok: false, error: r.error }, true);
-      return json({
+      const out = {
         ok: true,
         mappingType: r.mappingType,
         old: {
@@ -286,6 +302,55 @@ export function createServer(): McpServer {
         })),
         confidence: r.confidence,
         warnings: r.warnings,
+      };
+      if (r.mappingType !== 'divided' || r.candidates.length < 2) return json(out);
+      if (!server.server.getClientCapabilities()?.elicitation) return json(out);
+      let chosen: (typeof r.candidates)[number] | undefined;
+      try {
+        const oldName = [r.old.ward?.fullName, r.old.district?.fullName, r.old.province?.fullName]
+          .filter(Boolean)
+          .join(', ');
+        const res = await server.server.elicitInput({
+          message:
+            `Phường/xã cũ "${oldName}" đã được chia thành nhiều phường/xã mới. Vui lòng chọn phường/xã mới phù hợp. ` +
+            `(The old ward "${oldName}" was split into several new wards. Please choose the new ward.)`,
+          requestedSchema: {
+            type: 'object',
+            properties: {
+              ward: {
+                type: 'string',
+                title: 'Ward / Phường xã',
+                enum: r.candidates.map((c) => c.ward.code),
+                enumNames: r.candidates.map((c) => `${c.ward.fullName}, ${c.province.fullName}`),
+              },
+            },
+            required: ['ward'],
+          },
+        });
+        if (res.action === 'accept') {
+          chosen = r.candidates.find((c) => c.ward.code === res.content?.ward);
+        }
+      } catch {
+        chosen = undefined;
+      }
+      if (!chosen) return json({ ...out, chosenBy: 'default' });
+      const pick = chosen;
+      return json({
+        ...out,
+        new: {
+          province: { code: pick.province.code, fullName: pick.province.fullName },
+          ward: {
+            code: pick.ward.code,
+            fullName: pick.ward.fullName,
+            postalCode: pick.ward.postalCode,
+          },
+          street: r.new.street,
+          formatted: [r.new.street, pick.ward.fullName, pick.province.fullName]
+            .filter(Boolean)
+            .join(', '),
+        },
+        candidates: out.candidates.map((c) => ({ ...c, isDefault: c.code === pick.ward.code })),
+        chosenBy: 'user',
       });
     },
   );
@@ -431,6 +496,23 @@ export function createServer(): McpServer {
   );
 
   server.registerTool(
+    'vn_money_parse',
+    {
+      title: 'Vietnamese number words to digits',
+      annotations: OFFLINE_READ_ONLY,
+      description:
+        'Parse an amount written in Vietnamese words back to digits, e.g. "một triệu hai trăm nghìn đồng" -> "1200000". Returns value (digit string), negative, unit, chan.',
+      inputSchema: { text: z.string() },
+    },
+    async ({ text }) => {
+      const r = wordsToNumber(text);
+      return r.ok
+        ? json({ ok: true, value: r.value, negative: r.negative, unit: r.unit, chan: r.chan })
+        : json({ ok: false, error: r.error }, true);
+    },
+  );
+
+  server.registerTool(
     'vn_number_format',
     {
       title: 'Vietnamese number formatting and parsing',
@@ -504,6 +586,21 @@ export function createServer(): McpServer {
             date: `${r.year}-${String(r.month).padStart(2, '0')}-${String(r.day).padStart(2, '0')}`,
           })
         : json({ ok: false, error: r.error }, true);
+    },
+  );
+
+  server.registerTool(
+    'vn_lunar_parse_date',
+    {
+      title: 'Parse Vietnamese date phrase',
+      annotations: OFFLINE_READ_ONLY,
+      description:
+        'Turn a Vietnamese date phrase into a solar date: lunar ("rằm tháng Giêng năm sau", "mùng 1 Tết", "23 tháng Chạp"), relative ("ngày mai", "3 ngày nữa", "thứ Sáu tuần sau") or Gregorian. ref (yyyy-mm-dd) defaults to today in UTC+7.',
+      inputSchema: { text: z.string(), ref: z.string().optional() },
+    },
+    async ({ text, ref }) => {
+      const r = parseVietnameseDate(text, ref ? { ref } : {});
+      return r.ok ? json(r) : json({ ok: false, error: r.error }, true);
     },
   );
 
@@ -659,6 +756,27 @@ export function createServer(): McpServer {
   );
 
   server.registerTool(
+    'vn_einvoice_vat',
+    {
+      title: 'Apply or split VAT',
+      annotations: OFFLINE_READ_ONLY,
+      description:
+        'Apply VAT to a net amount, or with inclusive=true split a VAT-inclusive price (giá đã gồm VAT) into net (tiền hàng) and VAT. Rates 0/5/8/10/KCT/KKKNT. Net is rounded half away from zero and the leftover đồng goes to VAT (library convention).',
+      inputSchema: {
+        amount: z.number().describe('Integer VND amount'),
+        rate: z.union([z.number(), z.string()]).describe('VAT rate: 0, 5, 8, 10, "KCT" or "KKKNT"'),
+        inclusive: z.boolean().optional().describe('true: amount already includes VAT'),
+      },
+    },
+    async ({ amount, rate, inclusive }) => {
+      const r = inclusive
+        ? splitVatInclusive(amount, rate as VatRate)
+        : applyVat(amount, rate as VatRate);
+      return json(r, !r.ok);
+    },
+  );
+
+  server.registerTool(
     'vn_einvoice_mock_issue',
     {
       title: 'Issue invoice (mock)',
@@ -735,6 +853,24 @@ export function createServer(): McpServer {
   );
 
   server.registerTool(
+    'vn_address_history',
+    {
+      title: 'Former wards of a current ward',
+      description:
+        'List the pre-01/07/2025 wards (with district and province) that became a current ward, by ward code or name.',
+      inputSchema: {
+        ward: z.string().describe('Current ward code or name'),
+        province: z.string().optional(),
+      },
+      annotations: OFFLINE_READ_ONLY,
+    },
+    async ({ ward, province }) => {
+      const r = formerUnits(ward, { province });
+      return json(r, !r.ok);
+    },
+  );
+
+  server.registerTool(
     'vn_address_province',
     {
       title: 'Look up a province',
@@ -760,6 +896,105 @@ export function createServer(): McpServer {
   );
 
   registerPrompts(server);
+
+  const asResource = (uri: URL, data: unknown) => ({
+    contents: [
+      {
+        uri: uri.href,
+        mimeType: 'application/json',
+        text: JSON.stringify(data, null, 2),
+      },
+    ],
+  });
+  const fail = (e: VnError): never => {
+    throw new Error(e.hint ? `${e.message} (${e.hint})` : e.message);
+  };
+  const one = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v) ?? '';
+
+  server.registerResource(
+    'vietqr-app',
+    VIETQR_APP_URI,
+    {
+      title: 'VietQR card (MCP Apps view)',
+      description: 'Interactive VietQR card shown by MCP Apps hosts for vietqr_build.',
+      mimeType: MCP_APP_MIME,
+    },
+    (uri) => ({
+      contents: [
+        {
+          uri: uri.href,
+          mimeType: MCP_APP_MIME,
+          text: VIETQR_APP_HTML,
+          _meta: { ui: { prefersBorder: true } },
+        },
+      ],
+    }),
+  );
+
+  server.registerResource(
+    'provinces',
+    'vn-skills://provinces',
+    {
+      title: 'Danh sách 34 tỉnh, thành (2025) / The 34 provinces',
+      description: 'The 34 current Vietnamese provinces (since 01/07/2025) with ward counts.',
+      mimeType: 'application/json',
+    },
+    (uri) => asResource(uri, provincesList()),
+  );
+
+  server.registerResource(
+    'banks',
+    'vn-skills://banks',
+    {
+      title: 'Danh sách ngân hàng VietQR / VietQR bank list',
+      description: 'The NAPAS bank list used by VietQR: BIN, code, short and full names.',
+      mimeType: 'application/json',
+    },
+    (uri) => asResource(uri, { ok: true, banks: searchBanks('') }),
+  );
+
+  server.registerResource(
+    'province-wards',
+    new ResourceTemplate('vn-skills://province/{code}/wards', {
+      list: () => ({
+        resources: PROVINCES.map((p) => ({
+          uri: `vn-skills://province/${p.code}/wards`,
+          name: `wards-${p.code}`,
+          title: `Phường/xã của ${p.fullName} / Wards of ${p.nameEn ?? p.fullName}`,
+          mimeType: 'application/json',
+        })),
+      }),
+    }),
+    {
+      title: 'Phường/xã theo tỉnh / Wards of a province',
+      description: 'A province (2-digit code) with its list of wards.',
+      mimeType: 'application/json',
+    },
+    (uri, { code }) => {
+      const p = provinceByCode.get(one(code));
+      if (!p)
+        return fail({
+          code: 'PROVINCE_NOT_FOUND',
+          message: `No province with code "${one(code)}"`,
+          hint: 'Use a 2-digit code from vn-skills://provinces',
+        });
+      return asResource(uri, { ok: true, ...provinceInfo(p), wards: p.wards });
+    },
+  );
+
+  server.registerResource(
+    'holidays-year',
+    new ResourceTemplate('vn-skills://holidays/{year}', { list: undefined }),
+    {
+      title: 'Ngày nghỉ lễ trong năm / Official days off of a year',
+      description: 'Official days off for public-sector staff in a year (2023-2199).',
+      mimeType: 'application/json',
+    },
+    (uri, { year }) => {
+      const r = publicHolidays(Number(one(year)));
+      return r.ok ? asResource(uri, r) : fail(r.error);
+    },
+  );
 
   return server;
 }

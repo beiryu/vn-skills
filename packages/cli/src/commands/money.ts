@@ -1,5 +1,5 @@
 import { Command } from 'commander';
-import { moneyToWords, numberToWords } from '@vn-skills/core';
+import { moneyToWords, numberToWords, wordsToNumber } from '@vn-skills/core';
 import { failExit, printJson, wantsJson } from '../output.js';
 
 export function registerMoney(program: Command): void {
@@ -36,5 +36,15 @@ export function registerMoney(program: Command): void {
       if (!r.ok) failExit(c, r.error);
       if (wantsJson(c)) printJson({ ok: true, amount: r.amount, words: r.words });
       else process.stdout.write(r.words + '\n');
+    });
+  cmd
+    .command('parse <words>')
+    .description('Convert Vietnamese number words to digits, e.g. "một triệu đồng" -> 1000000')
+    .action((words: string, _opts, c: Command) => {
+      const r = wordsToNumber(words);
+      if (!r.ok) failExit(c, r.error);
+      if (wantsJson(c))
+        printJson({ ok: true, value: r.value, negative: r.negative, unit: r.unit, chan: r.chan });
+      else process.stdout.write((r.negative ? '-' : '') + r.value + '\n');
     });
 }

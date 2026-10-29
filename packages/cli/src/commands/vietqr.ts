@@ -1,7 +1,7 @@
 import { Command } from 'commander';
-import { writeFileSync } from 'node:fs';
+import { readFileSync, writeFileSync } from 'node:fs';
 import QRCode from 'qrcode';
-import { buildVietQR, parseVietQR, searchBanks } from '@vn-skills/core';
+import { buildVietQR, parseVietQR, registerBanks, searchBanks, type Bank } from '@vn-skills/core';
 import { decodeQrPng } from '../decode.js';
 import { failExit, kv, printJson, wantsJson } from '../output.js';
 
@@ -52,6 +52,24 @@ function printParsed(payload: string, c: Command, extra: Record<string, unknown>
   }
 }
 
+const BANKS_OPT = '--banks <file>';
+const BANKS_DESC = 'JSON array of extra/override banks (not verified by vn-skills)';
+
+function loadBanks(opts: { banks?: string }, c: Command): void {
+  if (!opts.banks) return;
+  let data: unknown;
+  try {
+    data = JSON.parse(readFileSync(opts.banks, 'utf8'));
+  } catch (e) {
+    failExit(c, {
+      code: 'READ_ERROR',
+      message: `cannot read ${opts.banks}: ${e instanceof Error ? e.message : String(e)}`,
+    });
+  }
+  const r = registerBanks(data as Bank[]);
+  if (!r.ok) failExit(c, r.error);
+}
+
 export function registerVietqr(program: Command): void {
   const cmd = program
     .command('vietqr')
@@ -69,7 +87,9 @@ export function registerVietqr(program: Command): void {
     .option('-o, --out <file>', 'write image: .png or .svg (also prints payload)')
     .option('--ascii', 'print the QR as ASCII art to the terminal')
     .option('--data-url', 'include a base64 PNG data URL in the JSON output')
+    .option(BANKS_OPT, BANKS_DESC)
     .action(async (opts, c: Command) => {
+      loadBanks(opts, c);
       const r = buildVietQR({
         bank: opts.bank,
         account: opts.account,
@@ -144,12 +164,18 @@ export function registerVietqr(program: Command): void {
   cmd
     .command('parse <payload>')
     .description('Decode a VietQR/EMVCo payload and verify its CRC')
-    .action((payload: string, _o, c: Command) => printParsed(payload, c));
+    .option(BANKS_OPT, BANKS_DESC)
+    .action((payload: string, opts, c: Command) => {
+      loadBanks(opts, c);
+      printParsed(payload, c);
+    });
 
   cmd
     .command('decode <image>')
     .description('Read the QR code in a PNG image and decode it like `parse`')
-    .action((image: string, _o, c: Command) => {
+    .option(BANKS_OPT, BANKS_DESC)
+    .action((image: string, opts, c: Command) => {
+      loadBanks(opts, c);
       const d = decodeQrPng(image);
       if (!d.ok) failExit(c, d.error);
       printParsed(d.payload, c, { payload: d.payload });
@@ -157,14 +183,16 @@ export function registerVietqr(program: Command): void {
 
   cmd
     .command('banks [query]')
-    .description('List banks / search by BIN, code or name')
-    .action((query: string | undefined, _o, c: Command) => {
+    .description('List banks / search by BIN, code, SWIFT/BIC or name')
+    .option(BANKS_OPT, BANKS_DESC)
+    .action((query: string | undefined, opts, c: Command) => {
+      loadBanks(opts, c);
       const list = searchBanks(query ?? '');
       if (wantsJson(c)) printJson({ ok: true, count: list.length, banks: list });
       else {
         for (const b of list)
           process.stdout.write(
-            `${b.bin}  ${b.code.padEnd(12)} ${b.shortName.padEnd(18)} ${b.name}${b.deprecated ? '  (deprecated)' : ''}\n`,
+            `${b.bin}  ${b.code.padEnd(12)} ${b.shortName.padEnd(18)} ${(b.swift ?? '').padEnd(11)} ${b.name}${b.deprecated ? '  (deprecated)' : ''}\n`,
           );
       }
     });

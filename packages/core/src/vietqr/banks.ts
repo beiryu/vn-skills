@@ -1,5 +1,6 @@
 import banksData from '../../data/banks.json' with { type: 'json' };
 import { compactKey } from '../shared/diacritics.js';
+import { fail, type Result } from '../shared/result.js';
 
 export interface Bank {
   /** 6-digit NAPAS BIN, e.g. 970436 */
@@ -17,8 +18,77 @@ export interface Bank {
 
 export const BANKS: readonly Bank[] = banksData as Bank[];
 
-const byBin = new Map(BANKS.map((b) => [b.bin, b]));
-const byCode = new Map(BANKS.map((b) => [b.code.toLowerCase(), b]));
+let current: readonly Bank[] = BANKS;
+let byBin = new Map<string, Bank>();
+let byCode = new Map<string, Bank>();
+
+function setRegistry(list: readonly Bank[]): void {
+  current = list;
+  byBin = new Map(list.map((b) => [b.bin, b]));
+  byCode = new Map(list.map((b) => [b.code.toLowerCase(), b]));
+}
+setRegistry(BANKS);
+
+/** The current bank registry (the bundled list unless changed by registerBanks). */
+export function listBanks(): Bank[] {
+  return [...current];
+}
+
+/** Restore the bundled bank list. */
+export function resetBanks(): void {
+  setRegistry(BANKS);
+}
+
+function checkEntry(e: unknown): string[] {
+  if (!e || typeof e !== 'object') return ['not an object'];
+  const b = e as Record<string, unknown>;
+  const errs: string[] = [];
+  if (typeof b.bin !== 'string' || !/^\d{6}$/.test(b.bin)) errs.push('bin must be 6 digits');
+  for (const k of ['code', 'shortName', 'name'])
+    if (typeof b[k] !== 'string' || !b[k].trim()) errs.push(`${k} must be a non-empty string`);
+  if (
+    b.swift !== undefined &&
+    (typeof b.swift !== 'string' || !/^[A-Za-z0-9]{8}([A-Za-z0-9]{3})?$/.test(b.swift))
+  )
+    errs.push('swift must be 8 or 11 alphanumeric characters');
+  if (b.vietqr !== undefined && !['transfer', 'receive', 'none'].includes(b.vietqr as string))
+    errs.push('vietqr must be transfer, receive or none');
+  return errs;
+}
+
+/**
+ * Add or override banks at runtime. Entries come from the caller and are not verified.
+ * Atomic: any invalid entry leaves the registry unchanged.
+ */
+export function registerBanks(
+  entries: Bank[],
+  options: { mode?: 'merge' | 'replace' } = {},
+): Result<{ count: number; added: string[]; replaced: string[] }> {
+  if (!Array.isArray(entries)) return fail('INVALID_BANKS', 'entries must be an array');
+  const problems: string[] = [];
+  entries.forEach((e, i) => {
+    for (const m of checkEntry(e)) problems.push(`entry ${i}: ${m}`);
+  });
+  const replace = options.mode === 'replace';
+  const given = new Set(entries.map((e) => e?.bin));
+  const base = replace ? [] : current.filter((b) => !given.has(b.bin));
+  if (!problems.length) {
+    const bins = new Set(base.map((b) => b.bin));
+    const codes = new Set(base.map((b) => b.code.toLowerCase()));
+    entries.forEach((e, i) => {
+      if (bins.has(e.bin)) problems.push(`entry ${i}: duplicate bin ${e.bin}`);
+      if (codes.has(e.code.toLowerCase())) problems.push(`entry ${i}: duplicate code ${e.code}`);
+      bins.add(e.bin);
+      codes.add(e.code.toLowerCase());
+    });
+  }
+  if (problems.length) return fail('INVALID_BANKS', problems.join('; '));
+  const old = new Set(current.map((b) => b.bin));
+  const added = entries.filter((e) => !old.has(e.bin)).map((e) => e.bin);
+  const replaced = replace ? [] : entries.filter((e) => old.has(e.bin)).map((e) => e.bin);
+  setRegistry([...base, ...entries]);
+  return { ok: true, count: current.length, added, replaced };
+}
 
 /** Common aliases people type that are not the official code/short name. */
 const ALIASES: Record<string, string> = {
@@ -104,11 +174,16 @@ export function findBank(query: string): Bank | undefined {
   if (alias) return byBin.get(alias);
   const code = byCode.get(q.toLowerCase());
   if (code) return code;
-  for (const b of BANKS) {
+  for (const b of current) {
     if (compactKey(b.shortName) === key) return b;
     if (b.keywords?.some((k) => compactKey(k) === key)) return b;
   }
-  const sub = BANKS.filter(
+  if (/^[a-z]{6}[a-z0-9]{2}([a-z0-9]{3})?$/i.test(q)) {
+    const bic = q.slice(0, 8).toUpperCase();
+    const bySwift = current.find((b) => b.swift?.slice(0, 8).toUpperCase() === bic);
+    if (bySwift) return bySwift;
+  }
+  const sub = current.filter(
     (b) => compactKey(b.shortName).includes(key) || compactKey(b.name).includes(key),
   );
   return sub.find((b) => !b.deprecated) ?? sub[0];
@@ -117,13 +192,14 @@ export function findBank(query: string): Bank | undefined {
 /** Search banks; returns ranked matches (exact first). Empty query returns all banks. */
 export function searchBanks(query = ''): Bank[] {
   const key = compactKey(query);
-  if (!key) return [...BANKS];
+  if (!key) return [...current];
   const exact = findBank(query);
-  const rest = BANKS.filter(
+  const rest = current.filter(
     (b) =>
       b !== exact &&
       (b.bin.includes(key) ||
         compactKey(b.code).includes(key) ||
+        b.swift?.toLowerCase().includes(key) ||
         compactKey(b.shortName).includes(key) ||
         compactKey(b.name).includes(key) ||
         b.keywords?.some((k) => compactKey(k).includes(key))),

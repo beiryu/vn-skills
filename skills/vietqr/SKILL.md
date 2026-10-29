@@ -1,6 +1,6 @@
 ---
 name: vietqr
-description: Generate or decode VietQR bank-transfer QR codes (NAPAS 247 / EMVCo) for Vietnamese banks, with CRC16 validation and PNG/SVG output. Use when the user asks for a payment QR, "QR thanh toán", "mã QR chuyển khoản", "tạo QR VietQR", "quét mã chuyển tiền", needs to parse a VietQR string, look up a bank BIN (Vietcombank 970436, MB 970422, ...), or integrate Vietnamese bank-transfer payments.
+description: Generate or decode VietQR bank-transfer QR codes (NAPAS 247 / EMVCo) for Vietnamese banks, with CRC16 validation and PNG/SVG output. Use when the user asks for a payment QR, "QR thanh toán", "mã QR chuyển khoản", "tạo QR VietQR", "quét mã chuyển tiền", needs to parse a VietQR string, look up a bank by SWIFT/BIC code ("mã SWIFT", "SWIFT code của Techcombank"), look up a bank BIN (Vietcombank 970436, MB 970422, ...), or integrate Vietnamese bank-transfer payments.
 license: MIT
 compatibility: Requires Node.js 22+ (runs npx -y @vn-skills/cli). No network access needed.
 metadata:
@@ -62,6 +62,8 @@ All commands print JSON when piped (or with `--json`). Inside this repo use `pnp
    uncropped PNG (convert screenshots or JPEGs to PNG first).
 
 3. **Find a bank**: `npx -y @vn-skills/cli vietqr banks techcom` (empty query lists all 58 banks with BIN/code/name).
+
+4. **Custom banks**: add `--banks banks.json` (JSON array of `{bin, code, shortName, name, swift?, vietqr?, keywords?}`) to `vietqr build|parse|decode|banks`, or to `@vn-skills/mcp`, to add or override banks. vn-skills does not verify user-supplied entries. Errors: `READ_ERROR`, `INVALID_BANKS`.
 
 Library use (TypeScript): `import { buildVietQR, parseVietQR, findBank } from '@vn-skills/core'`.
 

@@ -40,6 +40,7 @@ Chuyển hàng loạt địa chỉ đã lưu (mỗi dòng một địa chỉ →
 ```bash
 vn-skills address convert-file addresses.txt
 vn-skills address convert-file customers.csv --csv --column address > converted.csv
+vn-skills address convert-file customers.csv --csv --province-column province --district-column district --ward-column ward > converted.csv
 ```
 
 ## Cài skill
@@ -86,25 +87,35 @@ Hoặc trong cấu hình MCP bất kỳ:
 { "mcpServers": { "vn-skills": { "command": "npx", "args": ["-y", "@vn-skills/mcp"] } } }
 ```
 
-Server cung cấp 32 tool, nhóm theo skill. Mọi tool đều được khai báo chỉ đọc và offline (`readOnlyHint: true`, `openWorldHint: false`).
+Server cung cấp 36 tool, nhóm theo skill. Mọi tool đều được khai báo chỉ đọc và offline (`readOnlyHint: true`, `openWorldHint: false`).
 
-| Skill              | Tool                                                                                                                                           |
-| ------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------- |
-| `vietqr`           | `vietqr_build`, `vietqr_parse`, `vietqr_decode`, `vietqr_banks`                                                                                |
-| `vn-address`       | `vn_address_parse`, `vn_address_convert`, `vn_address_convert_batch`, `vn_address_search_wards`, `vn_address_provinces`, `vn_address_province` |
-| `vn-tax-id`        | `vn_tax_id_validate`, `vn_tax_id_check_digit`                                                                                                  |
-| `vn-id`            | `vn_id_parse`                                                                                                                                  |
-| `vn-phone`         | `vn_phone`                                                                                                                                     |
-| `vn-holidays`      | `vn_holidays_year`, `vn_holidays_ics`, `vn_holidays_is_working_day`, `vn_holidays_add_working_days`, `vn_holidays_count_working_days`          |
-| `vn-money-words`   | `vn_money_to_words`                                                                                                                            |
-| `vn-lunar`         | `vn_lunar_from_solar`, `vn_lunar_to_solar`, `vn_lunar_month`, `vn_lunar_holidays`, `vn_lunar_tet`, `vn_lunar_canchi`                           |
-| `vn-einvoice`      | `vn_einvoice_validate`, `vn_einvoice_totals`, `vn_einvoice_mock_issue`, `vn_einvoice_example`                                                  |
-| `vn-name`          | `vn_name`                                                                                                                                      |
-| `vn-number-format` | `vn_number_format`                                                                                                                             |
+| Skill              | Tool                                                                                                                                                                 |
+| ------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `vietqr`           | `vietqr_build`, `vietqr_parse`, `vietqr_decode`, `vietqr_banks`                                                                                                      |
+| `vn-address`       | `vn_address_parse`, `vn_address_convert`, `vn_address_convert_batch`, `vn_address_search_wards`, `vn_address_history`, `vn_address_provinces`, `vn_address_province` |
+| `vn-tax-id`        | `vn_tax_id_validate`, `vn_tax_id_check_digit`                                                                                                                        |
+| `vn-id`            | `vn_id_parse`                                                                                                                                                        |
+| `vn-phone`         | `vn_phone`                                                                                                                                                           |
+| `vn-holidays`      | `vn_holidays_year`, `vn_holidays_ics`, `vn_holidays_is_working_day`, `vn_holidays_add_working_days`, `vn_holidays_count_working_days`                                |
+| `vn-money-words`   | `vn_money_to_words`, `vn_money_parse`                                                                                                                                |
+| `vn-lunar`         | `vn_lunar_from_solar`, `vn_lunar_to_solar`, `vn_lunar_month`, `vn_lunar_parse_date`, `vn_lunar_holidays`, `vn_lunar_tet`, `vn_lunar_canchi`                          |
+| `vn-einvoice`      | `vn_einvoice_validate`, `vn_einvoice_totals`, `vn_einvoice_vat`, `vn_einvoice_mock_issue`, `vn_einvoice_example`                                                     |
+| `vn-name`          | `vn_name`                                                                                                                                                            |
+| `vn-number-format` | `vn_number_format`                                                                                                                                                   |
+
+Client hỗ trợ MCP Apps (Claude, ChatGPT, VS Code, …) hiển thị kết quả VietQR (tạo với `image: true`) dưới dạng thẻ VietQR gồm ngân hàng, số tài khoản, số tiền và nút sao chép; client khác vẫn thấy JSON và ảnh như cũ.
+
+Khi client khai báo capability `elicitation` của MCP, công cụ đổi địa chỉ sẽ hỏi người dùng chọn phường/xã mới nếu phường/xã cũ bị chia tách, và trả về `chosenBy` (`user` hoặc `default`).
+
+**Ngân hàng tùy chỉnh:** truyền `--banks <file.json>` (mảng JSON các mục `Bank`) cho `vn-skills-mcp` (stdio hoặc `--http`) hoặc `vn-skills vietqr build|parse|decode|banks` để thêm/ghi đè ngân hàng khi chạy; trong core dùng `registerBanks()` / `resetBanks()` / `listBanks()`. vn-skills không kiểm chứng các mục do người dùng cung cấp.
 
 ### Prompts
 
 Server cũng cung cấp prompt mẫu, hiển thị dạng lệnh `/` trong các client hỗ trợ MCP prompts: `tao-vietqr`, `doi-dia-chi-moi`, `kiem-tra-mst`, `doc-cccd`, `so-tien-bang-chu`, `ngay-lam-viec`, `doi-am-duong`, `kiem-tra-hoa-don`.
+
+### Resources
+
+Dữ liệu chỉ đọc mà client có thể đính kèm không cần gọi tool (đều là `application/json`):
 
 ### Cài đặt MCP theo client
 
@@ -189,6 +200,51 @@ import {
 ```
 
 Mọi hàm trả về `{ ok: true, ... }` hoặc `{ ok: false, error: { code, message, hint } }`, không ném exception với input sai.
+
+## Google Sheets
+
+`packages/sheets` (private, không đăng lên npm) build các hàm tuỳ chỉnh Apps Script từ `@vn-skills/core`:
+`pnpm --filter ./packages/sheets build` tạo `packages/sheets/dist/vn-skills.gs`, `vn-skills-lite.gs` và `appsscript.json`.
+
+1. Trong Google Sheet mở **Tiện ích mở rộng → Apps Script**, dán nội dung một file `.gs`.
+2. Đặt múi giờ `Asia/Ho_Chi_Minh` (Cài đặt dự án, hoặc dùng `timeZone` trong `appsscript.json`).
+3. Lưu và dùng hàm trong ô. Mỗi hàm nhận một giá trị hoặc một vùng và trả về cùng kích thước; ô lỗi trả về nội dung lỗi.
+
+| Hàm                               | Ví dụ                                                                                          |
+| --------------------------------- | ---------------------------------------------------------------------------------------------- |
+| `VN_TIEN_CHU(amount, [thousand])` | `=VN_TIEN_CHU(A2)`, `=VN_TIEN_CHU(A2:A9, "ngàn")`                                              |
+| `VN_SO_THANH_CHU(number)`         | `=VN_SO_THANH_CHU(A2)`                                                                         |
+| `VN_MST(taxId)`                   | `=VN_MST(A2:A9)` → TRUE/FALSE                                                                  |
+| `VN_AM_LICH(date)`                | `=VN_AM_LICH(A2)` hoặc `=VN_AM_LICH("29/01/2025")`                                             |
+| `VN_NGAY_LAM_VIEC(date)`          | `=VN_NGAY_LAM_VIEC(A2)` → TRUE/FALSE                                                           |
+| `VN_CONG_NGAY_LAM_VIEC(date, n)`  | `=VN_CONG_NGAY_LAM_VIEC(A2, 5)` (chuỗi yyyy-mm-dd)                                             |
+| `VN_DIA_CHI_MOI(address)`         | `=VN_DIA_CHI_MOI(A2)` (chỉ bản đầy đủ)                                                         |
+| `VN_SDT(phone, [format])`         | `=VN_SDT(A2)`, `=VN_SDT(A2, "e164")`, `"carrier"`                                              |
+| `VN_TACH_TEN(name, part)`         | `=VN_TACH_TEN(A2, "ten")` (`ho`, `dem`, `ten`)                                                 |
+| `VN_CCCD(id, [field])`            | `=VN_CCCD(A2, "tinh")` (`hop_le`, `tinh`, `tinh_moi`, `gioi_tinh`, `nam_sinh`; chỉ bản đầy đủ) |
+
+Kích thước (theo build): `vn-skills.gs` ≈ 2533 KiB (gồm dữ liệu địa chỉ và `VN_CCCD`), `vn-skills-lite.gs` ≈ 49 KiB (không có dữ liệu và hàm địa chỉ). Nếu bản đầy đủ quá lớn với dự án của bạn, hãy dùng bản lite.
+
+## Excel
+
+`packages/excel` (private, không đăng lên npm) build add-in hàm tuỳ chỉnh Excel từ cùng các wrapper với Google Sheets:
+`pnpm --filter ./packages/excel build` tạo `packages/excel/dist/functions.js`, `functions.json`, `functions.html` và `manifest.xml`.
+
+1. Host thư mục `dist/` qua HTTPS (manifest trỏ tới `https://localhost:3000`; đặt `VN_EXCEL_BASE_URL` trước khi build để dùng địa chỉ khác).
+2. Sideload `dist/manifest.xml` theo [tài liệu sideload của Microsoft](https://learn.microsoft.com/en-us/office/dev/add-ins/testing/test-debug-office-add-ins#sideload-an-office-add-in-for-testing).
+3. Dùng hàm trong ô. Mỗi hàm nhận một giá trị hoặc một vùng và trả về cùng kích thước; ô lỗi trả về nội dung lỗi. Ngày có thể là ô ngày (số serial) hoặc chuỗi `dd/mm/yyyy`.
+
+| Hàm                               | Ví dụ                                              |
+| --------------------------------- | -------------------------------------------------- |
+| `VN.TIEN_CHU(amount, [thousand])` | `=VN.TIEN_CHU(A2)`, `=VN.TIEN_CHU(A2:A9, "ngàn")`  |
+| `VN.SO_THANH_CHU(number)`         | `=VN.SO_THANH_CHU(A2)`                             |
+| `VN.MST(taxId)`                   | `=VN.MST(A2:A9)` → TRUE/FALSE                      |
+| `VN.AM_LICH(date)`                | `=VN.AM_LICH(A2)` hoặc `=VN.AM_LICH("29/01/2025")` |
+| `VN.NGAY_LAM_VIEC(date)`          | `=VN.NGAY_LAM_VIEC(A2)` → TRUE/FALSE               |
+| `VN.CONG_NGAY_LAM_VIEC(date, n)`  | `=VN.CONG_NGAY_LAM_VIEC(A2, 5)` (chuỗi yyyy-mm-dd) |
+| `VN.DIA_CHI_MOI(address)`         | `=VN.DIA_CHI_MOI(A2)`                              |
+
+Kích thước (theo build): `functions.js` ≈ 2520 KiB, gồm dữ liệu địa chỉ nên có `VN.DIA_CHI_MOI`.
 
 ## Phát triển
 
