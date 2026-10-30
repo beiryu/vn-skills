@@ -1,6 +1,6 @@
 {
  "version": 1,
- "exported_at": "2026-10-30T09:04:09.005Z",
+ "exported_at": "2026-10-30T09:27:11.765Z",
  "tables": {
   "repos": [
    {
@@ -10,7 +10,7 @@
     "policy_status": null,
     "policy_excerpts": null,
     "block_reason": null,
-    "last_scanned": "2026-10-30T09:03:44.532Z"
+    "last_scanned": "2026-10-30T09:26:45.368Z"
    }
   ],
   "issues": [
@@ -2863,7 +2863,7 @@
     "title": "vn-lunar: return the hour's can chi with `lunar from-solar --hour` and in the MCP tool",
     "body": "## Problem\n\nPeople ask for the can chi of a birth hour (\"giờ sinh\") for tử vi forms and baby names, and want to know what a day's Tý hour is called. Core already has this: `hourCanChi(dd, mm, yy, hour)` in `packages/core/src/lunar/canchi.ts:92`, re-exported from `packages/core/src/lunar/index.ts`. The CLI (`packages/cli/src/commands/lunar.ts`: from-solar, parse, month, to-solar, holidays, tet, canchi) and the MCP server (`packages/mcp/src/server.ts`) never call it. CLI and MCP users therefore cannot get it.\n\nThe top Vietnamese lunar package on npm, @dqcai/vn-lunar (about 18.7k downloads a month), offers year, month and day can chi, so users compare libraries on this.\n\n## Proposal\n\n- CLI: add `--hour <0-23>` to `vn-skills lunar from-solar <date>`. When it is given, the output (JSON and pretty) gets:\n  - `hourCanChi`: the result of the existing `hourCanChi(dd, mm, yy, hour)`, for example `Giáp Tý`.\n  - `hourBranch`: the earthly-branch name of the 2-hour period (Tý … Hợi), using the same index formula as `hourCanChi` (`Math.floor(((hour + 1) % 24) / 2)`).\n  - `hourRange`: the period as text, for example `23:00-01:00` for Tý or `01:00-03:00` for Sửu. Derive it from that same index; do not add new rules.\n- Return an error with code `INVALID_HOUR` and a hint when the hour is not an integer from 0 to 23. Without `--hour`, the output stays exactly as it is today.\n- MCP: add an optional `hour` (integer 0-23) input to `vn_lunar_from_solar` and the same three output fields.\n- If it helps, add a small core helper such as `hourInfo(dd, mm, yy, hour)` that returns `{ canChi, branch, range }` as a Result, and use it from both the CLI and the MCP tool. Do not change how `hourCanChi` computes.\n- At 23:00, `hourCanChi` uses the can of the calendar date passed in. Keep that behaviour and state it in `skills/vn-lunar/SKILL.md`.\n- Giờ hoàng đạo is out of scope; it stays blocked in #205.\n\n## Acceptance\n\n- [ ] `vn-skills --json lunar from-solar 10/02/2024 --hour 0` includes `hourCanChi`, `hourBranch: \"Tý\"` and `hourRange: \"23:00-01:00\"`, and `hourCanChi` equals `hourCanChi(10, 2, 2024, 0)` from core.\n- [ ] `--hour 23` and `--hour 0` give the same branch; `--hour 1` gives Sửu; `--hour 22` gives Hợi.\n- [ ] `--hour 24`, `--hour -1` and `--hour 1.5` return `INVALID_HOUR` with a hint.\n- [ ] Without `--hour`, the output is unchanged (an existing CLI test still passes).\n- [ ] `vn_lunar_from_solar` accepts `hour` and returns the same fields; `tests/mcp.test.ts` covers this.\n- [ ] Tests cover all 12 branches and the 23:00 boundary.\n- [ ] `skills/vn-lunar/SKILL.md` documents `--hour`, mentions \"giờ sinh\" / \"can chi giờ\", and states the 23:00 behaviour.\n- [ ] README.md and README.vi.md mention `--hour` if the lunar row or examples list the options.\n- [ ] `pnpm build && pnpm typecheck && pnpm lint && pnpm exec vitest run && pnpm format:check` pass.",
     "url": "https://github.com/beiryu/vn-skills/issues/288",
-    "state": "pr_open",
+    "state": "done",
     "score": 1,
     "triage_reason": "The function is already in core but nobody can reach it from the CLI or MCP. Exposing it closes a feature gap with the most-downloaded Vietnamese lunar package at very low cost.",
     "attempts": 0,
@@ -2879,7 +2879,7 @@
     "pr_body": "## What & why\n\nCloses #288\n\nCLI and MCP users could not get the can chi of a birth hour, although core already has `hourCanChi`. This adds an optional hour to `vn-skills lunar from-solar` and to `vn_lunar_from_solar`.\n\n- Core: new `hourInfo(dd, mm, yy, hour)` returns `{ canChi, branch, range }` as a Result. It uses the same index as `hourCanChi`, and `hourCanChi` is unchanged.\n- CLI: `--hour <0-23>` adds `hourCanChi`, `hourBranch` and `hourRange` to the output. A bad hour returns `INVALID_HOUR` with a hint. Without `--hour` the output is unchanged.\n- MCP: optional integer `hour` (0-23) on `vn_lunar_from_solar`, with the same three output fields.\n- `skills/vn-lunar/SKILL.md` documents `--hour` and states that at 23:00 the can of the date passed in is used.\n\n## Acceptance\n\n- [x] `--hour 0` on 10/02/2024 returns `hourCanChi`, `hourBranch: \"Tý\"`, `hourRange: \"23:00-01:00\"`, and `hourCanChi` matches core.\n- [x] `--hour 23` and `--hour 0` give the same branch; `--hour 1` gives Sửu; `--hour 22` gives Hợi.\n- [x] `--hour 24`, `--hour -1` and `--hour 1.5` return `INVALID_HOUR` with a hint.\n- [x] Without `--hour`, the output is unchanged.\n- [x] `vn_lunar_from_solar` accepts `hour` and returns the same fields; covered in `tests/mcp.test.ts`.\n- [x] Tests cover all 12 branches and the 23:00 boundary.\n- [x] `skills/vn-lunar/SKILL.md` documents `--hour`, \"giờ sinh\" / \"can chi giờ\", and the 23:00 behaviour.\n- [ ] README.md and README.vi.md: not changed in this diff.\n- [x] `pnpm build && pnpm typecheck && pnpm lint && pnpm exec vitest run && pnpm format:check` pass.\n\n## Tests\n\n- `tests/lunar.test.ts`: `hourInfo` cases `covers all 12 branches and ranges`, `23:00 uses the date passed in`, `rejects bad hours`.\n- `tests/cli.test.ts`: `lunar from-solar --hour`.\n- `tests/mcp.test.ts`: `vn_lunar_from_solar with hour`.\n\n## Checklist\n\n- [x] Title follows Conventional Commits (`feat|fix|docs|data|test|refactor|perf|build|ci|chore(scope): …`)\n- [x] Tests added or updated (golden test for every bug fix)\n- [x] `pnpm build && pnpm typecheck && pnpm lint && pnpm test && pnpm format:check` pass locally\n- [x] Core stays offline (no `fetch`/HTTP in `packages/core`)\n- [ ] Data changes go through `scripts/build-data.ts` and `SOURCES.md` (source + license)\n- [x] SKILL.md / README updated if behaviour changed\n",
     "dry": 0,
     "claimed_at": null,
-    "updated_at": "2026-10-29T08:46:13.208Z",
+    "updated_at": "2026-10-30T09:26:28.949Z",
     "blocked": null,
     "patch": "diff --git a/packages/cli/src/commands/lunar.ts b/packages/cli/src/commands/lunar.ts\nindex c34a49d..49498dd 100644\n--- a/packages/cli/src/commands/lunar.ts\n+++ b/packages/cli/src/commands/lunar.ts\n@@ -1,6 +1,7 @@\n import { Command } from 'commander';\n import {\n   lunarInfo,\n+  hourInfo,\n   lunarMonthCalendar,\n   lunarToSolar,\n   parseDateInput,\n@@ -19,12 +20,21 @@ export function registerLunar(program: Command): void {\n   cmd\n     .command('from-solar <date>')\n     .description('Solar (dd/mm/yyyy or yyyy-mm-dd) -> lunar date with can chi')\n-    .action((date: string, _o, c: Command) => {\n+    .option('--hour <0-23>', 'birth hour: adds hourCanChi, hourBranch, hourRange')\n+    .action((date: string, opts, c: Command) => {\n       const d = parseDateInput(date);\n       if (!d.ok) failExit(c, d.error);\n       const r = lunarInfo(d.day, d.month, d.year);\n       if (!r.ok) failExit(c, r.error);\n-      const { ok: _ok, ...rest } = r;\n+      let hour: { hourCanChi: string; hourBranch: string; hourRange: string } | undefined;\n+      if (opts.hour !== undefined) {\n+        const h = /^-?\\d+$/.test(String(opts.hour).trim()) ? Number(opts.hour) : NaN;\n+        const hi = hourInfo(d.day, d.month, d.year, h);\n+        if (!hi.ok) failExit(c, { ...hi.error, message: `Invalid hour \"${opts.hour}\"` });\n+        else hour = { hourCanChi: hi.canChi, hourBranch: hi.branch, hourRange: hi.range };\n+      }\n+      const { ok: _ok, ...base } = r;\n+      const rest = { ...base, ...hour };\n       if (wantsJson(c)) printJson({ ok: true, ...rest });\n       else\n         process.stdout.write(\n@@ -36,6 +46,9 @@ export function registerLunar(program: Command): void {\n             ['Month', r.monthCanChi],\n             ['Day', r.dayCanChi],\n             ['Solar term', r.solarTerm],\n+            ...(hour\n+              ? ([['Hour', `${hour.hourCanChi} (${hour.hourRange})`]] as [string, string][])\n+              : []),\n           ]) + '\\n',\n         );\n     });\ndiff --git a/packages/core/src/lunar/index.ts b/packages/core/src/lunar/index.ts\nindex 4f04227..1c8c5d4 100644\n--- a/packages/core/src/lunar/index.ts\n+++ b/packages/core/src/lunar/index.ts\n@@ -4,6 +4,7 @@ import {\n   yearCanChi,\n   monthCanChi,\n   dayCanChi,\n+  hourCanChi,\n   lunarMonthName,\n   SOLAR_TERMS,\n   CHI_ANIMALS_EN,\n@@ -53,6 +54,27 @@ export interface LunarInfo extends LunarDate {\n \n const WEEKDAYS = ['Chủ nhật', 'Thứ hai', 'Thứ ba', 'Thứ tư', 'Thứ năm', 'Thứ sáu', 'Thứ bảy'];\n \n+export interface HourInfo {\n+  canChi: string;\n+  branch: string;\n+  range: string;\n+}\n+\n+/** Can chi, earthly branch and 2-hour range of a birth hour (0-23). At 23:00 the can of the given date is used. */\n+export function hourInfo(dd: number, mm: number, yy: number, hour: number): Result<HourInfo> {\n+  if (!Number.isInteger(hour) || hour < 0 || hour > 23)\n+    return fail('INVALID_HOUR', `Invalid hour \"${hour}\"`, 'Use an integer from 0 to 23.');\n+  const index = Math.floor(((hour + 1) % 24) / 2);\n+  const pad = (h: number) => `${String((h + 24) % 24).padStart(2, '0')}:00`;\n+  const start = index * 2 - 1;\n+  return {\n+    ok: true,\n+    canChi: hourCanChi(dd, mm, yy, hour),\n+    branch: CHI[index]!,\n+    range: `${pad(start)}-${pad(start + 2)}`,\n+  };\n+}\n+\n /** Full lunar information for a solar date (conversion + can chi + solar term). */\n export function lunarInfo(\n   dd: number,\ndiff --git a/packages/mcp/src/server.ts b/packages/mcp/src/server.ts\nindex 04c9486..e353196 100644\n--- a/packages/mcp/src/server.ts\n+++ b/packages/mcp/src/server.ts\n@@ -28,6 +28,7 @@ import {\n   formatDate,\n   parseAmount,\n   lunarInfo,\n+  hourInfo,\n   lunarMonthCalendar,\n   lunarToSolar,\n   parseVietnameseDate,\n@@ -549,14 +550,18 @@ export function createServer(): McpServer {\n       title: 'Solar to lunar date',\n       annotations: OFFLINE_READ_ONLY,\n       description:\n-        'Convert a Gregorian date (dd/mm/yyyy or yyyy-mm-dd) to the Vietnamese lunar date with can chi (e.g. Ất Tỵ), zodiac, leap-month flag and solar term.',\n-      inputSchema: { date: z.string() },\n+        'Convert a Gregorian date (dd/mm/yyyy or yyyy-mm-dd) to the Vietnamese lunar date with can chi (e.g. Ất Tỵ), zodiac, leap-month flag and solar term. Optional hour (0-23) adds hourCanChi, hourBranch, hourRange (giờ sinh).',\n+      inputSchema: { date: z.string(), hour: z.number().int().min(0).max(23).optional() },\n     },\n-    async ({ date }) => {\n+    async ({ date, hour }) => {\n       const d = parseDateInput(date);\n       if (!d.ok) return json({ ok: false, error: d.error }, true);\n       const r = lunarInfo(d.day, d.month, d.year);\n-      return r.ok ? json(r) : json({ ok: false, error: r.error }, true);\n+      if (!r.ok) return json({ ok: false, error: r.error }, true);\n+      if (hour === undefined) return json(r);\n+      const hi = hourInfo(d.day, d.month, d.year, hour);\n+      if (!hi.ok) return json({ ok: false, error: hi.error }, true);\n+      return json({ ...r, hourCanChi: hi.canChi, hourBranch: hi.branch, hourRange: hi.range });\n     },\n   );\n \ndiff --git a/skills/vn-lunar/SKILL.md b/skills/vn-lunar/SKILL.md\nindex 11f529c..52ca804 100644\n--- a/skills/vn-lunar/SKILL.md\n+++ b/skills/vn-lunar/SKILL.md\n@@ -29,6 +29,8 @@ Inside this repo use `pnpm vn-skills` instead of `npx -y @vn-skills/cli`. Dates\n npx -y @vn-skills/cli lunar from-solar 29/01/2025\n ```\n \n+Add `--hour <0-23>` for the birth hour (\"giờ sinh\", \"can chi giờ\"): the output gains `hourCanChi`, `hourBranch` and `hourRange` (e.g. `Giáp Tý`, `Tý`, `23:00-01:00`). An hour outside 0-23 or a non-integer returns `INVALID_HOUR`. At 23:00 the can of the calendar date you pass is used (the late Tý hour is not moved to the next day). The MCP tool `vn_lunar_from_solar` takes the same optional `hour`.\n+\n ```json\n {\n   \"ok\": true,\ndiff --git a/tests/cli.test.ts b/tests/cli.test.ts\nindex be40188..64e9e71 100644\n--- a/tests/cli.test.ts\n+++ b/tests/cli.test.ts\n@@ -304,6 +304,23 @@ describe('vn-skills CLI', () => {\n     const r = run(['lunar', 'from-solar', '29/01/2025']);\n     expect(r.json().text).toBe('Mùng 1 tháng Giêng năm Ất Tỵ');\n   });\n+  it('lunar from-solar --hour', () => {\n+    const j = run(['lunar', 'from-solar', '10/02/2024', '--hour', '0']).json();\n+    expect(j).toMatchObject({ hourCanChi: 'Giáp Tý', hourBranch: 'Tý', hourRange: '23:00-01:00' });\n+    const b = (h: string) => run(['lunar', 'from-solar', '10/02/2024', '--hour', h]).json();\n+    expect(b('23').hourBranch).toBe('Tý');\n+    expect(b('1').hourBranch).toBe('Sửu');\n+    expect(b('1').hourRange).toBe('01:00-03:00');\n+    expect(b('22').hourBranch).toBe('Hợi');\n+    expect(b('22').hourRange).toBe('21:00-23:00');\n+    expect(run(['lunar', 'from-solar', '10/02/2024']).json().hourCanChi).toBeUndefined();\n+    for (const h of ['24', '-1', '1.5']) {\n+      const r = run(['lunar', 'from-solar', '10/02/2024', '--hour', h]);\n+      expect(r.code).toBe(1);\n+      expect(r.json()).toMatchObject({ ok: false, error: { code: 'INVALID_HOUR' } });\n+      expect((r.json() as { error: { hint?: string } }).error.hint).toBeTruthy();\n+    }\n+  });\n   it('lunar month', () => {\n     const j = run(['lunar', 'month', '02/2027']).json() as { days: Array<{ date: string }> };\n     expect(j.days).toHaveLength(28);\ndiff --git a/tests/lunar.test.ts b/tests/lunar.test.ts\nindex f610e4a..48da5bd 100644\n--- a/tests/lunar.test.ts\n+++ b/tests/lunar.test.ts\n@@ -5,6 +5,8 @@ import {\n   solarToLunar,\n   lunarToSolar,\n   lunarInfo,\n+  hourInfo,\n+  hourCanChi,\n   tetDate,\n   holidays,\n   yearCanChi,\n@@ -314,3 +316,39 @@ describe('lunarMonthCalendar', () => {\n     if (!r.ok && !info.ok) expect(r.error.code).toBe(info.error.code);\n   });\n });\n+\n+describe('hourInfo', () => {\n+  const branches = [\n+    'Tý',\n+    'Sửu',\n+    'Dần',\n+    'Mão',\n+    'Thìn',\n+    'Tỵ',\n+    'Ngọ',\n+    'Mùi',\n+    'Thân',\n+    'Dậu',\n+    'Tuất',\n+    'Hợi',\n+  ];\n+  it('covers all 12 branches and ranges', () => {\n+    branches.forEach((b, i) => {\n+      const h = i * 2;\n+      const r = hourInfo(10, 2, 2024, h);\n+      expect(r).toMatchObject({ ok: true, branch: b });\n+      const pad = (n: number) => `${String((n + 24) % 24).padStart(2, '0')}:00`;\n+      expect(r.ok && r.range).toBe(`${pad(h - 1)}-${pad(h + 1)}`);\n+    });\n+  });\n+  it('23:00 uses the date passed in', () => {\n+    const a = hourInfo(10, 2, 2024, 23);\n+    const b = hourInfo(10, 2, 2024, 0);\n+    expect(a.ok && a.canChi).toBe(b.ok && b.canChi);\n+    expect(a.ok && a.canChi).toBe(hourCanChi(10, 2, 2024, 23));\n+  });\n+  it('rejects bad hours', () => {\n+    for (const h of [24, -1, 1.5, NaN])\n+      expect(hourInfo(10, 2, 2024, h)).toMatchObject({ ok: false });\n+  });\n+});\ndiff --git a/tests/mcp.test.ts b/tests/mcp.test.ts\nindex 2a91a7d..1c53ca4 100644\n--- a/tests/mcp.test.ts\n+++ b/tests/mcp.test.ts\n@@ -196,6 +196,15 @@ describe('vn-skills MCP server', () => {\n     );\n     expect(j.yearCanChi).toBe('Ất Tỵ');\n   });\n+  it('vn_lunar_from_solar with hour', async () => {\n+    const j = text(\n+      await client.callTool({\n+        name: 'vn_lunar_from_solar',\n+        arguments: { date: '2024-02-10', hour: 23 },\n+      }),\n+    );\n+    expect(j).toMatchObject({ hourCanChi: 'Giáp Tý', hourBranch: 'Tý', hourRange: '23:00-01:00' });\n+  });\n   it('vn_lunar_month', async () => {\n     const j = text(\n       await client.callTool({ name: 'vn_lunar_month', arguments: { month: 2, year: 2027 } }),\n",
     "repro_patch": null,
@@ -3850,12 +3850,12 @@
     "last_seen_at": "2026-10-27T07:21:02.312Z",
     "opened_at": "2026-10-27T07:21:02.312Z",
     "head_sha": "d24d6c9cbce72f57e9120d7f230255769de6cdea",
-    "mergeable": "MERGEABLE",
+    "mergeable": "UNKNOWN",
     "ci_state": "failure",
     "review_decision": "REVIEW_REQUIRED",
-    "snapshot_at": "2026-10-30T09:03:28.602Z",
+    "snapshot_at": "2026-10-30T09:26:26.539Z",
     "ci_seen_sha": "d4fa2a49c2748d1b63abec8f02d15dac369649b1",
-    "merge_state": "BEHIND"
+    "merge_state": "UNKNOWN"
    },
    {
     "issue_id": 68,
@@ -4131,16 +4131,16 @@
     "issue_id": 99,
     "url": "https://github.com/beiryu/vn-skills/pull/293",
     "number": 293,
-    "state": "open",
+    "state": "merged",
     "last_seen_at": "2026-10-29T08:46:13.208Z",
     "opened_at": "2026-10-29T08:46:13.208Z",
-    "head_sha": "af39f9d5a7cc21a9a2c2e40634274fd9663499ed",
-    "mergeable": "MERGEABLE",
-    "ci_state": "success",
+    "head_sha": "a4ded3dc9ffa201bed052c49237ded074b4e8b40",
+    "mergeable": "UNKNOWN",
+    "ci_state": "pending",
     "review_decision": "REVIEW_REQUIRED",
-    "snapshot_at": "2026-10-30T09:03:30.929Z",
+    "snapshot_at": "2026-10-30T09:26:28.948Z",
     "ci_seen_sha": null,
-    "merge_state": "BEHIND"
+    "merge_state": "UNKNOWN"
    },
    {
     "issue_id": 101,
@@ -4165,12 +4165,12 @@
     "last_seen_at": "2026-10-30T09:02:53.270Z",
     "opened_at": "2026-10-30T09:02:53.270Z",
     "head_sha": "0203d3a1c4d949990803aa7e4a13977d65c41788",
-    "mergeable": "MERGEABLE",
-    "ci_state": "pending",
+    "mergeable": "UNKNOWN",
+    "ci_state": "success",
     "review_decision": "REVIEW_REQUIRED",
-    "snapshot_at": "2026-10-30T09:03:32.696Z",
+    "snapshot_at": "2026-10-30T09:26:30.182Z",
     "ci_seen_sha": null,
-    "merge_state": "BLOCKED"
+    "merge_state": "UNKNOWN"
    }
   ],
   "pending_actions": [
