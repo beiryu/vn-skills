@@ -187,6 +187,8 @@ npx -y @vn-skills/mcp --http --port 3000   # http://127.0.0.1:3000/mcp
 
 Mặc định chỉ lắng nghe trên `127.0.0.1`; dùng `--host 0.0.0.0` để mở ra ngoài (ví dụ `docker run -p 3000:3000 vn-skills-mcp --http --host 0.0.0.0`). Request có header `Origin` không phải localhost sẽ bị từ chối (403) trừ khi thêm `--allow-origin <origin>` (có thể lặp lại). Không có `--http` thì server dùng stdio.
 
+**REST / GPT Actions:** thêm `--rest` (bị bỏ qua nếu không có `--http`) để phục vụ thêm `GET /openapi.json` (tài liệu OpenAPI 3.1.0 sinh từ danh sách tool) và `POST /tools/{name}` (nhận JSON, trả JSON kết quả của tool; trả `400` kèm `{ "ok": false, ... }` khi tool báo lỗi, JSON sai hoặc đầu vào sai, `404` nếu không có tool; lỗi có dạng `{ "ok": false, "error": { "code", "message" } }`). Nội dung ảnh không được trả về. Dùng `--public-url https://your.host` để `servers[0].url` trỏ tới URL HTTPS công khai. Để dùng làm GPT Action: trong trình soạn GPT chọn Actions → Import from URL và nhập `https://your.host/openapi.json`.
+
 [![Deploy to Cloudflare Workers](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/beiryu/vn-skills/tree/main/examples/cloudflare-worker)
 
 Hoặc triển khai lên một URL HTTPS công khai; thêm `https://<name>.workers.dev/mcp` nhận được vào bất kỳ client nào hỗ trợ Streamable HTTP.
