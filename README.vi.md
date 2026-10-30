@@ -205,6 +205,22 @@ import {
 
 Mọi hàm trả về `{ ok: true, ... }` hoặc `{ ok: false, error: { code, message, hint } }`, không ném exception với input sai.
 
+### Validator Standard Schema
+
+`@vn-skills/core/schema` xuất `vnPhone()`, `vnTaxId()` và `vnCitizenId()` theo chuẩn [Standard Schema](https://standardschema.dev/) v1, nên các thư viện hỗ trợ Standard Schema (như resolver của react-hook-form) dùng được mà không cần adapter.
+
+```ts
+import { vnPhone, vnTaxId, vnCitizenId } from '@vn-skills/core/schema';
+
+vnPhone()['~standard'].validate('0912345678'); // { value: { e164: '+84912345678', ... } }
+vnTaxId()['~standard'].validate('0100233480'); // { issues: [{ message, code: 'INVALID_CHECKSUM' }] }
+
+// ví dụ với react-hook-form
+import { standardSchemaResolver } from '@hookform/resolvers/standard-schema';
+
+const resolver = standardSchemaResolver(vnCitizenId());
+```
+
 ## Google Sheets
 
 `packages/sheets` (private, không đăng lên npm) build các hàm tuỳ chỉnh Apps Script từ `@vn-skills/core`:
