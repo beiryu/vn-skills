@@ -5,6 +5,8 @@ import {
   solarToLunar,
   lunarToSolar,
   lunarInfo,
+  hourInfo,
+  hourCanChi,
   tetDate,
   holidays,
   yearCanChi,
@@ -312,5 +314,41 @@ describe('lunarMonthCalendar', () => {
     expect(r.ok).toBe(false);
     expect(info.ok).toBe(false);
     if (!r.ok && !info.ok) expect(r.error.code).toBe(info.error.code);
+  });
+});
+
+describe('hourInfo', () => {
+  const branches = [
+    'Tý',
+    'Sửu',
+    'Dần',
+    'Mão',
+    'Thìn',
+    'Tỵ',
+    'Ngọ',
+    'Mùi',
+    'Thân',
+    'Dậu',
+    'Tuất',
+    'Hợi',
+  ];
+  it('covers all 12 branches and ranges', () => {
+    branches.forEach((b, i) => {
+      const h = i * 2;
+      const r = hourInfo(10, 2, 2024, h);
+      expect(r).toMatchObject({ ok: true, branch: b });
+      const pad = (n: number) => `${String((n + 24) % 24).padStart(2, '0')}:00`;
+      expect(r.ok && r.range).toBe(`${pad(h - 1)}-${pad(h + 1)}`);
+    });
+  });
+  it('23:00 uses the date passed in', () => {
+    const a = hourInfo(10, 2, 2024, 23);
+    const b = hourInfo(10, 2, 2024, 0);
+    expect(a.ok && a.canChi).toBe(b.ok && b.canChi);
+    expect(a.ok && a.canChi).toBe(hourCanChi(10, 2, 2024, 23));
+  });
+  it('rejects bad hours', () => {
+    for (const h of [24, -1, 1.5, NaN])
+      expect(hourInfo(10, 2, 2024, h)).toMatchObject({ ok: false });
   });
 });
