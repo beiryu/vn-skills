@@ -1,5 +1,57 @@
 # Changelog
 
+## [0.8.0](https://github.com/beiryu/vn-skills/compare/v0.7.0...v0.8.0) (2026-10-30)
+
+
+### Features
+
+* **cli:** read structured columns in address convert-file --csv ([#261](https://github.com/beiryu/vn-skills/issues/261)) ([1bbd76f](https://github.com/beiryu/vn-skills/commit/1bbd76fc418ff4858fa77eb7294c313fcab8bacf)), closes [#254](https://github.com/beiryu/vn-skills/issues/254)
+* **core:** export Standard Schema validators from @vn-skills/core/schema ([#296](https://github.com/beiryu/vn-skills/issues/296)) ([e12ed7f](https://github.com/beiryu/vn-skills/commit/e12ed7fc8abb5948dac319a4498976bd89fa13f4)), closes [#295](https://github.com/beiryu/vn-skills/issues/295)
+* **mcp:** add Cloudflare Workers example and @vn-skills/mcp/server export ([#300](https://github.com/beiryu/vn-skills/issues/300)) ([688e79c](https://github.com/beiryu/vn-skills/commit/688e79cba7ecdcf093583bb49dbd1c0074eab697)), closes [#298](https://github.com/beiryu/vn-skills/issues/298)
+* **mcp:** add opt-in Streamable HTTP mode (--http) ([#244](https://github.com/beiryu/vn-skills/issues/244)) ([0af8d1a](https://github.com/beiryu/vn-skills/commit/0af8d1a1cf2e5dceaf065888a67c76b0704180c0)), closes [#243](https://github.com/beiryu/vn-skills/issues/243)
+* **mcp:** add prompts for the main vn-skills tasks ([#252](https://github.com/beiryu/vn-skills/issues/252)) ([f54bc7c](https://github.com/beiryu/vn-skills/commit/f54bc7c2b62d42dc0de71e00f3b6a901f41f71a3)), closes [#250](https://github.com/beiryu/vn-skills/issues/250)
+* **mcp:** add read-only, offline annotations to every tool ([#245](https://github.com/beiryu/vn-skills/issues/245)) ([e604bf1](https://github.com/beiryu/vn-skills/commit/e604bf150405833f4cd26b55feb458194173494b)), closes [#242](https://github.com/beiryu/vn-skills/issues/242)
+* **mcp:** ask user to pick a ward in vn_address_convert ([#266](https://github.com/beiryu/vn-skills/issues/266)) ([f91390a](https://github.com/beiryu/vn-skills/commit/f91390a6a797b34f89fde4959fae960192249104)), closes [#265](https://github.com/beiryu/vn-skills/issues/265)
+* **mcp:** expose provinces, banks, wards and holidays as resources ([#259](https://github.com/beiryu/vn-skills/issues/259)) ([186ea32](https://github.com/beiryu/vn-skills/commit/186ea32875318ed261c4fad55db287a67670e777)), closes [#257](https://github.com/beiryu/vn-skills/issues/257)
+* **mcp:** show inline VietQR card for vietqr_build in MCP Apps ([#269](https://github.com/beiryu/vn-skills/issues/269)) ([12d4bfd](https://github.com/beiryu/vn-skills/commit/12d4bfdcbf05a5a3095f999276979bb8c73ca30f)), closes [#268](https://github.com/beiryu/vn-skills/issues/268)
+* **skill:** add Excel custom-functions add-in package ([#287](https://github.com/beiryu/vn-skills/issues/287)) ([356ff4b](https://github.com/beiryu/vn-skills/commit/356ff4bc9994f800567a96adc391391b3a6de3e1)), closes [#284](https://github.com/beiryu/vn-skills/issues/284)
+* **skill:** add Google Sheets custom-functions bundle ([#274](https://github.com/beiryu/vn-skills/issues/274)) ([7653b24](https://github.com/beiryu/vn-skills/commit/7653b242aed57daba394ee1e284bab7f5bcad1ab)), closes [#272](https://github.com/beiryu/vn-skills/issues/272)
+* **skill:** add SDT, TACH_TEN and CCCD to the Excel add-in ([#292](https://github.com/beiryu/vn-skills/issues/292)) ([c9d550e](https://github.com/beiryu/vn-skills/commit/c9d550efe642cae956c0e8095321548c7cbf66bd)), closes [#290](https://github.com/beiryu/vn-skills/issues/290)
+* **skill:** add VN_SDT, VN_TACH_TEN and VN_CCCD to Sheets ([#286](https://github.com/beiryu/vn-skills/issues/286)) ([efba2d0](https://github.com/beiryu/vn-skills/commit/efba2d07c09c4d1503efd54945d5aeb4af47cafd)), closes [#285](https://github.com/beiryu/vn-skills/issues/285)
+* **vietqr:** add runtime bank registry and --banks option ([#276](https://github.com/beiryu/vn-skills/issues/276)) ([5de41e2](https://github.com/beiryu/vn-skills/commit/5de41e28ec8f16d9c9c9bb48851bde25c0686f54)), closes [#270](https://github.com/beiryu/vn-skills/issues/270)
+* **vietqr:** find banks by SWIFT/BIC code ([#267](https://github.com/beiryu/vn-skills/issues/267)) ([b150170](https://github.com/beiryu/vn-skills/commit/b150170e172b07ec2e09f5d91a31f28389b58805)), closes [#263](https://github.com/beiryu/vn-skills/issues/263)
+* **vn-address:** add convertAddresses and vn_address_convert_batch ([#198](https://github.com/beiryu/vn-skills/issues/198)) ([f0d95b4](https://github.com/beiryu/vn-skills/commit/f0d95b47817eb1525e647691f53339d92c56bb6a)), closes [#197](https://github.com/beiryu/vn-skills/issues/197)
+* **vn-address:** list old wards that became a new ward ([#262](https://github.com/beiryu/vn-skills/issues/262)) ([b31f3ce](https://github.com/beiryu/vn-skills/commit/b31f3ce97f782307fa7c9cad0516b86d029e4f67)), closes [#253](https://github.com/beiryu/vn-skills/issues/253)
+* **vn-einvoice:** split VAT-inclusive price into net and VAT ([#275](https://github.com/beiryu/vn-skills/issues/275)) ([884847b](https://github.com/beiryu/vn-skills/commit/884847b86f46f707c023ae629479bbd7c9686acc)), closes [#271](https://github.com/beiryu/vn-skills/issues/271)
+* **vn-holidays:** add countWorkingDays, CLI count and MCP tool ([#236](https://github.com/beiryu/vn-skills/issues/236)) ([10068d9](https://github.com/beiryu/vn-skills/commit/10068d91164d1667c4f76233f914c52eed31bfab)), closes [#235](https://github.com/beiryu/vn-skills/issues/235)
+* **vn-holidays:** export a year's days off as an iCalendar file ([#248](https://github.com/beiryu/vn-skills/issues/248)) ([3ca904e](https://github.com/beiryu/vn-skills/commit/3ca904e2f28a877351f26c7047118b5635af83e8))
+* **vn-lunar:** add --hour to lunar from-solar and MCP tool ([#293](https://github.com/beiryu/vn-skills/issues/293)) ([819620b](https://github.com/beiryu/vn-skills/commit/819620bfc262a3febf8eb75d4f2dfb1b7fed6dd7)), closes [#288](https://github.com/beiryu/vn-skills/issues/288)
+* **vn-lunar:** add month calendar to core, CLI and MCP ([#246](https://github.com/beiryu/vn-skills/issues/246)) ([2ae4ba9](https://github.com/beiryu/vn-skills/commit/2ae4ba9b9bce4aad5dd3031227848c75071dc2c5)), closes [#240](https://github.com/beiryu/vn-skills/issues/240)
+* **vn-lunar:** parse Vietnamese date phrases incl. lunar dates ([#282](https://github.com/beiryu/vn-skills/issues/282)) ([5ec5201](https://github.com/beiryu/vn-skills/commit/5ec520186f8a5727ab9ebc515f3ae30638a23a2e)), closes [#280](https://github.com/beiryu/vn-skills/issues/280)
+* **vn-money-words:** add toSpokenText for TTS text normalisation ([#301](https://github.com/beiryu/vn-skills/issues/301)) ([a669de3](https://github.com/beiryu/vn-skills/commit/a669de3ac086bfeb93f802229d3e098d6c81a75d)), closes [#297](https://github.com/beiryu/vn-skills/issues/297)
+* **vn-money-words:** parse Vietnamese number words to digits ([#260](https://github.com/beiryu/vn-skills/issues/260)) ([69836ea](https://github.com/beiryu/vn-skills/commit/69836ea8cb9b9b5dfda30e27606a7babccb1dd02)), closes [#255](https://github.com/beiryu/vn-skills/issues/255)
+* **vn-money-words:** read plain numbers with --plain in CLI and MCP ([#247](https://github.com/beiryu/vn-skills/issues/247)) ([677f84e](https://github.com/beiryu/vn-skills/commit/677f84e23870c00e2b60da508cf3f6f1258b1b5d)), closes [#238](https://github.com/beiryu/vn-skills/issues/238)
+
+
+### Bug Fixes
+
+* **cli:** give vietqr decode clear errors for empty and missing files ([#220](https://github.com/beiryu/vn-skills/issues/220)) ([40d4084](https://github.com/beiryu/vn-skills/commit/40d40847aba749bce85937494ed4388e2cc9f2a8)), closes [#215](https://github.com/beiryu/vn-skills/issues/215)
+* **cli:** keep warnings off stderr in JSON mode for id and taxid ([#234](https://github.com/beiryu/vn-skills/issues/234)) ([9a3cfd4](https://github.com/beiryu/vn-skills/commit/9a3cfd4b5ffa504903755376ba84f6cae79dc454)), closes [#233](https://github.com/beiryu/vn-skills/issues/233)
+* **mcp:** return per-row errors in vn_address_convert_batch ([#207](https://github.com/beiryu/vn-skills/issues/207)) ([41acede](https://github.com/beiryu/vn-skills/commit/41acede425bc4b0f748f03865acf1d20b9e4121e)), closes [#201](https://github.com/beiryu/vn-skills/issues/201)
+* **vietqr:** name the exact amount in INVALID_AMOUNT for shorthand ([#229](https://github.com/beiryu/vn-skills/issues/229)) ([66ccda6](https://github.com/beiryu/vn-skills/commit/66ccda688d93a8171e1d0043041bb47e39063ebc)), closes [#227](https://github.com/beiryu/vn-skills/issues/227)
+* **vietqr:** warn when a ',' grouped amount is read as thousands ([#219](https://github.com/beiryu/vn-skills/issues/219)) ([1f228c7](https://github.com/beiryu/vn-skills/commit/1f228c71af285b056f69da62b5ca6031f58eaaa6)), closes [#216](https://github.com/beiryu/vn-skills/issues/216)
+* **vietqr:** warn when buildVietQR removes spaces from the account ([#212](https://github.com/beiryu/vn-skills/issues/212)) ([50d707c](https://github.com/beiryu/vn-skills/commit/50d707c01dcf5f2e5af963f7537841a6cdc43a48)), closes [#209](https://github.com/beiryu/vn-skills/issues/209)
+* **vn-einvoice:** return INVALID_INVOICE from computeTotals on bad input ([#231](https://github.com/beiryu/vn-skills/issues/231)) ([cf72bf5](https://github.com/beiryu/vn-skills/commit/cf72bf58b31b3c77963a81cc4f8e153b5ecc1354)), closes [#225](https://github.com/beiryu/vn-skills/issues/225)
+* **vn-id:** return EMPTY error for empty or blank input ([#221](https://github.com/beiryu/vn-skills/issues/221)) ([a79c8fd](https://github.com/beiryu/vn-skills/commit/a79c8fd84b01c930b5a1fe0b4f188143a093e900)), closes [#214](https://github.com/beiryu/vn-skills/issues/214)
+* **vn-lunar:** word lunar day-out-of-range error and hint ([#230](https://github.com/beiryu/vn-skills/issues/230)) ([463dd0a](https://github.com/beiryu/vn-skills/commit/463dd0ada3ce3d2180fea0b20c478032f101ce48)), closes [#226](https://github.com/beiryu/vn-skills/issues/226)
+* **vn-number-format:** add hint to INVALID_NUMBER error ([#213](https://github.com/beiryu/vn-skills/issues/213)) ([4ee3b2e](https://github.com/beiryu/vn-skills/commit/4ee3b2e0c6da81639a81de22920b7c657015b035)), closes [#208](https://github.com/beiryu/vn-skills/issues/208)
+* **vn-number-format:** return EMPTY from parseAmount for blank input ([#224](https://github.com/beiryu/vn-skills/issues/224)) ([cccbbbd](https://github.com/beiryu/vn-skills/commit/cccbbbd66e5555f5a9c2ed68fdd251b6581d0e52)), closes [#222](https://github.com/beiryu/vn-skills/issues/222)
+
+
+### Documentation
+
+* **repo:** add llms-install.md for Cline MCP setup ([#195](https://github.com/beiryu/vn-skills/issues/195)) ([b6a5655](https://github.com/beiryu/vn-skills/commit/b6a56557f09b0905cc21afa95b625b0770060638)), closes [#193](https://github.com/beiryu/vn-skills/issues/193)
+
 ## [0.7.0](https://github.com/beiryu/vn-skills/compare/v0.6.0...v0.7.0) (2026-10-25)
 
 
