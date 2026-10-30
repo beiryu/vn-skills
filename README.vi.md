@@ -187,6 +187,10 @@ npx -y @vn-skills/mcp --http --port 3000   # http://127.0.0.1:3000/mcp
 
 Mặc định chỉ lắng nghe trên `127.0.0.1`; dùng `--host 0.0.0.0` để mở ra ngoài (ví dụ `docker run -p 3000:3000 vn-skills-mcp --http --host 0.0.0.0`). Request có header `Origin` không phải localhost sẽ bị từ chối (403) trừ khi thêm `--allow-origin <origin>` (có thể lặp lại). Không có `--http` thì server dùng stdio.
 
+[![Deploy to Cloudflare Workers](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/beiryu/vn-skills/tree/main/examples/cloudflare-worker)
+
+Hoặc triển khai lên một URL HTTPS công khai; thêm `https://<name>.workers.dev/mcp` nhận được vào bất kỳ client nào hỗ trợ Streamable HTTP.
+
 ## Thư viện
 
 ```ts
@@ -200,6 +204,22 @@ import {
 ```
 
 Mọi hàm trả về `{ ok: true, ... }` hoặc `{ ok: false, error: { code, message, hint } }`, không ném exception với input sai.
+
+### Validator Standard Schema
+
+`@vn-skills/core/schema` xuất `vnPhone()`, `vnTaxId()` và `vnCitizenId()` theo chuẩn [Standard Schema](https://standardschema.dev/) v1, nên các thư viện hỗ trợ Standard Schema (như resolver của react-hook-form) dùng được mà không cần adapter.
+
+```ts
+import { vnPhone, vnTaxId, vnCitizenId } from '@vn-skills/core/schema';
+
+vnPhone()['~standard'].validate('0912345678'); // { value: { e164: '+84912345678', ... } }
+vnTaxId()['~standard'].validate('0100233480'); // { issues: [{ message, code: 'INVALID_CHECKSUM' }] }
+
+// ví dụ với react-hook-form
+import { standardSchemaResolver } from '@hookform/resolvers/standard-schema';
+
+const resolver = standardSchemaResolver(vnCitizenId());
+```
 
 ## Google Sheets
 

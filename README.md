@@ -189,6 +189,10 @@ npx -y @vn-skills/mcp --http --port 3000   # http://127.0.0.1:3000/mcp
 
 It binds to `127.0.0.1` by default; use `--host 0.0.0.0` to expose it (e.g. `docker run -p 3000:3000 vn-skills-mcp --http --host 0.0.0.0`). Requests with a non-localhost `Origin` header get 403 unless you pass `--allow-origin <origin>` (repeatable). Without `--http` the server uses stdio.
 
+[![Deploy to Cloudflare Workers](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/beiryu/vn-skills/tree/main/examples/cloudflare-worker)
+
+Or deploy it to a public HTTPS URL; add the resulting `https://<name>.workers.dev/mcp` to any client that supports Streamable HTTP.
+
 ## Library
 
 ```ts
@@ -209,6 +213,22 @@ lunarInfo(29, 1, 2025).text; // "Mùng 1 tháng Giêng năm Ất Tỵ"
 ```
 
 Every function returns `{ ok: true, ... }` or `{ ok: false, error: { code, message, hint } }` — no exceptions for bad input.
+
+### Standard Schema validators
+
+`@vn-skills/core/schema` exports `vnPhone()`, `vnTaxId()` and `vnCitizenId()` as [Standard Schema](https://standardschema.dev/) v1 validators, so Standard Schema consumers such as react-hook-form's resolver accept them without an adapter.
+
+```ts
+import { vnPhone, vnTaxId, vnCitizenId } from '@vn-skills/core/schema';
+
+vnPhone()['~standard'].validate('0912345678'); // { value: { e164: '+84912345678', ... } }
+vnTaxId()['~standard'].validate('0100233480'); // { issues: [{ message, code: 'INVALID_CHECKSUM' }] }
+
+// e.g. react-hook-form
+import { standardSchemaResolver } from '@hookform/resolvers/standard-schema';
+
+const resolver = standardSchemaResolver(vnCitizenId());
+```
 
 ## Google Sheets
 
