@@ -203,6 +203,7 @@ import {
   moneyToWords,
   lunarInfo,
   computeTotals,
+  maskVndInput,
 } from '@vn-skills/core';
 
 buildVietQR({ bank: 'VCB', account: '0011001234567', amount: 500000, note: 'don 123' }).payload;
@@ -210,6 +211,7 @@ convertAddress('12 Nguyễn Huệ, P. Bến Nghé, Q.1, TP.HCM').new.formatted; 
 validateTaxId('0100233488-001').kind; // "branch"
 moneyToWords(1_200_000).words; // "một triệu hai trăm nghìn đồng"
 lunarInfo(29, 1, 2025).text; // "Mùng 1 tháng Giêng năm Ất Tỵ"
+maskVndInput('1234', 4); // { text: "1.234", caret: 5, value: 1234, digits: "1234" } — format VND while typing
 ```
 
 Every function returns `{ ok: true, ... }` or `{ ok: false, error: { code, message, hint } }` — no exceptions for bad input.

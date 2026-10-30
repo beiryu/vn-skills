@@ -169,3 +169,43 @@ export function parseAmount(input: string): AmountResult {
   if (m[3] && /[.,]/.test(m[1]!)) return bad();
   return { ok: true, value: Number((value * mult).toFixed(2)) };
 }
+
+export type MaskResult = Result<{
+  text: string;
+  caret: number;
+  value: number | null;
+  digits: string;
+}>;
+
+/**
+ * Format a VND amount while the user types. Keeps only ASCII digits, strips leading zeros,
+ * groups in threes with "." and maps the caret to the same digit count in the output.
+ */
+export function maskVndInput(raw: string, caret?: number): MaskResult {
+  const input = String(raw ?? '');
+  const pos = Math.min(Math.max(caret ?? input.length, 0), input.length);
+  let digits = '';
+  let left = 0;
+  for (let i = 0; i < input.length; i++) {
+    const c = input[i]!;
+    if (c < '0' || c > '9') continue;
+    digits += c;
+    if (i < pos) left++;
+  }
+  const trimmed = digits.replace(/^0+(?=\d)/, '');
+  left = Math.max(0, left - (digits.length - trimmed.length));
+  if (trimmed === '') return { ok: true, text: '', caret: 0, value: null, digits: '' };
+  if (trimmed.length > 15) {
+    return fail(
+      'OUT_OF_RANGE',
+      `Amount has ${trimmed.length} digits; at most 15 are supported`,
+      'Use an amount below 1.000.000.000.000.000',
+    );
+  }
+  const text = trimmed.replace(/\B(?=(\d{3})+$)/g, '.');
+  let outCaret = 0;
+  for (let seen = 0; outCaret < text.length && seen < left; outCaret++) {
+    if (text[outCaret] !== '.') seen++;
+  }
+  return { ok: true, text, caret: outCaret, value: Number(trimmed), digits: trimmed };
+}
