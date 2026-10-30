@@ -327,3 +327,4 @@ export function wordsToNumber(text: string): Result<ParsedWords> {
     chan,
   };
 }
+export * from './spoken.js';
