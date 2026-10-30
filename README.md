@@ -189,6 +189,8 @@ npx -y @vn-skills/mcp --http --port 3000   # http://127.0.0.1:3000/mcp
 
 It binds to `127.0.0.1` by default; use `--host 0.0.0.0` to expose it (e.g. `docker run -p 3000:3000 vn-skills-mcp --http --host 0.0.0.0`). Requests with a non-localhost `Origin` header get 403 unless you pass `--allow-origin <origin>` (repeatable). Without `--http` the server uses stdio.
 
+**REST / GPT Actions:** add `--rest` (ignored without `--http`) to also serve `GET /openapi.json` (an OpenAPI 3.1.0 document built from the tool list) and `POST /tools/{name}` (JSON body in, the tool's JSON result out; `400` with `{ "ok": false, ... }` on tool errors, invalid JSON or invalid input, `404` for an unknown tool, errors use `{ "ok": false, "error": { "code", "message" } }`). Image content is not returned. Use `--public-url https://your.host` so `servers[0].url` points at your public HTTPS URL. To use it as a GPT Action, in the GPT editor choose Actions → Import from URL and enter `https://your.host/openapi.json`.
+
 [![Deploy to Cloudflare Workers](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/beiryu/vn-skills/tree/main/examples/cloudflare-worker)
 
 Or deploy it to a public HTTPS URL; add the resulting `https://<name>.workers.dev/mcp` to any client that supports Streamable HTTP.
