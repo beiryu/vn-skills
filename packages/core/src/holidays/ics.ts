@@ -20,13 +20,19 @@ export interface HolidaysICSOptions {
 const esc = (s: string): string =>
   s.replace(/\\/g, '\\\\').replace(/;/g, '\\;').replace(/,/g, '\\,').replace(/\r?\n/g, '\\n');
 
+/** UTF-8 octet length of one code point; core also runs where `Buffer` doesn't exist (Sheets, Workers). */
+const utf8Len = (ch: string): number => {
+  const cp = ch.codePointAt(0)!;
+  return cp < 0x80 ? 1 : cp < 0x800 ? 2 : cp < 0x10000 ? 3 : 4;
+};
+
 /** RFC 5545 §3.1: fold at 75 octets without splitting a UTF-8 sequence. */
 function fold(line: string): string[] {
   const out: string[] = [];
   let cur = '';
   let bytes = 0;
   for (const ch of line) {
-    const n = Buffer.byteLength(ch, 'utf8');
+    const n = utf8Len(ch);
     if (bytes + n > 75) {
       out.push(cur);
       cur = ' ';
