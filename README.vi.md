@@ -200,7 +200,10 @@ import {
   validateTaxId,
   moneyToWords,
   lunarInfo,
+  maskVndInput,
 } from '@vn-skills/core';
+
+maskVndInput('1234', 4); // { text: "1.234", caret: 5, value: 1234, digits: "1234" } — định dạng số tiền khi gõ
 ```
 
 Mọi hàm trả về `{ ok: true, ... }` hoặc `{ ok: false, error: { code, message, hint } }`, không ném exception với input sai.
