@@ -5,7 +5,7 @@ import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { PNG } from 'pngjs';
 import jsqrModule from 'jsqr';
-import { convertAddress, parseVietQR, VERSION } from '@vn-skills/core';
+import { convertAddress, numberToWords, parseVietQR, VERSION } from '@vn-skills/core';
 
 const CLI = resolve(__dirname, '..', 'packages', 'cli', 'dist', 'index.js');
 
@@ -271,6 +271,15 @@ describe('vn-skills CLI', () => {
     expect((r.json().error as { code: string }).code).toBe('INVALID_CHECKSUM');
   });
 
+  it('money speak rewrites text', () => {
+    const r = run(['money', 'speak', 'giảm 15%']);
+    expect(r.json().text).toBe(`giảm ${words15()} phần trăm`);
+  });
+  it('money speak --pretty prints plain text and reads stdin', () => {
+    expect(run(['money', 'speak', '-', '--pretty'], '15%').out.trim()).toBe(
+      `${words15()} phần trăm`,
+    );
+  });
   it('money words', () => {
     const r = run(['money', 'words', '1200000']);
     expect(r.json().words).toBe('một triệu hai trăm nghìn đồng');
@@ -327,6 +336,23 @@ describe('vn-skills CLI', () => {
   it('lunar from-solar', () => {
     const r = run(['lunar', 'from-solar', '29/01/2025']);
     expect(r.json().text).toBe('Mùng 1 tháng Giêng năm Ất Tỵ');
+  });
+  it('lunar from-solar --hour', () => {
+    const j = run(['lunar', 'from-solar', '10/02/2024', '--hour', '0']).json();
+    expect(j).toMatchObject({ hourCanChi: 'Giáp Tý', hourBranch: 'Tý', hourRange: '23:00-01:00' });
+    const b = (h: string) => run(['lunar', 'from-solar', '10/02/2024', '--hour', h]).json();
+    expect(b('23').hourBranch).toBe('Tý');
+    expect(b('1').hourBranch).toBe('Sửu');
+    expect(b('1').hourRange).toBe('01:00-03:00');
+    expect(b('22').hourBranch).toBe('Hợi');
+    expect(b('22').hourRange).toBe('21:00-23:00');
+    expect(run(['lunar', 'from-solar', '10/02/2024']).json().hourCanChi).toBeUndefined();
+    for (const h of ['24', '-1', '1.5']) {
+      const r = run(['lunar', 'from-solar', '10/02/2024', '--hour', h]);
+      expect(r.code).toBe(1);
+      expect(r.json()).toMatchObject({ ok: false, error: { code: 'INVALID_HOUR' } });
+      expect((r.json() as { error: { hint?: string } }).error.hint).toBeTruthy();
+    }
   });
   it('lunar month', () => {
     const j = run(['lunar', 'month', '02/2027']).json() as { days: Array<{ date: string }> };
@@ -881,3 +907,9 @@ describe('vn-skills install', () => {
     expect(existsSync(join(cwd, '.claude'))).toBe(false);
   });
 });
+
+function words15() {
+  const r = numberToWords(15);
+  if (!r.ok) throw new Error(r.error.message);
+  return r.words;
+}

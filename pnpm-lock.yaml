@@ -239,6 +239,15 @@ importers:
         specifier: ^5.0.4
         version: 5.0.4(@types/node@22.20.5)(vite@7.3.7(@types/node@22.20.5)(jiti@2.6.1)(tsx@4.23.15))
 
+  examples/cloudflare-worker:
+    dependencies:
+      '@modelcontextprotocol/sdk':
+        specifier: ^1.32.1
+        version: 1.32.1(supports-color@7.2.0)(zod@4.6.7)
+      '@vn-skills/mcp':
+        specifier: workspace:*
+        version: link:../../packages/mcp
+
   packages/cli:
     dependencies:
       '@vn-skills/core':

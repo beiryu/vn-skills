@@ -1,5 +1,6 @@
 import { Command } from 'commander';
-import { moneyToWords, numberToWords, wordsToNumber } from '@vn-skills/core';
+import { readFileSync } from 'node:fs';
+import { moneyToWords, numberToWords, toSpokenText, wordsToNumber } from '@vn-skills/core';
 import { failExit, printJson, wantsJson } from '../output.js';
 
 export function registerMoney(program: Command): void {
@@ -36,6 +37,18 @@ export function registerMoney(program: Command): void {
       if (!r.ok) failExit(c, r.error);
       if (wantsJson(c)) printJson({ ok: true, amount: r.amount, words: r.words });
       else process.stdout.write(r.words + '\n');
+    });
+  cmd
+    .command('speak <text>')
+    .description(
+      'Rewrite numbers, money, %, phones and dates in text as spoken Vietnamese (use - for stdin)',
+    )
+    .action((text: string, _opts, c: Command) => {
+      const r = toSpokenText(text === '-' ? readFileSync(0, 'utf8') : text);
+      if (!r.ok) failExit(c, r.error);
+      if (wantsJson(c))
+        printJson({ ok: true, text: r.text, changes: r.changes, skipped: r.skipped });
+      else process.stdout.write(r.text + '\n');
     });
   cmd
     .command('parse <words>')

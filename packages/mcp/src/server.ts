@@ -20,6 +20,7 @@ import {
   validateTaxId,
   parseCitizenId,
   moneyToWords,
+  toSpokenText,
   numberToWords,
   wordsToNumber,
   formatNumber,
@@ -28,6 +29,7 @@ import {
   formatDate,
   parseAmount,
   lunarInfo,
+  hourInfo,
   lunarMonthCalendar,
   lunarToSolar,
   parseVietnameseDate,
@@ -496,6 +498,23 @@ export function createServer(): McpServer {
   );
 
   server.registerTool(
+    'vn_text_speech_normalize',
+    {
+      title: 'Rewrite text as spoken Vietnamese for TTS',
+      annotations: OFFLINE_READ_ONLY,
+      description:
+        'Rewrite numbers, VND amounts (1.250.000đ, 500k), percentages, phone numbers and dd/mm/yyyy dates in text as spoken Vietnamese for text-to-speech. Decimals and partial dates are left unchanged and listed in skipped. Returns text, changes, skipped.',
+      inputSchema: { text: z.string() },
+    },
+    async ({ text }) => {
+      const r = toSpokenText(text);
+      return r.ok
+        ? json({ ok: true, text: r.text, changes: r.changes, skipped: r.skipped })
+        : json({ ok: false, error: r.error }, true);
+    },
+  );
+
+  server.registerTool(
     'vn_money_parse',
     {
       title: 'Vietnamese number words to digits',
@@ -550,14 +569,18 @@ export function createServer(): McpServer {
       title: 'Solar to lunar date',
       annotations: OFFLINE_READ_ONLY,
       description:
-        'Convert a Gregorian date (dd/mm/yyyy or yyyy-mm-dd) to the Vietnamese lunar date with can chi (e.g. Ất Tỵ), zodiac, leap-month flag and solar term.',
-      inputSchema: { date: z.string() },
+        'Convert a Gregorian date (dd/mm/yyyy or yyyy-mm-dd) to the Vietnamese lunar date with can chi (e.g. Ất Tỵ), zodiac, leap-month flag and solar term. Optional hour (0-23) adds hourCanChi, hourBranch, hourRange (giờ sinh).',
+      inputSchema: { date: z.string(), hour: z.number().int().min(0).max(23).optional() },
     },
-    async ({ date }) => {
+    async ({ date, hour }) => {
       const d = parseDateInput(date);
       if (!d.ok) return json({ ok: false, error: d.error }, true);
       const r = lunarInfo(d.day, d.month, d.year);
-      return r.ok ? json(r) : json({ ok: false, error: r.error }, true);
+      if (!r.ok) return json({ ok: false, error: r.error }, true);
+      if (hour === undefined) return json(r);
+      const hi = hourInfo(d.day, d.month, d.year, hour);
+      if (!hi.ok) return json({ ok: false, error: hi.error }, true);
+      return json({ ...r, hourCanChi: hi.canChi, hourBranch: hi.branch, hourRange: hi.range });
     },
   );
 

@@ -29,7 +29,7 @@ pre-2025 provinces and districts, misread amounts in words, or confuse the Chine
 | [`vn-id`](skills/vn-id/SKILL.md)                       | Validate/decode 12-digit CCCD (province, sex, birth year) and check 9-digit CMND format offline                        | `vn-skills id parse 048090123456`                                                                         |
 | [`vn-phone`](skills/vn-phone/SKILL.md)                 | Normalise phone numbers (+84, old 11-digit prefixes), carrier by prefix, landline area codes                           | `vn-skills phone 0912345678`                                                                              |
 | [`vn-holidays`](skills/vn-holidays/SKILL.md)           | Official days off per year (announced notices, nghỉ bù, swaps), working-day check and add N working days               | `vn-skills holidays add 2026-02-12 3`                                                                     |
-| [`vn-money-words`](skills/vn-money-words/SKILL.md)     | Amount → Vietnamese words (nghìn/ngàn, lẻ/linh, mốt/lăm/tư, tỷ tỷ)                                                     | `vn-skills money words 1200000` → `một triệu hai trăm nghìn đồng`                                         |
+| [`vn-money-words`](skills/vn-money-words/SKILL.md)     | Amount → Vietnamese words (nghìn/ngàn, lẻ/linh, mốt/lăm/tư, tỷ tỷ; text → spoken TTS)                                  | `vn-skills money words 1200000` → `một triệu hai trăm nghìn đồng`                                         |
 | [`vn-lunar`](skills/vn-lunar/SKILL.md)                 | Solar ↔ lunar, leap months, can chi, Tết, holidays (Meeus astronomical algorithms, UTC+7)                              | `vn-skills lunar tet 2027` → `2027-02-06 Đinh Mùi`                                                        |
 | [`vn-einvoice`](skills/vn-einvoice/SKILL.md)           | E-invoice schema validation, VAT/totals, amount in words, mock provider; MISA/Viettel/VNPT adapter skeletons           | `vn-skills einvoice example > invoice.json && vn-skills einvoice totals invoice.json`                     |
 | [`vn-name`](skills/vn-name/SKILL.md)                   | Split họ / tên đệm / tên, compound surnames, Vietnamese collation sort, unaccented slugs and initials                  | `vn-skills name split "Tôn Thất Tùng"`                                                                    |
@@ -89,7 +89,7 @@ Setup for other clients is in [MCP client setup](#mcp-client-setup). Or in any M
 { "mcpServers": { "vn-skills": { "command": "npx", "args": ["-y", "@vn-skills/mcp"] } } }
 ```
 
-The server exposes 36 tools, grouped by skill. All tools are declared read-only and offline (`readOnlyHint: true`, `openWorldHint: false`).
+The server exposes 37 tools, grouped by skill. All tools are declared read-only and offline (`readOnlyHint: true`, `openWorldHint: false`).
 
 | Skill              | Tools                                                                                                                                                                |
 | ------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -99,7 +99,7 @@ The server exposes 36 tools, grouped by skill. All tools are declared read-only 
 | `vn-id`            | `vn_id_parse`                                                                                                                                                        |
 | `vn-phone`         | `vn_phone`                                                                                                                                                           |
 | `vn-holidays`      | `vn_holidays_year`, `vn_holidays_ics`, `vn_holidays_is_working_day`, `vn_holidays_add_working_days`, `vn_holidays_count_working_days`                                |
-| `vn-money-words`   | `vn_money_to_words`, `vn_money_parse`                                                                                                                                |
+| `vn-money-words`   | `vn_money_to_words`, `vn_money_parse`, `vn_text_speech_normalize`                                                                                                    |
 | `vn-lunar`         | `vn_lunar_from_solar`, `vn_lunar_to_solar`, `vn_lunar_month`, `vn_lunar_parse_date`, `vn_lunar_holidays`, `vn_lunar_tet`, `vn_lunar_canchi`                          |
 | `vn-einvoice`      | `vn_einvoice_validate`, `vn_einvoice_totals`, `vn_einvoice_vat`, `vn_einvoice_mock_issue`, `vn_einvoice_example`                                                     |
 | `vn-name`          | `vn_name`                                                                                                                                                            |
@@ -189,6 +189,10 @@ npx -y @vn-skills/mcp --http --port 3000   # http://127.0.0.1:3000/mcp
 
 It binds to `127.0.0.1` by default; use `--host 0.0.0.0` to expose it (e.g. `docker run -p 3000:3000 vn-skills-mcp --http --host 0.0.0.0`). Requests with a non-localhost `Origin` header get 403 unless you pass `--allow-origin <origin>` (repeatable). Without `--http` the server uses stdio.
 
+[![Deploy to Cloudflare Workers](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/beiryu/vn-skills/tree/main/examples/cloudflare-worker)
+
+Or deploy it to a public HTTPS URL; add the resulting `https://<name>.workers.dev/mcp` to any client that supports Streamable HTTP.
+
 ## Library
 
 ```ts
@@ -209,6 +213,22 @@ lunarInfo(29, 1, 2025).text; // "Mùng 1 tháng Giêng năm Ất Tỵ"
 ```
 
 Every function returns `{ ok: true, ... }` or `{ ok: false, error: { code, message, hint } }` — no exceptions for bad input.
+
+### Standard Schema validators
+
+`@vn-skills/core/schema` exports `vnPhone()`, `vnTaxId()` and `vnCitizenId()` as [Standard Schema](https://standardschema.dev/) v1 validators, so Standard Schema consumers such as react-hook-form's resolver accept them without an adapter.
+
+```ts
+import { vnPhone, vnTaxId, vnCitizenId } from '@vn-skills/core/schema';
+
+vnPhone()['~standard'].validate('0912345678'); // { value: { e164: '+84912345678', ... } }
+vnTaxId()['~standard'].validate('0100233480'); // { issues: [{ message, code: 'INVALID_CHECKSUM' }] }
+
+// e.g. react-hook-form
+import { standardSchemaResolver } from '@hookform/resolvers/standard-schema';
+
+const resolver = standardSchemaResolver(vnCitizenId());
+```
 
 ## Google Sheets
 
@@ -243,17 +263,20 @@ Bundle sizes (as measured by the build): `vn-skills.gs` ≈ 2533 KiB (includes t
 2. Sideload `dist/manifest.xml` as described in [Microsoft's sideloading docs](https://learn.microsoft.com/en-us/office/dev/add-ins/testing/test-debug-office-add-ins#sideload-an-office-add-in-for-testing).
 3. Use the functions in cells. Each accepts one value or a range and returns the same shape; a bad cell returns the error text. Dates may be date cells (serial numbers) or `dd/mm/yyyy` text.
 
-| Function                          | Example                                           |
-| --------------------------------- | ------------------------------------------------- |
-| `VN.TIEN_CHU(amount, [thousand])` | `=VN.TIEN_CHU(A2)`, `=VN.TIEN_CHU(A2:A9, "ngàn")` |
-| `VN.SO_THANH_CHU(number)`         | `=VN.SO_THANH_CHU(A2)`                            |
-| `VN.MST(taxId)`                   | `=VN.MST(A2:A9)` → TRUE/FALSE                     |
-| `VN.AM_LICH(date)`                | `=VN.AM_LICH(A2)` or `=VN.AM_LICH("29/01/2025")`  |
-| `VN.NGAY_LAM_VIEC(date)`          | `=VN.NGAY_LAM_VIEC(A2)` → TRUE/FALSE              |
-| `VN.CONG_NGAY_LAM_VIEC(date, n)`  | `=VN.CONG_NGAY_LAM_VIEC(A2, 5)` (yyyy-mm-dd text) |
-| `VN.DIA_CHI_MOI(address)`         | `=VN.DIA_CHI_MOI(A2)`                             |
+| Function                          | Example                                                                        |
+| --------------------------------- | ------------------------------------------------------------------------------ |
+| `VN.TIEN_CHU(amount, [thousand])` | `=VN.TIEN_CHU(A2)`, `=VN.TIEN_CHU(A2:A9, "ngàn")`                              |
+| `VN.SO_THANH_CHU(number)`         | `=VN.SO_THANH_CHU(A2)`                                                         |
+| `VN.MST(taxId)`                   | `=VN.MST(A2:A9)` → TRUE/FALSE                                                  |
+| `VN.AM_LICH(date)`                | `=VN.AM_LICH(A2)` or `=VN.AM_LICH("29/01/2025")`                               |
+| `VN.NGAY_LAM_VIEC(date)`          | `=VN.NGAY_LAM_VIEC(A2)` → TRUE/FALSE                                           |
+| `VN.CONG_NGAY_LAM_VIEC(date, n)`  | `=VN.CONG_NGAY_LAM_VIEC(A2, 5)` (yyyy-mm-dd text)                              |
+| `VN.DIA_CHI_MOI(address)`         | `=VN.DIA_CHI_MOI(A2)`                                                          |
+| `VN.SDT(phone, [format])`         | `=VN.SDT(A2)`, `=VN.SDT(A2, "e164")`, `"carrier"`                              |
+| `VN.TACH_TEN(name, part)`         | `=VN.TACH_TEN(A2, "ten")` (`ho`, `dem`, `ten`)                                 |
+| `VN.CCCD(id, [field])`            | `=VN.CCCD(A2, "tinh")` (`hop_le`, `tinh`, `tinh_moi`, `gioi_tinh`, `nam_sinh`) |
 
-Bundle size (as measured by the build): `functions.js` ≈ 2520 KiB, including the address data, so `VN.DIA_CHI_MOI` is included.
+Bundle size (as measured by the build): `functions.js` ≈ 2531 KiB, including the address data, so `VN.DIA_CHI_MOI` is included.
 
 ## Development
 
