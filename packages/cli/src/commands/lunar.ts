@@ -1,6 +1,7 @@
 import { Command } from 'commander';
 import {
   lunarInfo,
+  hourInfo,
   lunarMonthCalendar,
   lunarToSolar,
   parseDateInput,
@@ -19,12 +20,21 @@ export function registerLunar(program: Command): void {
   cmd
     .command('from-solar <date>')
     .description('Solar (dd/mm/yyyy or yyyy-mm-dd) -> lunar date with can chi')
-    .action((date: string, _o, c: Command) => {
+    .option('--hour <0-23>', 'birth hour: adds hourCanChi, hourBranch, hourRange')
+    .action((date: string, opts, c: Command) => {
       const d = parseDateInput(date);
       if (!d.ok) failExit(c, d.error);
       const r = lunarInfo(d.day, d.month, d.year);
       if (!r.ok) failExit(c, r.error);
-      const { ok: _ok, ...rest } = r;
+      let hour: { hourCanChi: string; hourBranch: string; hourRange: string } | undefined;
+      if (opts.hour !== undefined) {
+        const h = /^-?\d+$/.test(String(opts.hour).trim()) ? Number(opts.hour) : NaN;
+        const hi = hourInfo(d.day, d.month, d.year, h);
+        if (!hi.ok) failExit(c, { ...hi.error, message: `Invalid hour "${opts.hour}"` });
+        else hour = { hourCanChi: hi.canChi, hourBranch: hi.branch, hourRange: hi.range };
+      }
+      const { ok: _ok, ...base } = r;
+      const rest = { ...base, ...hour };
       if (wantsJson(c)) printJson({ ok: true, ...rest });
       else
         process.stdout.write(
@@ -36,6 +46,9 @@ export function registerLunar(program: Command): void {
             ['Month', r.monthCanChi],
             ['Day', r.dayCanChi],
             ['Solar term', r.solarTerm],
+            ...(hour
+              ? ([['Hour', `${hour.hourCanChi} (${hour.hourRange})`]] as [string, string][])
+              : []),
           ]) + '\n',
         );
     });

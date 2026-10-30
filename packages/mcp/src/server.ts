@@ -28,6 +28,7 @@ import {
   formatDate,
   parseAmount,
   lunarInfo,
+  hourInfo,
   lunarMonthCalendar,
   lunarToSolar,
   parseVietnameseDate,
@@ -549,14 +550,18 @@ export function createServer(): McpServer {
       title: 'Solar to lunar date',
       annotations: OFFLINE_READ_ONLY,
       description:
-        'Convert a Gregorian date (dd/mm/yyyy or yyyy-mm-dd) to the Vietnamese lunar date with can chi (e.g. Ất Tỵ), zodiac, leap-month flag and solar term.',
-      inputSchema: { date: z.string() },
+        'Convert a Gregorian date (dd/mm/yyyy or yyyy-mm-dd) to the Vietnamese lunar date with can chi (e.g. Ất Tỵ), zodiac, leap-month flag and solar term. Optional hour (0-23) adds hourCanChi, hourBranch, hourRange (giờ sinh).',
+      inputSchema: { date: z.string(), hour: z.number().int().min(0).max(23).optional() },
     },
-    async ({ date }) => {
+    async ({ date, hour }) => {
       const d = parseDateInput(date);
       if (!d.ok) return json({ ok: false, error: d.error }, true);
       const r = lunarInfo(d.day, d.month, d.year);
-      return r.ok ? json(r) : json({ ok: false, error: r.error }, true);
+      if (!r.ok) return json({ ok: false, error: r.error }, true);
+      if (hour === undefined) return json(r);
+      const hi = hourInfo(d.day, d.month, d.year, hour);
+      if (!hi.ok) return json({ ok: false, error: hi.error }, true);
+      return json({ ...r, hourCanChi: hi.canChi, hourBranch: hi.branch, hourRange: hi.range });
     },
   );
 

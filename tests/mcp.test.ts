@@ -196,6 +196,15 @@ describe('vn-skills MCP server', () => {
     );
     expect(j.yearCanChi).toBe('Ất Tỵ');
   });
+  it('vn_lunar_from_solar with hour', async () => {
+    const j = text(
+      await client.callTool({
+        name: 'vn_lunar_from_solar',
+        arguments: { date: '2024-02-10', hour: 23 },
+      }),
+    );
+    expect(j).toMatchObject({ hourCanChi: 'Giáp Tý', hourBranch: 'Tý', hourRange: '23:00-01:00' });
+  });
   it('vn_lunar_month', async () => {
     const j = text(
       await client.callTool({ name: 'vn_lunar_month', arguments: { month: 2, year: 2027 } }),
