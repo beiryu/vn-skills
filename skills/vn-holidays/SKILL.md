@@ -1,6 +1,6 @@
 ---
 name: vn-holidays
-description: Vietnamese public holidays and working days (ngày nghỉ lễ, nghỉ Tết, nghỉ bù, hoán đổi ngày làm việc) - the official days off of a year from the Government notice, whether a date is a working day, and adding N working days to a date and counting the working days between two dates (deadlines, SLAs, payroll). Covers Tết Dương lịch, Tết Âm lịch, Giỗ Tổ Hùng Vương, 30/4, 1/5 and Quốc khánh under the Labour Code 2019. Use for "lịch nghỉ Tết năm nay", "ngày làm việc", "nghỉ lễ 30/4 mấy ngày", "cộng 5 ngày làm việc", "đếm ngày làm việc", "bao nhiêu ngày làm việc", "public holidays", "working days", "business days".
+description: Vietnamese public holidays and working days (ngày nghỉ lễ, nghỉ Tết, nghỉ bù, hoán đổi ngày làm việc) - the official days off of a year from the Government notice, whether a date is a working day, and adding N working days to a date and counting the working days between two dates (deadlines, SLAs, payroll). Covers Tết Dương lịch, Tết Âm lịch, Giỗ Tổ Hùng Vương, 30/4, 1/5 and Quốc khánh under the Labour Code 2019. Use for "lịch nghỉ Tết năm nay", "ngày làm việc", "nghỉ lễ 30/4 mấy ngày", "cộng 5 ngày làm việc", "đếm ngày làm việc", "bao nhiêu ngày làm việc", "public holidays", "working days", "business days", "xuất lịch nghỉ", "file ics", "Google Calendar", "thêm lịch nghỉ Tết vào lịch công ty".
 license: MIT
 compatibility: Requires Node.js 22+ (runs npx -y @vn-skills/cli; the first run downloads the package). Calculations run offline.
 metadata:
@@ -19,6 +19,7 @@ npx -y @vn-skills/cli holidays year 2026          # days off, nghỉ bù, swappe
 npx -y @vn-skills/cli holidays check 2026-02-16 --json   # is it a working day?
 npx -y @vn-skills/cli holidays add 2026-02-12 3   # 3 working days later
 npx -y @vn-skills/cli holidays count 2026-02-10 2026-03-02   # working days in (from, to]
+npx -y @vn-skills/cli holidays ics 2027 > nghi-le-2027.ics   # iCalendar file; or --out <file>, --no-working-saturdays
 ```
 
 `holidays check … --json` prints (JSON is also the default when output is piped):
@@ -28,7 +29,7 @@ npx -y @vn-skills/cli holidays count 2026-02-10 2026-03-02   # working days in (
 ```
 
 Library: `import { publicHolidays, isWorkingDay, addWorkingDays, countWorkingDays } from '@vn-skills/core'`. MCP tools:
-`vn_holidays_year`, `vn_holidays_is_working_day`, `vn_holidays_add_working_days`, `vn_holidays_count_working_days`.
+`vn_holidays_year`, `vn_holidays_ics`, `vn_holidays_is_working_day`, `vn_holidays_add_working_days`, `vn_holidays_count_working_days`.
 
 `holidays count <from> <to>` counts working days in `(from, to]`: the start date is **not** counted and the end date
 **is** (the inverse of `add`). If `to` is before `from` the result is negative. Ranges over 3660 days return

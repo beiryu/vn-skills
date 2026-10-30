@@ -1,7 +1,9 @@
 import { Command } from 'commander';
+import { writeFileSync } from 'node:fs';
 import {
   addWorkingDays,
   countWorkingDays,
+  holidaysToICS,
   isWorkingDay,
   parseDateInput,
   publicHolidays,
@@ -32,6 +34,29 @@ export function registerHolidays(program: Command): void {
       for (const s of r.workingSaturdays) process.stdout.write(`${s}  working Saturday (swap)\n`);
       for (const p of r.pending) process.stdout.write(`pending: ${p.name}: ${p.note}\n`);
       for (const s of r.sources) process.stdout.write(`source: ${s.id} (${s.date}) ${s.url}\n`);
+    });
+
+  cmd
+    .command('ics <year>')
+    .description(
+      'Export the days off of a year as an iCalendar (.ics) file; raw ICS on stdout without --out',
+    )
+    .option('--out <file>', 'write the ICS to a file')
+    .option('--no-working-saturdays', 'omit the swapped working Saturdays')
+    .action((year: string, o: { out?: string; workingSaturdays: boolean }, c: Command) => {
+      const r = holidaysToICS(Number(year), { includeWorkingSaturdays: o.workingSaturdays });
+      if (!r.ok) failExit(c, r.error);
+      if (!o.out) {
+        if (c.optsWithGlobals<{ json?: boolean }>().json === true) return printJson(r);
+        process.stdout.write(r.ics);
+        return;
+      }
+      writeFileSync(o.out, r.ics);
+      const { year: y, events, announced, warnings } = r;
+      if (wantsJson(c))
+        return printJson({ ok: true, year: y, path: o.out, events, announced, warnings });
+      process.stdout.write(`${events} events written to ${o.out}\n`);
+      for (const w of warnings) process.stdout.write(`warning: ${w}\n`);
     });
 
   cmd

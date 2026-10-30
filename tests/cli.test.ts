@@ -183,6 +183,30 @@ describe('vn-skills CLI', () => {
     expect(bad.code).not.toBe(0);
     expect(bad.json()).toMatchObject({ ok: false, error: { code: 'OUT_OF_RANGE' } });
   });
+  it('holidays ics --out writes the file', () => {
+    const file = join(mkdtempSync(join(tmpdir(), 'vn-skills-')), 'nghi-le.ics');
+    const r = run(['holidays', 'ics', '2026', '--out', file]);
+    expect(r.code).toBe(0);
+    const j = r.json();
+    expect(j).toMatchObject({ ok: true, year: 2026, path: file, announced: true });
+    const t = readFileSync(file, 'utf8');
+    expect(t.startsWith('BEGIN:VCALENDAR\r\n')).toBe(true);
+    expect(t.match(/BEGIN:VEVENT/g)?.length).toBe(j.events);
+  });
+  it('holidays ics without --out prints raw ICS', () => {
+    const r = run(['holidays', 'ics', '2026']);
+    expect(r.code).toBe(0);
+    expect(r.out.startsWith('BEGIN:VCALENDAR\r\n')).toBe(true);
+    expect(r.out).toContain('END:VCALENDAR');
+  });
+  it('holidays ics --no-working-saturdays and bad year', () => {
+    const r = run(['holidays', 'ics', '2026', '--no-working-saturdays']);
+    expect(r.out).toContain('BEGIN:VCALENDAR');
+    expect(r.out).not.toContain('Đi làm bù');
+    const bad = run(['holidays', 'ics', '1999', '--json']);
+    expect(bad.code).not.toBe(0);
+    expect(bad.json()).toMatchObject({ ok: false, error: { code: 'OUT_OF_RANGE' } });
+  });
   it('vietqr build writes SVG', () => {
     const dir = mkdtempSync(join(tmpdir(), 'vn-skills-'));
     const file = join(dir, 'qr.svg');
