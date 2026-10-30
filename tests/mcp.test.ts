@@ -3,7 +3,7 @@ import { mkdtempSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { PNG } from 'pngjs';
-import { PROVINCES } from '@vn-skills/core';
+import { PROVINCES, numberToWords } from '@vn-skills/core';
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js';
 
@@ -66,6 +66,7 @@ describe('vn-skills MCP server', () => {
         'vn_address_history',
         'vn_address_search_wards',
         'vn_tax_id_validate',
+        'vn_text_speech_normalize',
         'vn_id_parse',
         'vn_money_to_words',
         'vn_money_parse',
@@ -161,6 +162,12 @@ describe('vn-skills MCP server', () => {
       arguments: { bank: 'zzz', account: '1' },
     });
     expect(r.isError).toBe(true);
+  });
+  it('vn_text_speech_normalize', async () => {
+    const j = text(
+      await client.callTool({ name: 'vn_text_speech_normalize', arguments: { text: 'giảm 15%' } }),
+    );
+    expect(j.text).toBe(`giảm ${words15()} phần trăm`);
   });
   it('vn_money_to_words', async () => {
     const j = text(
@@ -500,3 +507,9 @@ describe('vn-skills MCP server', () => {
     });
   });
 });
+
+function words15() {
+  const r = numberToWords(15);
+  if (!r.ok) throw new Error(r.error.message);
+  return r.words;
+}

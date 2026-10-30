@@ -20,6 +20,7 @@ import {
   validateTaxId,
   parseCitizenId,
   moneyToWords,
+  toSpokenText,
   numberToWords,
   wordsToNumber,
   formatNumber,
@@ -491,6 +492,23 @@ export function createServer(): McpServer {
       const r = plain ? numberToWords(amount, rest) : moneyToWords(amount, opts);
       return r.ok
         ? json({ ok: true, amount: r.amount, words: r.words })
+        : json({ ok: false, error: r.error }, true);
+    },
+  );
+
+  server.registerTool(
+    'vn_text_speech_normalize',
+    {
+      title: 'Rewrite text as spoken Vietnamese for TTS',
+      annotations: OFFLINE_READ_ONLY,
+      description:
+        'Rewrite numbers, VND amounts (1.250.000đ, 500k), percentages, phone numbers and dd/mm/yyyy dates in text as spoken Vietnamese for text-to-speech. Decimals and partial dates are left unchanged and listed in skipped. Returns text, changes, skipped.',
+      inputSchema: { text: z.string() },
+    },
+    async ({ text }) => {
+      const r = toSpokenText(text);
+      return r.ok
+        ? json({ ok: true, text: r.text, changes: r.changes, skipped: r.skipped })
         : json({ ok: false, error: r.error }, true);
     },
   );

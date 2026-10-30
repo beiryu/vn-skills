@@ -29,7 +29,7 @@ trên cùng một lõi chạy offline:
 | [`vn-id`](skills/vn-id/SKILL.md)                       | Kiểm tra/giải mã CCCD 12 số (tỉnh, giới tính, năm sinh) và định dạng CMND 9 số offline                             | `vn-skills id parse 048090123456`                                                                         |
 | [`vn-phone`](skills/vn-phone/SKILL.md)                 | Chuẩn hóa số điện thoại (+84, đầu số 11 số cũ), nhà mạng theo đầu số, mã vùng cố định                              | `vn-skills phone 0912345678`                                                                              |
 | [`vn-holidays`](skills/vn-holidays/SKILL.md)           | Lịch nghỉ lễ, Tết chính thức từng năm (thông báo, nghỉ bù, hoán đổi), kiểm tra ngày làm việc, cộng N ngày làm việc | `vn-skills holidays add 2026-02-12 3`                                                                     |
-| [`vn-money-words`](skills/vn-money-words/SKILL.md)     | Đọc số tiền bằng chữ (nghìn/ngàn, lẻ/linh, mốt/lăm/tư, tỷ tỷ)                                                      | `vn-skills money words 1200000` → `một triệu hai trăm nghìn đồng`                                         |
+| [`vn-money-words`](skills/vn-money-words/SKILL.md)     | Đọc số tiền bằng chữ (nghìn/ngàn, lẻ/linh, mốt/lăm/tư, tỷ tỷ; văn bản → TTS)                                       | `vn-skills money words 1200000` → `một triệu hai trăm nghìn đồng`                                         |
 | [`vn-lunar`](skills/vn-lunar/SKILL.md)                 | Dương ↔ âm lịch, tháng nhuận, can chi, Tết, ngày lễ (thuật toán thiên văn Meeus, UTC+7)                            | `vn-skills lunar tet 2027` → `2027-02-06 Đinh Mùi`                                                        |
 | [`vn-einvoice`](skills/vn-einvoice/SKILL.md)           | Schema hóa đơn điện tử, tính thuế/tổng, số tiền bằng chữ, provider mock; khung adapter MISA/Viettel/VNPT           | `vn-skills einvoice example > invoice.json && vn-skills einvoice totals invoice.json`                     |
 | [`vn-name`](skills/vn-name/SKILL.md)                   | Tách họ / tên đệm / tên, họ kép, sắp xếp theo tên (collation tiếng Việt), slug không dấu và chữ cái đầu            | `vn-skills name split "Tôn Thất Tùng"`                                                                    |
@@ -87,7 +87,7 @@ Hoặc trong cấu hình MCP bất kỳ:
 { "mcpServers": { "vn-skills": { "command": "npx", "args": ["-y", "@vn-skills/mcp"] } } }
 ```
 
-Server cung cấp 35 tool, nhóm theo skill. Mọi tool đều được khai báo chỉ đọc và offline (`readOnlyHint: true`, `openWorldHint: false`).
+Server cung cấp 36 tool, nhóm theo skill. Mọi tool đều được khai báo chỉ đọc và offline (`readOnlyHint: true`, `openWorldHint: false`).
 
 | Skill              | Tool                                                                                                                                                                 |
 | ------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -97,7 +97,7 @@ Server cung cấp 35 tool, nhóm theo skill. Mọi tool đều được khai bá
 | `vn-id`            | `vn_id_parse`                                                                                                                                                        |
 | `vn-phone`         | `vn_phone`                                                                                                                                                           |
 | `vn-holidays`      | `vn_holidays_year`, `vn_holidays_is_working_day`, `vn_holidays_add_working_days`, `vn_holidays_count_working_days`                                                   |
-| `vn-money-words`   | `vn_money_to_words`, `vn_money_parse`                                                                                                                                |
+| `vn-money-words`   | `vn_money_to_words`, `vn_money_parse`, `vn_text_speech_normalize`                                                                                                    |
 | `vn-lunar`         | `vn_lunar_from_solar`, `vn_lunar_to_solar`, `vn_lunar_month`, `vn_lunar_parse_date`, `vn_lunar_holidays`, `vn_lunar_tet`, `vn_lunar_canchi`                          |
 | `vn-einvoice`      | `vn_einvoice_validate`, `vn_einvoice_totals`, `vn_einvoice_vat`, `vn_einvoice_mock_issue`, `vn_einvoice_example`                                                     |
 | `vn-name`          | `vn_name`                                                                                                                                                            |

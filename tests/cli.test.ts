@@ -5,7 +5,7 @@ import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { PNG } from 'pngjs';
 import jsqrModule from 'jsqr';
-import { convertAddress, parseVietQR, VERSION } from '@vn-skills/core';
+import { convertAddress, numberToWords, parseVietQR, VERSION } from '@vn-skills/core';
 
 const CLI = resolve(__dirname, '..', 'packages', 'cli', 'dist', 'index.js');
 
@@ -247,6 +247,15 @@ describe('vn-skills CLI', () => {
     expect((r.json().error as { code: string }).code).toBe('INVALID_CHECKSUM');
   });
 
+  it('money speak rewrites text', () => {
+    const r = run(['money', 'speak', 'giảm 15%']);
+    expect(r.json().text).toBe(`giảm ${words15()} phần trăm`);
+  });
+  it('money speak --pretty prints plain text and reads stdin', () => {
+    expect(run(['money', 'speak', '-', '--pretty'], '15%').out.trim()).toBe(
+      `${words15()} phần trăm`,
+    );
+  });
   it('money words', () => {
     const r = run(['money', 'words', '1200000']);
     expect(r.json().words).toBe('một triệu hai trăm nghìn đồng');
@@ -874,3 +883,9 @@ describe('vn-skills install', () => {
     expect(existsSync(join(cwd, '.claude'))).toBe(false);
   });
 });
+
+function words15() {
+  const r = numberToWords(15);
+  if (!r.ok) throw new Error(r.error.message);
+  return r.words;
+}
