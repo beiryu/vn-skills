@@ -1,5 +1,11 @@
 {
   "extends": "./tsconfig.base.json",
-  "compilerOptions": { "noEmit": true, "types": ["node"] },
-  "include": ["scripts", "tests", "vitest.config.ts"]
+  "compilerOptions": {
+    "noEmit": true,
+    "types": ["node"],
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "paths": { "@vn-skills/mcp/server": ["./packages/mcp/src/server.ts"] }
+  },
+  "include": ["scripts", "tests", "examples", "vitest.config.ts"]
 }
