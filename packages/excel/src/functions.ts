@@ -3,10 +3,12 @@ import {
   VN_CONG_NGAY_LAM_VIEC,
   VN_MST,
   VN_NGAY_LAM_VIEC,
+  VN_SDT,
   VN_SO_THANH_CHU,
+  VN_TACH_TEN,
   VN_TIEN_CHU,
 } from '../../sheets/src/functions.js';
-import { VN_DIA_CHI_MOI } from '../../sheets/src/address.js';
+import { VN_CCCD, VN_DIA_CHI_MOI } from '../../sheets/src/address.js';
 import { mapRange } from '../../sheets/src/shared.js';
 
 const EXCEL_EPOCH_MS = Date.UTC(1899, 11, 30);
@@ -37,3 +39,6 @@ export const NGAY_LAM_VIEC = (date: unknown): unknown =>
 export const CONG_NGAY_LAM_VIEC = (date: unknown, n: unknown): unknown =>
   VN_CONG_NGAY_LAM_VIEC(mapRange(date, serialToText), scalar(n));
 export const DIA_CHI_MOI = (address: unknown): unknown => VN_DIA_CHI_MOI(address);
+export const SDT = (phone: unknown, format?: unknown): unknown => VN_SDT(phone, scalar(format));
+export const TACH_TEN = (name: unknown, part: unknown): unknown => VN_TACH_TEN(name, scalar(part));
+export const CCCD = (id: unknown, field?: unknown): unknown => VN_CCCD(id, scalar(field));
