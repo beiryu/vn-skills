@@ -210,6 +210,22 @@ lunarInfo(29, 1, 2025).text; // "Mùng 1 tháng Giêng năm Ất Tỵ"
 
 Every function returns `{ ok: true, ... }` or `{ ok: false, error: { code, message, hint } }` — no exceptions for bad input.
 
+### Standard Schema validators
+
+`@vn-skills/core/schema` exports `vnPhone()`, `vnTaxId()` and `vnCitizenId()` as [Standard Schema](https://standardschema.dev/) v1 validators, so Standard Schema consumers such as react-hook-form's resolver accept them without an adapter.
+
+```ts
+import { vnPhone, vnTaxId, vnCitizenId } from '@vn-skills/core/schema';
+
+vnPhone()['~standard'].validate('0912345678'); // { value: { e164: '+84912345678', ... } }
+vnTaxId()['~standard'].validate('0100233480'); // { issues: [{ message, code: 'INVALID_CHECKSUM' }] }
+
+// e.g. react-hook-form
+import { standardSchemaResolver } from '@hookform/resolvers/standard-schema';
+
+const resolver = standardSchemaResolver(vnCitizenId());
+```
+
 ## Google Sheets
 
 `packages/sheets` (private, not on npm) builds Apps Script custom functions from `@vn-skills/core`:
