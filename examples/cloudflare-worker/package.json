@@ -1,0 +1,15 @@
+{
+  "name": "@vn-skills/cloudflare-worker-example",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Stateless vn-skills MCP server for Cloudflare Workers.",
+  "type": "module",
+  "scripts": {
+    "dev": "npx wrangler dev",
+    "deploy": "npx wrangler deploy"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.32.1",
+    "@vn-skills/mcp": "workspace:*"
+  }
+}
