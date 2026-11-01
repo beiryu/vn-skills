@@ -105,11 +105,17 @@ export function createServer(): McpServer {
           .optional()
           .describe('Amount in VND (integer). Omit for a static QR.'),
         note: z.string().optional().describe('Transfer note / purpose'),
+        additionalData: z
+          .record(z.string(), z.string())
+          .optional()
+          .describe(
+            'Extra tag 62 sub-fields keyed by two-digit ID, e.g. {"05":"ORDER123"}. Passed through, not interpreted. Use note for 08.',
+          ),
         image: z.boolean().optional().describe('Also return a PNG image (base64). Default false.'),
       },
     },
-    async ({ bank, account, amount, note, image }) => {
-      const r = buildVietQR({ bank, account, amount, note });
+    async ({ bank, account, amount, note, additionalData, image }) => {
+      const r = buildVietQR({ bank, account, amount, note, additionalData });
       if (!r.ok) return json({ ok: false, error: r.error }, true);
       const data = {
         ok: true,

@@ -14,6 +14,8 @@ export interface ParsedVietQR {
   currency?: string;
   country?: string;
   note?: string;
+  /** Every tag 62 sub-field by two-digit ID; passed through, not interpreted. */
+  additionalData?: Record<string, string>;
   dynamic: boolean;
   crc: string;
   expectedCrc: string;
@@ -99,7 +101,9 @@ export function parseVietQR(input: string): Result<ParsedVietQR> {
   const currency = tlvFind(fields, '53')?.value;
   if (currency && currency !== '704') warnings.push(`Currency ${currency} is not VND (704).`);
   const country = tlvFind(fields, '58')?.value;
-  const note = tlvFind(tlvFind(fields, '62')?.children, '08')?.value;
+  const tag62 = tlvFind(fields, '62')?.children;
+  const note = tlvFind(tag62, '08')?.value;
+  const additionalData = tag62 ? Object.fromEntries(tag62.map((n) => [n.tag, n.value])) : undefined;
 
   return {
     ok: true,
@@ -112,6 +116,7 @@ export function parseVietQR(input: string): Result<ParsedVietQR> {
     currency,
     country,
     note,
+    additionalData,
     dynamic,
     crc,
     expectedCrc,
