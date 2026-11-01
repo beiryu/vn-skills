@@ -1,6 +1,6 @@
 {
  "version": 1,
- "exported_at": "2026-11-01T13:32:36.291Z",
+ "exported_at": "2026-11-01T13:45:04.235Z",
  "tables": {
   "repos": [
    {
@@ -10,7 +10,7 @@
     "policy_status": null,
     "policy_excerpts": null,
     "block_reason": null,
-    "last_scanned": "2026-11-01T13:32:10.152Z"
+    "last_scanned": "2026-11-01T13:44:36.732Z"
    }
   ],
   "issues": [
@@ -3153,7 +3153,7 @@
     "title": "vn-number-format: add maskVndInput to format VND amounts while the user types, keeping the cursor in place",
     "body": "## Problem\n\nCheckout and accounting forms in Vietnam show amounts grouped as `1.250.000` while the user types and then need the plain number `1250000` back. `@vn-skills/core` has `formatNumber`, `formatCompactVnd` and `parseAmount` (`packages/core/src/numfmt/index.ts`), but nothing that works on the text of an input field and its cursor position. Each app reimplements this and usually gets the cursor wrong when a `.` is inserted or deleted. A competing toolkit ships a dedicated real-time number mask (`@llein/realtime-number-mask`, listed in https://raw.githubusercontent.com/Llein-Dev/viet-dev-toolkit/main/README.md). Nothing should be copied from it.\n\n## Proposal\n\nAdd a pure function to `packages/core/src/numfmt/index.ts` and export it from `packages/core/src/index.ts`:\n\n```ts\nmaskVndInput(raw: string, caret?: number): Result<{ text: string; caret: number; value: number | null; digits: string }>\n```\n\n- Keep only the ASCII digits of `raw`. Every other character (`.`, `,`, spaces, letters, `₫`, `-`) is dropped. VND has no decimals and this helper is for whole amounts only.\n- Strip leading zeros, but keep a single `0` when the input is all zeros.\n- `text` = the digits grouped in threes with `.`, the same grouping `formatNumber` uses for integers. The test must assert that `text` equals `formatNumber(value).text` for a few values.\n- `caret` (default `raw.length`): count the digits to the left of the caret in `raw` (after removing the leading zeros that were stripped), then place the output caret right after that same number of digits in `text`. With 0 digits on the left, the caret is 0.\n- Empty or digit-free input returns `{ ok: true, text: '', caret: 0, value: null, digits: '' }`.\n- More than 15 significant digits (above `Number.MAX_SAFE_INTEGER` range) returns `ok: false` with code `OUT_OF_RANGE`, a message and a hint, following the repo's Result shape.\n- No CLI command or MCP tool: this is a library helper for UI code. Mention it in `skills/vn-number-format/SKILL.md` under the library section only if that file has one; otherwise add one line to README.md's Library section and README.vi.md.\n\n## Acceptance\n\n- [ ] `maskVndInput` is exported from `@vn-skills/core`\n- [ ] `tests/vn-number-format-mask.test.ts` with at least 15 cases, including:\n  - [ ] `('1250000')` → text `1.250.000`, value `1250000`, caret 9\n  - [ ] typing a 4th digit: `('1234', 4)` → `1.234`, caret 5\n  - [ ] deleting next to a separator: `('1.20.000', 4)`, the result of removing one digit from `1.200.000`, → `120.000` with the caret after the same digits\n  - [ ] caret in the middle stays after the same digit count\n  - [ ] pasted `'1.250.000 ₫'`, `'1,250,000'` and `' 500 000 '` give the expected values\n  - [ ] leading zeros: `'000123'` → `123`; `'000'` → `0`\n  - [ ] empty and letters-only input → value `null`, text `''`\n  - [ ] 16 or more digits → `OUT_OF_RANGE`\n  - [ ] `text` equals `formatNumber(value).text` for several values\n- [ ] `pnpm build && pnpm typecheck && pnpm lint && pnpm exec vitest run && pnpm format:check` pass\n",
     "url": "https://github.com/beiryu/vn-skills/issues/303",
-    "state": "pr_open",
+    "state": "done",
     "score": 1,
     "triage_reason": "It's a small, fact-free addition for web developers building Vietnamese forms. It pairs with the Standard Schema validators (#295) and the browser playground (#283).",
     "attempts": 2,
@@ -3169,7 +3169,7 @@
     "pr_body": "Closes #303\n\n## What & why\n\nAdds `maskVndInput(raw, caret?)` to `packages/core/src/numfmt/index.ts` and exports it from `@vn-skills/core`. It is a pure helper for UI code that formats a VND amount as the user types and keeps the cursor in place.\n\n- Keeps only ASCII digits and drops every other character.\n- Strips leading zeros, but keeps a single `0` for all-zero input.\n- Groups digits in threes with `.`.\n- Places the output caret after the same number of digits that were left of the caret in `raw`. The default caret is `raw.length`.\n- Empty or digit-free input returns `{ ok: true, text: '', caret: 0, value: null, digits: '' }`.\n- More than 15 significant digits returns `ok: false` with code `OUT_OF_RANGE`, a message and a hint.\n\nThere is no CLI command or MCP tool, as the issue asks. The helper is listed in the Library sections of `README.md` and `README.vi.md`.\n\n## Acceptance\n\n- [x] `maskVndInput` is exported from `@vn-skills/core`\n- [x] `tests/vn-number-format-mask.test.ts` with at least 15 cases, including:\n  - [x] `('1250000')` gives text `1.250.000`, value `1250000`, caret 9\n  - [x] `('1234', 4)` gives `1.234`, caret 5\n  - [x] `('1.20.000', 4)` gives `120.000` with the caret after the same digits\n  - [x] caret in the middle stays after the same digit count\n  - [x] pasted `'1.250.000 ₫'`, `'1,250,000'` and `' 500 000 '`\n  - [x] leading zeros: `'000123'` gives `123`, `'000'` gives `0`\n  - [x] empty and letters-only input give value `null`, text `''`\n  - [x] 16 or more digits give `OUT_OF_RANGE`\n  - [x] `text` equals `formatNumber(value).text` for several values\n- [x] `pnpm build && pnpm typecheck && pnpm lint && pnpm exec vitest run && pnpm format:check` pass\n\n## Testing\n\nNew file `tests/vn-number-format-mask.test.ts` covers the cases above. The full check command from the acceptance list passes.\n\n## Checklist\n\n- [x] Title follows Conventional Commits (`feat|fix|docs|data|test|refactor|perf|build|ci|chore(scope): …`)\n- [x] Tests added or updated (golden test for every bug fix)\n- [x] `pnpm build && pnpm typecheck && pnpm lint && pnpm test && pnpm format:check` pass locally\n- [x] Core stays offline (no `fetch`/HTTP in `packages/core`)\n- [ ] Data changes go through `scripts/build-data.ts` and `SOURCES.md` (source + license)\n- [x] SKILL.md / README updated if behaviour changed\n",
     "dry": 0,
     "claimed_at": null,
-    "updated_at": "2026-10-30T16:03:19.032Z",
+    "updated_at": "2026-11-01T13:44:21.597Z",
     "blocked": null,
     "patch": "diff --git a/README.md b/README.md\nindex 15d4c6e..336f0bd 100644\n--- a/README.md\n+++ b/README.md\n@@ -203,6 +203,7 @@ import {\n   moneyToWords,\n   lunarInfo,\n   computeTotals,\n+  maskVndInput,\n } from '@vn-skills/core';\n \n buildVietQR({ bank: 'VCB', account: '0011001234567', amount: 500000, note: 'don 123' }).payload;\n@@ -210,6 +211,7 @@ convertAddress('12 Nguyễn Huệ, P. Bến Nghé, Q.1, TP.HCM').new.formatted;\n validateTaxId('0100233488-001').kind; // \"branch\"\n moneyToWords(1_200_000).words; // \"một triệu hai trăm nghìn đồng\"\n lunarInfo(29, 1, 2025).text; // \"Mùng 1 tháng Giêng năm Ất Tỵ\"\n+maskVndInput('1234', 4); // { text: \"1.234\", caret: 5, value: 1234, digits: \"1234\" } — format VND while typing\n ```\n \n Every function returns `{ ok: true, ... }` or `{ ok: false, error: { code, message, hint } }` — no exceptions for bad input.\ndiff --git a/README.vi.md b/README.vi.md\nindex b211962..010fb00 100644\n--- a/README.vi.md\n+++ b/README.vi.md\n@@ -200,7 +200,10 @@ import {\n   validateTaxId,\n   moneyToWords,\n   lunarInfo,\n+  maskVndInput,\n } from '@vn-skills/core';\n+\n+maskVndInput('1234', 4); // { text: \"1.234\", caret: 5, value: 1234, digits: \"1234\" } — định dạng số tiền khi gõ\n ```\n \n Mọi hàm trả về `{ ok: true, ... }` hoặc `{ ok: false, error: { code, message, hint } }`, không ném exception với input sai.\ndiff --git a/packages/core/src/numfmt/index.ts b/packages/core/src/numfmt/index.ts\nindex 6cacd78..1db3908 100644\n--- a/packages/core/src/numfmt/index.ts\n+++ b/packages/core/src/numfmt/index.ts\n@@ -169,3 +169,43 @@ export function parseAmount(input: string): AmountResult {\n   if (m[3] && /[.,]/.test(m[1]!)) return bad();\n   return { ok: true, value: Number((value * mult).toFixed(2)) };\n }\n+\n+export type MaskResult = Result<{\n+  text: string;\n+  caret: number;\n+  value: number | null;\n+  digits: string;\n+}>;\n+\n+/**\n+ * Format a VND amount while the user types. Keeps only ASCII digits, strips leading zeros,\n+ * groups in threes with \".\" and maps the caret to the same digit count in the output.\n+ */\n+export function maskVndInput(raw: string, caret?: number): MaskResult {\n+  const input = String(raw ?? '');\n+  const pos = Math.min(Math.max(caret ?? input.length, 0), input.length);\n+  let digits = '';\n+  let left = 0;\n+  for (let i = 0; i < input.length; i++) {\n+    const c = input[i]!;\n+    if (c < '0' || c > '9') continue;\n+    digits += c;\n+    if (i < pos) left++;\n+  }\n+  const trimmed = digits.replace(/^0+(?=\\d)/, '');\n+  left = Math.max(0, left - (digits.length - trimmed.length));\n+  if (trimmed === '') return { ok: true, text: '', caret: 0, value: null, digits: '' };\n+  if (trimmed.length > 15) {\n+    return fail(\n+      'OUT_OF_RANGE',\n+      `Amount has ${trimmed.length} digits; at most 15 are supported`,\n+      'Use an amount below 1.000.000.000.000.000',\n+    );\n+  }\n+  const text = trimmed.replace(/\\B(?=(\\d{3})+$)/g, '.');\n+  let outCaret = 0;\n+  for (let seen = 0; outCaret < text.length && seen < left; outCaret++) {\n+    if (text[outCaret] !== '.') seen++;\n+  }\n+  return { ok: true, text, caret: outCaret, value: Number(trimmed), digits: trimmed };\n+}\ndiff --git a/tests/vn-number-format-mask.test.ts b/tests/vn-number-format-mask.test.ts\nnew file mode 100644\nindex 0000000..299e915\n--- /dev/null\n+++ b/tests/vn-number-format-mask.test.ts\n@@ -0,0 +1,125 @@\n+import { describe, expect, it } from 'vitest';\n+import { formatNumber, maskVndInput } from '@vn-skills/core';\n+\n+const mask = (raw: string, caret?: number) => {\n+  const r = maskVndInput(raw, caret);\n+  if (!r.ok) throw new Error(r.error.message);\n+  return r;\n+};\n+\n+describe('maskVndInput', () => {\n+  it('groups a plain number and puts the caret at the end', () => {\n+    expect(mask('1250000')).toEqual({\n+      ok: true,\n+      text: '1.250.000',\n+      caret: 9,\n+      value: 1250000,\n+      digits: '1250000',\n+    });\n+  });\n+\n+  it('typing a 4th digit adds a separator and moves the caret', () => {\n+    const r = mask('1234', 4);\n+    expect(r.text).toBe('1.234');\n+    expect(r.caret).toBe(5);\n+  });\n+\n+  it('typing a digit that does not add a separator', () => {\n+    const r = mask('12', 2);\n+    expect(r.text).toBe('12');\n+    expect(r.caret).toBe(2);\n+  });\n+\n+  it('deleting next to a separator keeps the caret after the same digits', () => {\n+    const r = mask('1.20.000', 4);\n+    expect(r.text).toBe('120.000');\n+    expect(r.value).toBe(120000);\n+    expect(r.caret).toBe(3);\n+  });\n+\n+  it.each([\n+    [0, 0],\n+    [1, 1],\n+    [2, 3],\n+    [3, 4],\n+    [4, 5],\n+    [5, 7],\n+    [7, 9],\n+  ])('caret in the middle: digits left %i -> caret %i', (digitsLeft, expected) => {\n+    expect(mask('1250000', digitsLeft).caret).toBe(expected);\n+  });\n+\n+  it('caret counts digits only, ignoring separators in raw', () => {\n+    expect(mask('1.250.000', 5).caret).toBe(5);\n+  });\n+\n+  it('defaults the caret to raw.length', () => {\n+    expect(mask('1.250.000 ₫').caret).toBe(9);\n+  });\n+\n+  it.each([\n+    ['1.250.000 ₫', 1250000, '1.250.000'],\n+    ['1,250,000', 1250000, '1.250.000'],\n+    [' 500 000 ', 500000, '500.000'],\n+    ['-1.000', 1000, '1.000'],\n+    ['abc12d3', 123, '123'],\n+  ])('pasted %j', (raw, value, text) => {\n+    const r = mask(raw);\n+    expect(r.value).toBe(value);\n+    expect(r.text).toBe(text);\n+    expect(r.digits).toBe(String(value));\n+  });\n+\n+  it('strips leading zeros', () => {\n+    const r = mask('000123');\n+    expect(r.text).toBe('123');\n+    expect(r.value).toBe(123);\n+    expect(r.digits).toBe('123');\n+    expect(r.caret).toBe(3);\n+  });\n+\n+  it('caret inside stripped leading zeros goes to 0', () => {\n+    expect(mask('000123', 2).caret).toBe(0);\n+    expect(mask('000123', 4).caret).toBe(1);\n+  });\n+\n+  it('keeps a single 0 for all zeros', () => {\n+    const r = mask('000');\n+    expect(r.text).toBe('0');\n+    expect(r.value).toBe(0);\n+    expect(r.digits).toBe('0');\n+  });\n+\n+  it.each(['', 'abc', ' ', '₫', '.,-'])('digit-free input %j gives null', (raw) => {\n+    expect(maskVndInput(raw)).toEqual({ ok: true, text: '', caret: 0, value: null, digits: '' });\n+  });\n+\n+  it('accepts 15 digits', () => {\n+    const r = mask('999999999999999');\n+    expect(r.value).toBe(999999999999999);\n+    expect(r.text).toBe('999.999.999.999.999');\n+  });\n+\n+  it.each(['1000000000000000', '12345678901234567890'])('%s is out of range', (raw) => {\n+    const r = maskVndInput(raw);\n+    expect(r.ok).toBe(false);\n+    if (!r.ok) {\n+      expect(r.error.code).toBe('OUT_OF_RANGE');\n+      expect(r.error.message).toBeTruthy();\n+      expect(r.error.hint).toBeTruthy();\n+    }\n+  });\n+\n+  it('leading zeros do not count toward the 15 digit limit', () => {\n+    expect(mask('0001234').value).toBe(1234);\n+  });\n+\n+  it.each([0, 5, 999, 1000, 123456, 1250000, 999999999999999])(\n+    'text equals formatNumber(%i).text',\n+    (n) => {\n+      const f = formatNumber(n);\n+      if (!f.ok) throw new Error(f.error.message);\n+      expect(mask(String(n)).text).toBe(f.text);\n+    },\n+  );\n+});\n",
     "repro_patch": "diff --git a/tests/vn-number-format-mask.test.ts b/tests/vn-number-format-mask.test.ts\nnew file mode 100644\nindex 0000000..299e915\n--- /dev/null\n+++ b/tests/vn-number-format-mask.test.ts\n@@ -0,0 +1,125 @@\n+import { describe, expect, it } from 'vitest';\n+import { formatNumber, maskVndInput } from '@vn-skills/core';\n+\n+const mask = (raw: string, caret?: number) => {\n+  const r = maskVndInput(raw, caret);\n+  if (!r.ok) throw new Error(r.error.message);\n+  return r;\n+};\n+\n+describe('maskVndInput', () => {\n+  it('groups a plain number and puts the caret at the end', () => {\n+    expect(mask('1250000')).toEqual({\n+      ok: true,\n+      text: '1.250.000',\n+      caret: 9,\n+      value: 1250000,\n+      digits: '1250000',\n+    });\n+  });\n+\n+  it('typing a 4th digit adds a separator and moves the caret', () => {\n+    const r = mask('1234', 4);\n+    expect(r.text).toBe('1.234');\n+    expect(r.caret).toBe(5);\n+  });\n+\n+  it('typing a digit that does not add a separator', () => {\n+    const r = mask('12', 2);\n+    expect(r.text).toBe('12');\n+    expect(r.caret).toBe(2);\n+  });\n+\n+  it('deleting next to a separator keeps the caret after the same digits', () => {\n+    const r = mask('1.20.000', 4);\n+    expect(r.text).toBe('120.000');\n+    expect(r.value).toBe(120000);\n+    expect(r.caret).toBe(3);\n+  });\n+\n+  it.each([\n+    [0, 0],\n+    [1, 1],\n+    [2, 3],\n+    [3, 4],\n+    [4, 5],\n+    [5, 7],\n+    [7, 9],\n+  ])('caret in the middle: digits left %i -> caret %i', (digitsLeft, expected) => {\n+    expect(mask('1250000', digitsLeft).caret).toBe(expected);\n+  });\n+\n+  it('caret counts digits only, ignoring separators in raw', () => {\n+    expect(mask('1.250.000', 5).caret).toBe(5);\n+  });\n+\n+  it('defaults the caret to raw.length', () => {\n+    expect(mask('1.250.000 ₫').caret).toBe(9);\n+  });\n+\n+  it.each([\n+    ['1.250.000 ₫', 1250000, '1.250.000'],\n+    ['1,250,000', 1250000, '1.250.000'],\n+    [' 500 000 ', 500000, '500.000'],\n+    ['-1.000', 1000, '1.000'],\n+    ['abc12d3', 123, '123'],\n+  ])('pasted %j', (raw, value, text) => {\n+    const r = mask(raw);\n+    expect(r.value).toBe(value);\n+    expect(r.text).toBe(text);\n+    expect(r.digits).toBe(String(value));\n+  });\n+\n+  it('strips leading zeros', () => {\n+    const r = mask('000123');\n+    expect(r.text).toBe('123');\n+    expect(r.value).toBe(123);\n+    expect(r.digits).toBe('123');\n+    expect(r.caret).toBe(3);\n+  });\n+\n+  it('caret inside stripped leading zeros goes to 0', () => {\n+    expect(mask('000123', 2).caret).toBe(0);\n+    expect(mask('000123', 4).caret).toBe(1);\n+  });\n+\n+  it('keeps a single 0 for all zeros', () => {\n+    const r = mask('000');\n+    expect(r.text).toBe('0');\n+    expect(r.value).toBe(0);\n+    expect(r.digits).toBe('0');\n+  });\n+\n+  it.each(['', 'abc', ' ', '₫', '.,-'])('digit-free input %j gives null', (raw) => {\n+    expect(maskVndInput(raw)).toEqual({ ok: true, text: '', caret: 0, value: null, digits: '' });\n+  });\n+\n+  it('accepts 15 digits', () => {\n+    const r = mask('999999999999999');\n+    expect(r.value).toBe(999999999999999);\n+    expect(r.text).toBe('999.999.999.999.999');\n+  });\n+\n+  it.each(['1000000000000000', '12345678901234567890'])('%s is out of range', (raw) => {\n+    const r = maskVndInput(raw);\n+    expect(r.ok).toBe(false);\n+    if (!r.ok) {\n+      expect(r.error.code).toBe('OUT_OF_RANGE');\n+      expect(r.error.message).toBeTruthy();\n+      expect(r.error.hint).toBeTruthy();\n+    }\n+  });\n+\n+  it('leading zeros do not count toward the 15 digit limit', () => {\n+    expect(mask('0001234').value).toBe(1234);\n+  });\n+\n+  it.each([0, 5, 999, 1000, 123456, 1250000, 999999999999999])(\n+    'text equals formatNumber(%i).text',\n+    (n) => {\n+      const f = formatNumber(n);\n+      if (!f.ok) throw new Error(f.error.message);\n+      expect(mask(String(n)).text).toBe(f.text);\n+    },\n+  );\n+});\n",
@@ -4442,27 +4442,27 @@
     "last_seen_at": "2026-10-30T16:03:26.125Z",
     "opened_at": "2026-10-30T16:03:26.125Z",
     "head_sha": "79990cbac896b1df8e68237dfee1d26f2d3e0e5c",
-    "mergeable": "MERGEABLE",
+    "mergeable": "UNKNOWN",
     "ci_state": "success",
     "review_decision": "REVIEW_REQUIRED",
-    "snapshot_at": "2026-11-01T13:31:47.158Z",
+    "snapshot_at": "2026-11-01T13:44:20.182Z",
     "ci_seen_sha": null,
-    "merge_state": "BEHIND"
+    "merge_state": "UNKNOWN"
    },
    {
     "issue_id": 109,
     "url": "https://github.com/beiryu/vn-skills/pull/304",
     "number": 304,
-    "state": "open",
+    "state": "merged",
     "last_seen_at": "2026-10-30T16:03:19.032Z",
     "opened_at": "2026-10-30T16:03:19.032Z",
     "head_sha": "e48a7cd1086325d64a36f084e28621974d84f8c4",
-    "mergeable": "MERGEABLE",
-    "ci_state": "pending",
+    "mergeable": "UNKNOWN",
+    "ci_state": "success",
     "review_decision": "REVIEW_REQUIRED",
-    "snapshot_at": "2026-11-01T13:31:49.403Z",
+    "snapshot_at": "2026-11-01T13:44:21.596Z",
     "ci_seen_sha": null,
-    "merge_state": "BLOCKED"
+    "merge_state": "UNKNOWN"
    },
    {
     "issue_id": 110,
@@ -4472,12 +4472,12 @@
     "last_seen_at": "2026-11-01T09:47:06.652Z",
     "opened_at": "2026-11-01T09:47:06.652Z",
     "head_sha": "fb6505c797550ee37b68f2b6dbd2ce76dc4bfa09",
-    "mergeable": "MERGEABLE",
+    "mergeable": "UNKNOWN",
     "ci_state": "success",
     "review_decision": "REVIEW_REQUIRED",
-    "snapshot_at": "2026-11-01T13:31:52.151Z",
+    "snapshot_at": "2026-11-01T13:44:22.704Z",
     "ci_seen_sha": null,
-    "merge_state": "BLOCKED"
+    "merge_state": "UNKNOWN"
    },
    {
     "issue_id": 111,
@@ -4487,12 +4487,12 @@
     "last_seen_at": "2026-11-01T09:46:59.911Z",
     "opened_at": "2026-11-01T09:46:59.911Z",
     "head_sha": "007b17266d377c8e27c3bd1ec4afb27a12c31c47",
-    "mergeable": "MERGEABLE",
+    "mergeable": "UNKNOWN",
     "ci_state": "success",
     "review_decision": "REVIEW_REQUIRED",
-    "snapshot_at": "2026-11-01T13:31:54.578Z",
+    "snapshot_at": "2026-11-01T13:44:24.515Z",
     "ci_seen_sha": null,
-    "merge_state": "BLOCKED"
+    "merge_state": "UNKNOWN"
    },
    {
     "issue_id": 112,
@@ -4502,12 +4502,12 @@
     "last_seen_at": "2026-11-01T09:46:53.180Z",
     "opened_at": "2026-11-01T09:46:53.180Z",
     "head_sha": "2fa68e28b25d01e5fa6c8f9721c41314c0883c59",
-    "mergeable": "MERGEABLE",
+    "mergeable": "UNKNOWN",
     "ci_state": "success",
     "review_decision": "REVIEW_REQUIRED",
-    "snapshot_at": "2026-11-01T13:31:56.968Z",
+    "snapshot_at": "2026-11-01T13:44:26.305Z",
     "ci_seen_sha": null,
-    "merge_state": "BLOCKED"
+    "merge_state": "UNKNOWN"
    }
   ],
   "pending_actions": [
