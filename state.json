@@ -1,6 +1,6 @@
 {
  "version": 1,
- "exported_at": "2026-11-01T09:48:27.676Z",
+ "exported_at": "2026-11-01T13:32:36.291Z",
  "tables": {
   "repos": [
    {
@@ -10,7 +10,7 @@
     "policy_status": null,
     "policy_excerpts": null,
     "block_reason": null,
-    "last_scanned": "2026-11-01T09:48:03.229Z"
+    "last_scanned": "2026-11-01T13:32:10.152Z"
    }
   ],
   "issues": [
@@ -4445,7 +4445,7 @@
     "mergeable": "MERGEABLE",
     "ci_state": "success",
     "review_decision": "REVIEW_REQUIRED",
-    "snapshot_at": "2026-11-01T09:47:39.736Z",
+    "snapshot_at": "2026-11-01T13:31:47.158Z",
     "ci_seen_sha": null,
     "merge_state": "BEHIND"
    },
@@ -4456,13 +4456,13 @@
     "state": "open",
     "last_seen_at": "2026-10-30T16:03:19.032Z",
     "opened_at": "2026-10-30T16:03:19.032Z",
-    "head_sha": "6b36f9ced6af11af58c97180435a58c991a299ac",
+    "head_sha": "e48a7cd1086325d64a36f084e28621974d84f8c4",
     "mergeable": "MERGEABLE",
-    "ci_state": "success",
+    "ci_state": "pending",
     "review_decision": "REVIEW_REQUIRED",
-    "snapshot_at": "2026-11-01T09:47:42.746Z",
+    "snapshot_at": "2026-11-01T13:31:49.403Z",
     "ci_seen_sha": null,
-    "merge_state": "BEHIND"
+    "merge_state": "BLOCKED"
    },
    {
     "issue_id": 110,
@@ -4473,9 +4473,9 @@
     "opened_at": "2026-11-01T09:47:06.652Z",
     "head_sha": "fb6505c797550ee37b68f2b6dbd2ce76dc4bfa09",
     "mergeable": "MERGEABLE",
-    "ci_state": "pending",
+    "ci_state": "success",
     "review_decision": "REVIEW_REQUIRED",
-    "snapshot_at": "2026-11-01T09:47:45.025Z",
+    "snapshot_at": "2026-11-01T13:31:52.151Z",
     "ci_seen_sha": null,
     "merge_state": "BLOCKED"
    },
@@ -4488,9 +4488,9 @@
     "opened_at": "2026-11-01T09:46:59.911Z",
     "head_sha": "007b17266d377c8e27c3bd1ec4afb27a12c31c47",
     "mergeable": "MERGEABLE",
-    "ci_state": "pending",
+    "ci_state": "success",
     "review_decision": "REVIEW_REQUIRED",
-    "snapshot_at": "2026-11-01T09:47:47.284Z",
+    "snapshot_at": "2026-11-01T13:31:54.578Z",
     "ci_seen_sha": null,
     "merge_state": "BLOCKED"
    },
@@ -4503,9 +4503,9 @@
     "opened_at": "2026-11-01T09:46:53.180Z",
     "head_sha": "2fa68e28b25d01e5fa6c8f9721c41314c0883c59",
     "mergeable": "MERGEABLE",
-    "ci_state": "pending",
+    "ci_state": "success",
     "review_decision": "REVIEW_REQUIRED",
-    "snapshot_at": "2026-11-01T09:47:49.443Z",
+    "snapshot_at": "2026-11-01T13:31:56.968Z",
     "ci_seen_sha": null,
     "merge_state": "BLOCKED"
    }
