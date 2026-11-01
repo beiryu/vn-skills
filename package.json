@@ -10,7 +10,7 @@
     "node": ">=22.12"
   },
   "scripts": {
-    "build": "pnpm -r --filter './packages/*' build",
+    "build": "tsx scripts/sync-skill-data.ts && pnpm -r --filter './packages/*' build",
     "test": "pnpm build && vitest run",
     "test:watch": "vitest",
     "typecheck": "pnpm -r --filter './packages/*' typecheck && tsc --noEmit -p tsconfig.json",

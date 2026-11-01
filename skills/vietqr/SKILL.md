@@ -67,6 +67,16 @@ All commands print JSON when piped (or with `--json`). Inside this repo use `pnp
 
 Library use (TypeScript): `import { buildVietQR, parseVietQR, findBank } from '@vn-skills/core'`.
 
+## No `npx` (claude.ai, Claude API)
+
+If `npx` is unavailable (no network, Node.js missing), run the bundled Python 3 script (standard library only, offline) from the skill folder. It prints the same JSON as the CLI but cannot write PNG/SVG (`--out` returns an error; use the Node CLI for images).
+
+```bash
+python3 scripts/vietqr.py build --bank VCB --account 0011001234567 --amount 500000 --note "don 123"
+python3 scripts/vietqr.py parse "00020101021238530010A000000727012300069704230109mynamebvh0208QRIBFTTA53037045405500005802VN62080804test6304AB76"
+python3 scripts/vietqr.py banks techcom
+```
+
 ## Rules and gotchas
 
 - **Amount is integer VND.** "500k" means 500000; "1,5 triệu" means 1500000. The CLI rejects decimals and shorthand: convert first (e.g. `vn-skills numfmt parse 500k`), then pass the plain integer to `--amount`.
