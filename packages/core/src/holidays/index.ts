@@ -10,6 +10,8 @@ export {
   type ScheduleSource,
 } from './schedules.js';
 
+export { holidaysToICS, type HolidaysICS, type HolidaysICSOptions } from './ics.js';
+
 export type DayOffKind = 'holiday' | 'compensatory' | 'swapped';
 
 /** First year with an announced schedule in the data (Labour Code 2019, Law 45/2019/QH14, applies from 2021). */

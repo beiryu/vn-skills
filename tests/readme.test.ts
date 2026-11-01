@@ -205,6 +205,7 @@ describe.each(['README.md', 'README.vi.md'])('%s MCP tools grouped by skill', (f
     ['vn_einvoice_', 'vn-einvoice'],
     ['vn_name', 'vn-name'],
     ['vn_number_format', 'vn-number-format'],
+    ['vn_text_speech', 'vn-money-words'],
   ];
 
   it('states the total tool count in the MCP server section', () => {

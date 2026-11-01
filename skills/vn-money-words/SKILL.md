@@ -1,6 +1,6 @@
 ---
 name: vn-money-words
-description: Convert VND amounts to Vietnamese words ("1.200.000 đồng" -> "một triệu hai trăm nghìn đồng") with correct rules for mốt/lăm/tư, lẻ/linh, nghìn/ngàn, zero groups and very large numbers (tỷ tỷ). Use for invoices, contracts, receipts, bank transfer forms, "số tiền bằng chữ", "đọc số tiền thành chữ", "viết bằng chữ", "đọc số", "số bằng chữ", "viết số thành chữ", or any time an amount must be spelled out in Vietnamese.
+description: Convert VND amounts to Vietnamese words ("1.200.000 đồng" -> "một triệu hai trăm nghìn đồng") with correct rules for mốt/lăm/tư, lẻ/linh, nghìn/ngàn, zero groups and very large numbers (tỷ tỷ). Use for invoices, contracts, receipts, bank transfer forms, "số tiền bằng chữ", "đọc số tiền thành chữ", "viết bằng chữ", "đọc số", "số bằng chữ", "viết số thành chữ", "đọc văn bản", "chuyển số thành chữ trong câu", "chuẩn hóa văn bản cho TTS", "text to speech", or any time an amount must be spelled out in Vietnamese.
 license: MIT
 compatibility: Requires Node.js 22+ (runs npx -y @vn-skills/cli).
 metadata:
@@ -61,6 +61,26 @@ npx -y @vn-skills/cli money parse "một triệu hai trăm nghìn đồng"
 Library: `wordsToNumber(text)`; MCP tool `vn_money_parse`. Inverse of `money words`: accepts every form it produces
 (nghìn/ngàn, lẻ/linh, mốt, tư/bốn, lăm/năm, `âm`, `chẵn`, trailing unit, capitalised). `value` is an exact digit string.
 Errors: `EMPTY` (blank/non-string), `INVALID_WORDS` (unknown word or impossible order, e.g. colloquial "trăm rưỡi").
+
+### Text for TTS (đọc văn bản)
+
+```bash
+npx -y @vn-skills/cli money speak "Đơn 1.250.000đ giao ngày 08/02/2019, gọi 0912 345 678"
+echo "giảm 15%" | npx -y @vn-skills/cli money speak - --pretty
+```
+
+Library: `toSpokenText(text)`; MCP tool `vn_text_speech_normalize` (`{ text }`). Returns `{ text, changes, skipped }`;
+`changes` are `{ start, end, original, spoken, kind }` and `skipped` are `{ start, end, original, reason }` (offsets index
+the original text). Tokens are checked in this order, and the rest of the text is kept byte-for-byte:
+
+1. `phone`: digits (spaces/dots/dashes, optional `+84`) accepted by `parsePhone`, read digit by digit.
+2. `date`: full `dd/mm/yyyy` that is a valid date → `ngày … tháng … năm …`. Invalid dates (`31/02/2024`) and partial forms
+   (`8/2019`, `08/02`) stay unchanged and are `skipped`.
+3. `money`: number + `đ`/`₫`/`đồng`/`vnđ`/`VND` (`.` groups thousands) or shorthand (`500k`, `1tr2`, `2 tỷ`) → `moneyToWords`.
+4. `percent`: integer + `%` → `<số> phần trăm`.
+5. `number`: integer, optionally `.`-grouped or negative → `numberToWords`.
+
+Decimals (`1,5`, `3.14`) are left unchanged and `skipped` with reason `decimal`. Empty input → `EMPTY`.
 
 ## Rules implemented
 

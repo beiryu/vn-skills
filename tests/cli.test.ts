@@ -5,7 +5,7 @@ import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { PNG } from 'pngjs';
 import jsqrModule from 'jsqr';
-import { convertAddress, parseVietQR, VERSION } from '@vn-skills/core';
+import { convertAddress, numberToWords, parseVietQR, VERSION } from '@vn-skills/core';
 
 const CLI = resolve(__dirname, '..', 'packages', 'cli', 'dist', 'index.js');
 
@@ -183,6 +183,30 @@ describe('vn-skills CLI', () => {
     expect(bad.code).not.toBe(0);
     expect(bad.json()).toMatchObject({ ok: false, error: { code: 'OUT_OF_RANGE' } });
   });
+  it('holidays ics --out writes the file', () => {
+    const file = join(mkdtempSync(join(tmpdir(), 'vn-skills-')), 'nghi-le.ics');
+    const r = run(['holidays', 'ics', '2026', '--out', file]);
+    expect(r.code).toBe(0);
+    const j = r.json();
+    expect(j).toMatchObject({ ok: true, year: 2026, path: file, announced: true });
+    const t = readFileSync(file, 'utf8');
+    expect(t.startsWith('BEGIN:VCALENDAR\r\n')).toBe(true);
+    expect(t.match(/BEGIN:VEVENT/g)?.length).toBe(j.events);
+  });
+  it('holidays ics without --out prints raw ICS', () => {
+    const r = run(['holidays', 'ics', '2026']);
+    expect(r.code).toBe(0);
+    expect(r.out.startsWith('BEGIN:VCALENDAR\r\n')).toBe(true);
+    expect(r.out).toContain('END:VCALENDAR');
+  });
+  it('holidays ics --no-working-saturdays and bad year', () => {
+    const r = run(['holidays', 'ics', '2026', '--no-working-saturdays']);
+    expect(r.out).toContain('BEGIN:VCALENDAR');
+    expect(r.out).not.toContain('Đi làm bù');
+    const bad = run(['holidays', 'ics', '1999', '--json']);
+    expect(bad.code).not.toBe(0);
+    expect(bad.json()).toMatchObject({ ok: false, error: { code: 'OUT_OF_RANGE' } });
+  });
   it('vietqr build writes SVG', () => {
     const dir = mkdtempSync(join(tmpdir(), 'vn-skills-'));
     const file = join(dir, 'qr.svg');
@@ -247,6 +271,15 @@ describe('vn-skills CLI', () => {
     expect((r.json().error as { code: string }).code).toBe('INVALID_CHECKSUM');
   });
 
+  it('money speak rewrites text', () => {
+    const r = run(['money', 'speak', 'giảm 15%']);
+    expect(r.json().text).toBe(`giảm ${words15()} phần trăm`);
+  });
+  it('money speak --pretty prints plain text and reads stdin', () => {
+    expect(run(['money', 'speak', '-', '--pretty'], '15%').out.trim()).toBe(
+      `${words15()} phần trăm`,
+    );
+  });
   it('money words', () => {
     const r = run(['money', 'words', '1200000']);
     expect(r.json().words).toBe('một triệu hai trăm nghìn đồng');
@@ -874,3 +907,9 @@ describe('vn-skills install', () => {
     expect(existsSync(join(cwd, '.claude'))).toBe(false);
   });
 });
+
+function words15() {
+  const r = numberToWords(15);
+  if (!r.ok) throw new Error(r.error.message);
+  return r.words;
+}
