@@ -1,5 +1,145 @@
 import { describe, expect, it } from 'vitest';
-import { addWorkingDays, countWorkingDays, isWorkingDay, publicHolidays } from '@vn-skills/core';
+import {
+  addWorkingDays,
+  countWorkingDays,
+  holidaysToICS,
+  isWorkingDay,
+  publicHolidays,
+} from '@vn-skills/core';
+
+describe('vn-holidays: holidaysToICS (RFC 5545 export)', () => {
+  const dtstamp = new Date('2026-01-01T00:00:00Z');
+  const ics = (year: number, o: { includeWorkingSaturdays?: boolean } = {}) => {
+    const r = holidaysToICS(year, { dtstamp, ...o });
+    if (!r.ok) throw new Error('unexpected');
+    return r;
+  };
+  const days = (year: number) => {
+    const p = publicHolidays(year);
+    if (!p.ok) throw new Error('unexpected');
+    return p;
+  };
+  const unfold = (t: string) => t.replace(/\r\n[ \t]/g, '');
+  const next = (d: string) => {
+    const t = new Date(`${d}T00:00:00Z`);
+    t.setUTCDate(t.getUTCDate() + 1);
+    return t.toISOString().slice(0, 10).replace(/-/g, '');
+  };
+
+  it('has the calendar header', () => {
+    const t = unfold(ics(2026).ics);
+    expect(t.startsWith('BEGIN:VCALENDAR\r\n')).toBe(true);
+    expect(t).toContain('VERSION:2.0\r\n');
+    expect(t).toContain('PRODID:-//vn-skills//vn-holidays//EN\r\n');
+    expect(t).toContain('CALSCALE:GREGORIAN\r\n');
+    expect(t).toContain('X-WR-CALNAME:Ngày nghỉ lễ 2026\r\n');
+    expect(t.trimEnd().endsWith('END:VCALENDAR')).toBe(true);
+  });
+  it('event count equals daysOff + working Saturdays', () => {
+    const p = days(2026);
+    const r = ics(2026);
+    expect(r.year).toBe(2026);
+    expect(r.announced).toBe(true);
+    expect(r.events).toBe(p.daysOff.length + p.workingSaturdays.length);
+    expect(r.ics.match(/BEGIN:VEVENT/g)?.length).toBe(r.events);
+  });
+  it('can omit working Saturdays', () => {
+    const r = ics(2026, { includeWorkingSaturdays: false });
+    expect(r.events).toBe(days(2026).daysOff.length);
+    expect(r.ics).not.toContain('Đi làm bù (thứ Bảy)');
+  });
+  it('DTSTART/DTEND are date values with exclusive next-day end', () => {
+    const t = unfold(ics(2026).ics);
+    for (const d of days(2026).daysOff) {
+      const c = d.date.replace(/-/g, '');
+      expect(t).toContain(`DTSTART;VALUE=DATE:${c}\r\nDTEND;VALUE=DATE:${next(d.date)}\r\n`);
+    }
+  });
+  it('DTEND crosses a month end', () => {
+    const t = unfold(ics(2026).ics);
+    const edge = days(2026).daysOff.filter((d) => next(d.date).slice(6) === '01');
+    expect(edge.length).toBeGreaterThan(0);
+    for (const d of edge) expect(t).toContain(`DTEND;VALUE=DATE:${next(d.date)}`);
+  });
+  it('DTEND of 31/12 is 1/1 of the next year', () => {
+    expect(next('2026-12-31')).toBe('20270101');
+    const r = ics(2026);
+    const t = unfold(r.ics);
+    if (days(2026).daysOff.some((d) => d.date === '2026-12-31')) {
+      expect(t).toContain('DTSTART;VALUE=DATE:20261231\r\nDTEND;VALUE=DATE:20270101');
+    }
+    expect(t).not.toContain('DTEND;VALUE=DATE:20261232');
+  });
+  it('writes DTSTAMP in UTC and TRANSPARENT events', () => {
+    const t = ics(2026).ics;
+    expect(t).toContain('DTSTAMP:20260101T000000Z');
+    expect(t).toContain('TRANSP:TRANSPARENT');
+  });
+  it('UIDs are stable across calls, unique, and end with @vn-skills', () => {
+    const a = ics(2026).ics;
+    const b = holidaysToICS(2026, { dtstamp: new Date('2027-05-05T10:00:00Z') });
+    if (!b.ok) throw new Error('unexpected');
+    const uids = (t: string) => unfold(t).match(/^UID:.*$/gm) ?? [];
+    expect(uids(a).length).toBeGreaterThan(0);
+    expect(uids(a)).toEqual(uids(b.ics));
+    expect(new Set(uids(a)).size).toBe(uids(a).length);
+    expect(uids(a).every((u) => u.endsWith('@vn-skills'))).toBe(true);
+  });
+  it('uses CRLF only and no bare LF', () => {
+    const t = ics(2026).ics;
+    expect(t.endsWith('\r\n')).toBe(true);
+    expect(t.replace(/\r\n/g, '')).not.toMatch(/[\r\n]/);
+  });
+  it('no line exceeds 75 octets and folds keep UTF-8 intact', () => {
+    for (const y of [2026, 2027, 2030]) {
+      const r = holidaysToICS(y, { dtstamp });
+      if (!r.ok) continue;
+      for (const line of r.ics.split('\r\n')) {
+        expect(Buffer.byteLength(line, 'utf8')).toBeLessThanOrEqual(75);
+        expect(line).not.toContain('\uFFFD');
+      }
+    }
+  });
+  it('folds long Vietnamese lines with a leading space', () => {
+    const r = ics(2026);
+    expect(r.ics.split('\r\n').some((l) => l.startsWith(' '))).toBe(true);
+    expect(unfold(r.ics)).toContain('Đi làm bù (thứ Bảy)');
+  });
+  it('suffixes compensatory and swapped days', () => {
+    const t = unfold(ics(2026).ics);
+    const p = days(2026);
+    if (p.daysOff.some((d) => d.kind === 'compensatory')) expect(t).toContain(' (nghỉ bù)');
+    if (p.daysOff.some((d) => d.kind === 'swapped')) expect(t).toContain(' (hoán đổi)');
+  });
+  it('includes source URLs when announced', () => {
+    const p = days(2026);
+    const t = unfold(ics(2026).ics);
+    expect(p.sources.length).toBeGreaterThan(0);
+    for (const s of p.sources) {
+      expect(t).toContain(typeof s === 'string' ? s : (s as { url: string }).url);
+    }
+  });
+  it('unannounced year: warnings, announced false, no pending events', () => {
+    const p = days(2030);
+    const r = ics(2030);
+    expect(r.announced).toBe(false);
+    expect(r.warnings.length).toBe(p.pending.length);
+    expect(r.events).toBe(p.daysOff.length);
+  });
+  it('announced year has no warnings', () => {
+    expect(ics(2026).warnings).toEqual([]);
+  });
+  it('out-of-range year reuses the publicHolidays error', () => {
+    const r = holidaysToICS(1999);
+    expect(r.ok).toBe(false);
+    expect(r).toEqual(publicHolidays(1999));
+  });
+  it('defaults dtstamp to now', () => {
+    const r = holidaysToICS(2026);
+    if (!r.ok) throw new Error('unexpected');
+    expect(r.ics).toMatch(/DTSTAMP:\d{8}T\d{6}Z/);
+  });
+});
 
 describe('vn-holidays: invalid input (non-JSON inputs; the rest is in tests/golden/vn-holidays.json)', () => {
   it('publicHolidays rejects NaN', () => {

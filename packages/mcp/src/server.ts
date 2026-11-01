@@ -20,6 +20,7 @@ import {
   validateTaxId,
   parseCitizenId,
   moneyToWords,
+  toSpokenText,
   numberToWords,
   wordsToNumber,
   formatNumber,
@@ -43,6 +44,7 @@ import {
   PROVINCES,
   exampleInvoice,
   holidays,
+  holidaysToICS,
   publicHolidays,
   isWorkingDay,
   addWorkingDays,
@@ -496,6 +498,23 @@ export function createServer(): McpServer {
   );
 
   server.registerTool(
+    'vn_text_speech_normalize',
+    {
+      title: 'Rewrite text as spoken Vietnamese for TTS',
+      annotations: OFFLINE_READ_ONLY,
+      description:
+        'Rewrite numbers, VND amounts (1.250.000đ, 500k), percentages, phone numbers and dd/mm/yyyy dates in text as spoken Vietnamese for text-to-speech. Decimals and partial dates are left unchanged and listed in skipped. Returns text, changes, skipped.',
+      inputSchema: { text: z.string() },
+    },
+    async ({ text }) => {
+      const r = toSpokenText(text);
+      return r.ok
+        ? json({ ok: true, text: r.text, changes: r.changes, skipped: r.skipped })
+        : json({ ok: false, error: r.error }, true);
+    },
+  );
+
+  server.registerTool(
     'vn_money_parse',
     {
       title: 'Vietnamese number words to digits',
@@ -647,6 +666,21 @@ export function createServer(): McpServer {
     },
     async ({ year }) => {
       const r = publicHolidays(year);
+      return r.ok ? json(r) : json(r, true);
+    },
+  );
+
+  server.registerTool(
+    'vn_holidays_ics',
+    {
+      title: 'Export Vietnam days off as an iCalendar file',
+      annotations: OFFLINE_READ_ONLY,
+      description:
+        'Export the official days off of a year (2023-2199) as iCalendar (RFC 5545) text for Google Calendar, Outlook or Apple Calendar: holidays, nghỉ bù, swapped days and (optionally) working Saturdays. Unannounced years omit pending days and list them in warnings.',
+      inputSchema: { year: z.number().int(), includeWorkingSaturdays: z.boolean().optional() },
+    },
+    async ({ year, includeWorkingSaturdays }) => {
+      const r = holidaysToICS(year, { includeWorkingSaturdays });
       return r.ok ? json(r) : json(r, true);
     },
   );

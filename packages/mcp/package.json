@@ -1,7 +1,7 @@
 {
   "name": "@vn-skills/mcp",
   "mcpName": "io.github.beiryu/vn-skills",
-  "version": "0.7.0",
+  "version": "0.8.0",
   "description": "MCP server exposing vn-skills tools (VietQR, addresses, tax IDs, CCCD citizen IDs, phone numbers, public holidays and working days, money in words, number formatting, names, lunar calendar, e-invoice) over stdio.",
   "keywords": [
     "mcp",
