@@ -100,3 +100,12 @@ See [references/reading-rules.md](references/reading-rules.md). Summary:
 - Mixing "nghìn" and "ngàn" in one document; pick one via `--thousand`.
 - Forgetting "không trăm" (1.005.000 → "một triệu **không trăm lẻ năm** nghìn đồng").
 - Forgetting the unit or "chẵn" convention your template uses; ask or follow the existing document style.
+
+## Without npx (offline fallback)
+
+If `npx` is unavailable (no network or Node.js), run the bundled Python 3 script (standard library only) from the skill folder:
+
+```bash
+python3 scripts/money_words.py words 1200000 --thousand nghin --odd le
+python3 scripts/money_words.py parse "một triệu hai trăm nghìn đồng"
+```
