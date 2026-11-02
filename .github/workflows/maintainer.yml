@@ -16,10 +16,8 @@ on:
     types: [created]
   pull_request_target:
     types: [opened, synchronize] # other people's PRs: reviewed from the diff and CI, never run
-  schedule:
-    - cron: '7 2,8 * * *' # research: the list, then the issues to open next (09:07 and 15:07 Vietnam)
-    - cron: '37 2-13 * * *' # audit: issues and PRs, hourly 09:37–20:37 Vietnam
-    # Odd minutes: GitHub delays or drops scheduled runs at :00 and :30, its busiest minutes.
+  # No schedule for now: research and audit run by hand (Actions → maintainer-bot → Run workflow).
+  # To bring them back: '7 2,8 * * *' (research) and '37 2-13 * * *' (audit), UTC.
   workflow_dispatch:
     inputs:
       task:
@@ -43,9 +41,7 @@ jobs:
     # Tracks the bot's v1 tag (same owner as this repo): bot releases apply without a PR here.
     uses: beiryu/maintainer-bot/.github/workflows/agent.yml@v1 # tracks the latest v1.x release
     with:
-      # The research cron runs research; the other one, and every event, runs the audit. Different
-      # minutes: a run that waits in the concurrency group is replaced by the next one.
-      task: ${{ github.event.schedule == '7 2,8 * * *' && 'research' || inputs.task || 'audit' }}
+      task: ${{ inputs.task || 'audit' }}
       draft_prs: false
     # BOT_PAT lives in the environment "bot", which only the called workflow's publish job
     # enters; inherit is the only way an environment secret reaches a called workflow.
