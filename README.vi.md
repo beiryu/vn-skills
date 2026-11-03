@@ -41,7 +41,10 @@ Chuyển hàng loạt địa chỉ đã lưu (mỗi dòng một địa chỉ →
 vn-skills address convert-file addresses.txt
 vn-skills address convert-file customers.csv --csv --column address > converted.csv
 vn-skills address convert-file customers.csv --csv --province-column province --district-column district --ward-column ward > converted.csv
+vn-skills address convert-file addresses.txt --encoding windows-1258
 ```
+
+BOM của UTF-8/UTF-16 được nhận diện tự động; dùng `--encoding <label>` (ví dụ `windows-1258`, `utf-16le`) cho file lưu từ Windows/Excel tiếng Việt. Các lệnh file của `einvoice` và `money speak -` cũng hỗ trợ.
 
 ## Cài skill
 

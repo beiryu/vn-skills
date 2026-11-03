@@ -41,7 +41,10 @@ Bulk-convert stored addresses (one per line → NDJSON, or a CSV column; exit co
 vn-skills address convert-file addresses.txt
 vn-skills address convert-file customers.csv --csv --column address > converted.csv
 vn-skills address convert-file customers.csv --csv --province-column province --district-column district --ward-column ward > converted.csv
+vn-skills address convert-file addresses.txt --encoding windows-1258
 ```
+
+UTF-8/UTF-16 byte-order marks are detected automatically; use `--encoding <label>` (e.g. `windows-1258`, `utf-16le`) for files saved by Vietnamese Windows/Excel. `einvoice` file commands and `money speak -` accept it too.
 
 ## Install the skills
 
