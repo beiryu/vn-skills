@@ -21,7 +21,7 @@ Inside this repo use `pnpm vn-skills` instead of `npx -y @vn-skills/cli`.
 npx -y @vn-skills/cli id parse 048090123456
 ```
 
-Library: `import { parseCitizenId } from '@vn-skills/core'`. MCP tool: `vn_id_parse`.
+Library: `import { parseCitizenId } from '@vn-skills/core'`. MCP tools: `vn_id_parse`; `vn_id_parse_batch` for up to 1000 IDs per call.
 
 ## Structure of the 12-digit CCCD
 

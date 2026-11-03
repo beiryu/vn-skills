@@ -31,7 +31,7 @@ npx -y @vn-skills/cli phone "+84 162 123 4567"
 Landlines return `areaCode`, `province` (legacy 63-province name) and `province2025` (the province it was merged into).
 Invalid input exits with code 1 and `error.code` of `EMPTY`, `INVALID_FORMAT`, `INVALID_LENGTH` or `UNKNOWN_PREFIX`.
 
-Library: `import { parsePhone } from '@vn-skills/core'`. MCP tool: `vn_phone`.
+Library: `import { parsePhone } from '@vn-skills/core'`. MCP tools: `vn_phone`; `vn_phone_parse_batch` for up to 1000 numbers per call.
 
 ## Rules
 
