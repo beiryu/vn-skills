@@ -75,6 +75,14 @@ Skill chỉ cần Node.js 22+ vì gọi `npx -y @vn-skills/cli`. `.agents/skills
 
 **Khi làm việc trong repo này** chạy `node packages/cli/dist/index.js …` thay cho `npx -y @vn-skills/cli …` để có JSON sạch. `pnpm vn-skills …` vẫn chạy được nhưng thêm output của wrapper (dòng lệnh được echo và `[ELIFECYCLE]` khi lỗi).
 
+### claude.ai và Claude API
+
+```bash
+npx -y @vn-skills/cli install all --zip skills-zip    # ghi skills-zip/<skill>.zip
+```
+
+Tải các file zip lên claude.ai tại Customize > Skills, hoặc qua endpoint Skills của Claude API. Trên claude.ai, mỗi người dùng tự tải bản của mình. Chỉ `vietqr`, `vn-money-words` và `vn-tax-id` kèm script Python chạy được ở đó mà không cần npx hay mạng; các skill còn lại cần Node.js và mạng (`npx`), nên có thể không chạy trên Claude API. Zip có sẵn không bị ghi đè nếu thiếu `--force`; `--dry-run` không ghi gì.
+
 ## MCP server
 
 ```bash
