@@ -1,6 +1,6 @@
 {
  "version": 1,
- "exported_at": "2026-11-03T04:15:08.345Z",
+ "exported_at": "2026-11-03T04:18:06.519Z",
  "tables": {
   "repos": [
    {
@@ -10,7 +10,7 @@
     "policy_status": null,
     "policy_excerpts": null,
     "block_reason": null,
-    "last_scanned": "2026-11-03T04:14:44.201Z"
+    "last_scanned": "2026-11-03T04:17:36.253Z"
    }
   ],
   "issues": [
@@ -4472,12 +4472,12 @@
     "last_seen_at": "2026-11-01T09:47:06.652Z",
     "opened_at": "2026-11-01T09:47:06.652Z",
     "head_sha": "233e3d593c53aeb9aa077e1daeaabe5074456c28",
-    "mergeable": "MERGEABLE",
-    "ci_state": "pending",
+    "mergeable": "UNKNOWN",
+    "ci_state": "failure",
     "review_decision": "REVIEW_REQUIRED",
-    "snapshot_at": "2026-11-03T04:14:32.362Z",
-    "ci_seen_sha": null,
-    "merge_state": "BLOCKED"
+    "snapshot_at": "2026-11-03T04:16:48.826Z",
+    "ci_seen_sha": "233e3d593c53aeb9aa077e1daeaabe5074456c28",
+    "merge_state": "UNKNOWN"
    },
    {
     "issue_id": 111,
@@ -14511,6 +14511,20 @@
     "cost_usd": 0.057276499999999994,
     "ok": 1,
     "result_json": "{\"parsed\":{\"title\":\"feat(vn-money-words): bundle stdlib Python scripts for money-words and tax-id\",\"body\":\"## What & why\\n\\nCloses #308\\n\\nOn the Claude API (no network, no package install) and on claude.ai without network, `npx -y @vn-skills/cli` cannot run, so `vn-money-words` and `vn-tax-id` fail. This adds Python 3.11, standard-library-only ports of the existing TS logic. They make no network calls. They print the same JSON shapes as the CLI: `{ok: true, ...}` and `{ok: false, error: {code, message, hint}}`.\\n\\n- `skills/vn-money-words/scripts/money_words.py`: `words <amount> [--thousand nghin|ngan] [--odd le|linh] [--plain]` and `parse <text>`. Ported from `packages/core/src/money/index.ts`.\\n- `skills/vn-tax-id/scripts/taxid.py`: `validate <mst>` and `check-digit <first9>`. Ported from `packages/core/src/taxid/index.ts`.\\n- Both `SKILL.md` files get a short section: if `npx` is unavailable, run `python3 scripts/<file>.py ...` from the skill folder, with one example. Trigger words are kept.\\n- `eslint.config.js`: an override so `tests/python-scripts.test.ts` lints.\\n\\nNo new rules were added, and no core or data files changed.\\n\\n## Acceptance checklist from #308\\n\\n- [x] `tests/python-scripts.test.ts` runs both scripts via `python3` over every golden case in `tests/golden/vn-money-words.json` and `tests/golden/vn-tax-id.json` that the scripts cover. It asserts the same expected values and is skipped with a warning if `python3` is not on PATH.\\n- [x] Error cases (empty i",
+    "models": "claude-sonnet-5.5"
+   },
+   {
+    "id": 696,
+    "run_id": "63af8ee0-7f62-4f1a-818d-4891d21769f0",
+    "issue_id": 110,
+    "agent": "followup",
+    "started_at": "2026-11-03T04:16:54.457Z",
+    "duration_ms": 27560,
+    "input_tokens": 119534,
+    "output_tokens": 2620,
+    "cost_usd": 0.07936,
+    "ok": 1,
+    "result_json": "{\"parsed\":{\"action\":\"reply\",\"message\":\"Thanks for the CI report. The failing vietqr-python tests replay every golden case in tests/golden/vietqr.json through skills/vietqr/scripts/vietqr.py. My new additionalData cases are included, but the Python script doesn't support additionalData yet, so it ignores the field. I can't reproduce this on my current base, which predates the Python script and its test. After the rebase onto main I'll add additionalData support to vietqr.py (build validation with INVALID_ADDITIONAL_DATA, and parse output) so the golden cases pass. If you'd rather keep the Python script unchanged, the alternative is to exclude the additionalData cases from the Python test, as is already done for rawNote.\"},\"result\":\"The `tests/vietqr-python.test.ts` failure comes from files that don't exist on this checkout's base commit (8dbbae6). That base predates the `skills/vietqr/scripts/vietqr.py` port and its test, so I can't reproduce or fix it here without a rebase, and I made no changes.\\n\\nThe cause is clear from the log. The Python test replays every golden case in `tests/golden/vietqr.json` through `vietqr.py`. My new `additionalData` cases are replayed too, but `vietqr.py` doesn't support them, so it ignores the field and the results don't match.\\n\\nOnce the branch is rebased onto main, the fix is one of two things:\\n- Add `additionalData` support to `vietqr.py`: build rejects bad keys and values with `INVALID_ADDITIONAL_DATA`, and parse returns `additionalData`.",
     "models": "claude-sonnet-5.5"
    }
   ],
