@@ -1,5 +1,6 @@
 import { Command } from 'commander';
 import { validateTaxId, taxIdCheckDigitResult } from '@vn-skills/core';
+import { runBulkFile, type BulkOpts } from '../bulk.js';
 import { failExit, kv, printJson, wantsJson } from '../output.js';
 
 export function registerTaxid(program: Command): void {
@@ -24,6 +25,19 @@ export function registerTaxid(program: Command): void {
           ]) + '\n',
         );
       if (!wantsJson(c)) for (const w of r.warnings) process.stderr.write(`warning: ${w}\n`);
+    });
+  cmd
+    .command('validate-file <file>')
+    .description(
+      'Validate many tax IDs from a file ("-" = stdin): one per line (NDJSON out) or a CSV column (CSV out with valid, normalized appended)',
+    )
+    .option('--csv', 'input is CSV with a header row; output is CSV with result columns appended')
+    .option('--column <name>', 'CSV column holding the tax ID (required with --csv)')
+    .action((file: string, opts: BulkOpts, c: Command) => {
+      runBulkFile(c, file, opts, ['normalized'], (v) => {
+        const r = validateTaxId(v);
+        return { result: r, cells: [r.ok ? r.normalized : ''] };
+      });
     });
   cmd
     .command('check-digit <first9>')

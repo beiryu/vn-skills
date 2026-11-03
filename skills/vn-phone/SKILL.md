@@ -31,6 +31,8 @@ npx -y @vn-skills/cli phone "+84 162 123 4567"
 Landlines return `areaCode`, `province` (legacy 63-province name) and `province2025` (the province it was merged into).
 Invalid input exits with code 1 and `error.code` of `EMPTY`, `INVALID_FORMAT`, `INVALID_LENGTH` or `UNKNOWN_PREFIX`.
 
+Bulk check ("kiểm tra hàng loạt số điện thoại", "file CSV"): `phone parse-file <file>` (`-` = stdin) prints NDJSON `{ line, input, ...result }`; with `--csv --column <name>` it writes the CSV with `valid`, `e164` and `carrier` appended. Exit code 2 if any row is invalid; `--json` prints `{ total, valid, invalid }` on stderr.
+
 Library: `import { parsePhone } from '@vn-skills/core'`. MCP tool: `vn_phone`.
 
 ## Rules
