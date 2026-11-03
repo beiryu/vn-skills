@@ -74,3 +74,12 @@ Library: `import { validateTaxId, isValidTaxId, taxIdCheckDigit } from '@vn-skil
 - Treating a valid checksum as proof the company exists. Say "structurally valid" in your answer.
 - Dropping the dash (or underscore) and then mis-reading `0100233488-01` as a 12-digit personal ID. The tool rejects dashed or underscored forms that are not 10-3.
 - Stripping leading zeros (`0100233488` must keep its `0`). Store tax IDs as strings, never numbers.
+
+## Without npx (offline fallback)
+
+If `npx` is unavailable (no network or Node.js), run the bundled Python 3 script (standard library only) from the skill folder:
+
+```bash
+python3 scripts/taxid.py validate 0100233488-001
+python3 scripts/taxid.py check-digit 010023348
+```

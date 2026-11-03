@@ -86,6 +86,11 @@ export default tseslint.config(
     },
   },
   {
+    // Parses untyped JSON printed by the bundled Python scripts.
+    files: ['tests/python-scripts.test.ts'],
+    rules: { '@typescript-eslint/no-explicit-any': 'off' },
+  },
+  {
     // vm.createContext() hands back the sandbox typed loosely; the double cast reads the globals.
     files: ['tests/sheets.test.ts'],
     rules: { '@typescript-eslint/no-unnecessary-type-assertion': 'off' },
