@@ -8,3 +8,4 @@ vn-skills-SPEC.md
 # Written by release-please on every release, in its own format.
 CHANGELOG.md
 .release-please-manifest.json
+skills/vietqr/scripts/banks.json
