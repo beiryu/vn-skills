@@ -60,7 +60,7 @@ Empty or blank input returns `code: "EMPTY"` with a hint listing the accepted fo
 
 Compute the check digit for the first 9 digits: `npx -y @vn-skills/cli taxid check-digit 010023348` → `0100233488`.
 
-Library: `import { validateTaxId, isValidTaxId, taxIdCheckDigit } from '@vn-skills/core'`.
+Library: `import { validateTaxId, isValidTaxId, taxIdCheckDigit } from '@vn-skills/core'`. MCP tools: `vn_tax_id_validate`; `vn_tax_id_validate_batch` for up to 1000 tax IDs per call.
 
 ## Format rules (Circular 105/2020/TT-BTC, Law on Tax Administration 2019 art. 30)
 

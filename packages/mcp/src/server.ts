@@ -79,6 +79,23 @@ const json = (data: unknown, isError = false): ToolResult => ({
 
 const mock = new MockProvider();
 
+const batchRows = (
+  inputs: unknown[],
+  fn: (s: string) => { ok: boolean },
+): { ok: true; results: unknown[]; summary: { total: number; valid: number; invalid: number } } => {
+  const results = inputs.map((input, index) => ({
+    index,
+    input,
+    ...fn(typeof input === 'string' ? input : ''),
+  }));
+  const valid = results.filter((r) => r.ok).length;
+  return {
+    ok: true,
+    results,
+    summary: { total: results.length, valid, invalid: results.length - valid },
+  };
+};
+
 const OFFLINE_READ_ONLY = {
   readOnlyHint: true,
   destructiveHint: false,
@@ -383,6 +400,29 @@ export function createServer(): McpServer {
   );
 
   server.registerTool(
+    'vn_tax_id_validate_batch',
+    {
+      title: 'Validate many tax IDs',
+      annotations: OFFLINE_READ_ONLY,
+      description:
+        'Check up to 1000 Vietnamese tax IDs (mã số thuế) in one call. Returns per-row results (same fields as the single-value tool) plus a summary of total, valid and invalid rows. Null, empty or non-string entries do not fail the call: they come back as failed rows (ok:false, error code EMPTY) and are counted in summary.invalid.',
+      inputSchema: {
+        taxIds: z
+          .array(z.unknown())
+          .max(1000)
+          .describe('Tax IDs (max 1000); null or empty entries become failed rows'),
+      },
+    },
+    async ({ taxIds }) =>
+      json(
+        batchRows(taxIds, (x) => {
+          const r = validateTaxId(x);
+          return r.ok ? { ...r, valid: true } : { ok: false, valid: false, error: r.error };
+        }),
+      ),
+  );
+
+  server.registerTool(
     'vn_tax_id_validate',
     {
       title: 'Validate tax ID',
@@ -400,6 +440,23 @@ export function createServer(): McpServer {
   );
 
   server.registerTool(
+    'vn_id_parse_batch',
+    {
+      title: 'Parse many citizen IDs',
+      annotations: OFFLINE_READ_ONLY,
+      description:
+        'Check up to 1000 Vietnamese CCCD/CMND numbers in one call. Returns per-row results (same fields as the single-value tool) plus a summary of total, valid and invalid rows. Null, empty or non-string entries do not fail the call: they come back as failed rows (ok:false, error code EMPTY) and are counted in summary.invalid.',
+      inputSchema: {
+        ids: z
+          .array(z.unknown())
+          .max(1000)
+          .describe('Citizen ID numbers (max 1000); null or empty entries become failed rows'),
+      },
+    },
+    async ({ ids }) => json(batchRows(ids, (x) => parseCitizenId(x))),
+  );
+
+  server.registerTool(
     'vn_id_parse',
     {
       title: 'Parse citizen ID',
@@ -412,6 +469,23 @@ export function createServer(): McpServer {
       const r = parseCitizenId(id);
       return r.ok ? json(r) : json(r, true);
     },
+  );
+
+  server.registerTool(
+    'vn_phone_parse_batch',
+    {
+      title: 'Parse many phone numbers',
+      annotations: OFFLINE_READ_ONLY,
+      description:
+        'Check up to 1000 Vietnamese phone numbers in one call. Returns per-row results (same fields as the single-value tool) plus a summary of total, valid and invalid rows. Null, empty or non-string entries do not fail the call: they come back as failed rows (ok:false, error code EMPTY) and are counted in summary.invalid.',
+      inputSchema: {
+        phones: z
+          .array(z.unknown())
+          .max(1000)
+          .describe('Phone numbers (max 1000); null or empty entries become failed rows'),
+      },
+    },
+    async ({ phones }) => json(batchRows(phones, parsePhone)),
   );
 
   server.registerTool(
