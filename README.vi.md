@@ -43,6 +43,14 @@ vn-skills address convert-file customers.csv --csv --column address > converted.
 vn-skills address convert-file customers.csv --csv --province-column province --district-column district --ward-column ward > converted.csv
 ```
 
+Kiểm tra hàng loạt mã số thuế, CCCD hoặc số điện thoại (mỗi dòng một giá trị → NDJSON, hoặc một cột CSV kèm cột `valid` và các cột kết quả; thoát với mã 2 nếu có dòng không hợp lệ):
+
+```bash
+vn-skills taxid validate-file suppliers.csv --csv --column mst > checked.csv
+vn-skills id parse-file ids.txt
+vn-skills phone parse-file phones.txt
+```
+
 ## Cài skill
 
 **Plugin Claude Code** (tất cả skill + MCP server, một lệnh):

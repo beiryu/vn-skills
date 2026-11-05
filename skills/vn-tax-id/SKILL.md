@@ -60,6 +60,8 @@ Empty or blank input returns `code: "EMPTY"` with a hint listing the accepted fo
 
 Compute the check digit for the first 9 digits: `npx -y @vn-skills/cli taxid check-digit 010023348` → `0100233488`.
 
+Bulk check ("kiểm tra hàng loạt MST", "file CSV"): `taxid validate-file <file>` (`-` = stdin) prints NDJSON `{ line, input, ...result }`; with `--csv --column <name>` it writes the CSV with `valid` and `normalized` appended. Exit code 2 if any row is invalid; `--json` prints `{ total, valid, invalid }` on stderr.
+
 Library: `import { validateTaxId, isValidTaxId, taxIdCheckDigit } from '@vn-skills/core'`.
 
 ## Format rules (Circular 105/2020/TT-BTC, Law on Tax Administration 2019 art. 30)

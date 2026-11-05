@@ -1,5 +1,6 @@
 import { Command } from 'commander';
 import { parseCitizenId } from '@vn-skills/core';
+import { runBulkFile, type BulkOpts } from '../bulk.js';
 import { failExit, kv, printJson, wantsJson } from '../output.js';
 
 export function registerId(program: Command): void {
@@ -33,5 +34,20 @@ export function registerId(program: Command): void {
           ]) + '\n',
         );
       if (!wantsJson(c)) for (const w of r.warnings) process.stderr.write(`warning: ${w}\n`);
+    });
+  cmd
+    .command('parse-file <file>')
+    .description(
+      'Parse many CCCD/CMND numbers from a file ("-" = stdin): one per line (NDJSON out) or a CSV column (CSV out with valid, province, birthYear appended)',
+    )
+    .option('--csv', 'input is CSV with a header row; output is CSV with result columns appended')
+    .option('--column <name>', 'CSV column holding the ID number (required with --csv)')
+    .action((file: string, opts: BulkOpts, c: Command) => {
+      runBulkFile(c, file, opts, ['province', 'birthYear'], (v) => {
+        const r = parseCitizenId(v);
+        const cells =
+          r.ok && r.kind !== 'cmnd' ? [r.province?.fullName ?? '', String(r.birthYear)] : ['', ''];
+        return { result: r, cells };
+      });
     });
 }

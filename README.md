@@ -43,6 +43,14 @@ vn-skills address convert-file customers.csv --csv --column address > converted.
 vn-skills address convert-file customers.csv --csv --province-column province --district-column district --ward-column ward > converted.csv
 ```
 
+Bulk-check tax IDs, CCCD numbers or phones (one per line → NDJSON, or a CSV column with `valid` and result columns appended; exit code 2 if some rows are invalid):
+
+```bash
+vn-skills taxid validate-file suppliers.csv --csv --column mst > checked.csv
+vn-skills id parse-file ids.txt
+vn-skills phone parse-file phones.txt
+```
+
 ## Install the skills
 
 **Claude Code plugin** (all skills + the MCP server, one command):

@@ -908,6 +908,128 @@ describe('vn-skills install', () => {
   });
 });
 
+describe('bulk file commands (taxid validate-file, id parse-file, phone parse-file)', () => {
+  const tmpFile = (name: string, content: string) => {
+    const file = join(mkdtempSync(join(tmpdir(), 'vn-skills-')), name);
+    writeFileSync(file, content);
+    return file;
+  };
+  const ndjson = (out: string) =>
+    out
+      .split('\n')
+      .filter((l) => l.trim() !== '')
+      .map((l) => JSON.parse(l) as Record<string, unknown>);
+  const csvLines = (out: string) =>
+    out
+      .split('\n')
+      .filter((l) => l.trim() !== '')
+      .map((l) => l.split(','));
+
+  const cases = [
+    {
+      name: 'taxid validate-file',
+      cmd: ['taxid', 'validate-file'],
+      good: '0100233488-001',
+      bad: 'abc',
+      extra: ['normalized'],
+    },
+    {
+      name: 'id parse-file',
+      cmd: ['id', 'parse-file'],
+      good: '001099012345',
+      bad: 'abc',
+      extra: ['province', 'birthYear'],
+    },
+    {
+      name: 'phone parse-file',
+      cmd: ['phone', 'parse-file'],
+      good: '0912345678',
+      bad: 'abc',
+      extra: ['e164', 'carrier'],
+    },
+  ];
+
+  for (const c of cases) {
+    describe(c.name, () => {
+      it('is listed in --help', () => {
+        expect(run([...c.cmd, '--help']).code).toBe(0);
+        expect(run([c.cmd[0]!, '--help']).out).toContain(c.cmd[1]!);
+      });
+
+      it('plain text: NDJSON with 1-based line numbers, blanks skipped, exit 0', () => {
+        const file = tmpFile('ok.txt', `${c.good}\n\n${c.good}\n`);
+        const r = run([...c.cmd, file]);
+        expect(r.code).toBe(0);
+        const rows = ndjson(r.out);
+        expect(rows.map((o) => o.line)).toEqual([1, 3]);
+        expect(rows[0]!.input).toBe(c.good);
+      });
+
+      it('plain text with an invalid row exits 2', () => {
+        const file = tmpFile('bad.txt', `${c.good}\n${c.bad}\n`);
+        const r = run([...c.cmd, file]);
+        expect(r.code).toBe(2);
+        const rows = ndjson(r.out);
+        expect(rows).toHaveLength(2);
+        expect(rows[1]!.line).toBe(2);
+        expect(rows[1]!.input).toBe(c.bad);
+      });
+
+      it('reads stdin with "-"', () => {
+        const r = run([...c.cmd, '-'], `${c.good}\n`);
+        expect(r.code).toBe(0);
+        const rows = ndjson(r.out);
+        expect(rows).toHaveLength(1);
+        expect(rows[0]!.input).toBe(c.good);
+      });
+
+      it('--csv --column appends valid and result columns, exit 2 on invalid row', () => {
+        const file = tmpFile('in.csv', `id,value\n1,${c.good}\n2,${c.bad}\n`);
+        const r = run([...c.cmd, file, '--csv', '--column', 'value']);
+        expect(r.code).toBe(2);
+        const rows = csvLines(r.out);
+        expect(rows).toHaveLength(3);
+        const header = rows[0]!;
+        expect(header.slice(0, 2)).toEqual(['id', 'value']);
+        for (const col of ['valid', ...c.extra]) expect(header).toContain(col);
+        const v = header.indexOf('valid');
+        expect(rows[1]![v]).toBe('true');
+        expect(rows[2]![v]).toBe('false');
+      });
+
+      it('--json: summary { total, valid, invalid } on stderr', () => {
+        const file = tmpFile('sum.txt', `${c.good}\n${c.bad}\n`);
+        const r = run(['--json', ...c.cmd, file]);
+        expect(r.code).toBe(2);
+        expect(r.err).toContain('"total"');
+        expect(JSON.parse(r.err.trim().split('\n').pop()!)).toMatchObject({
+          total: 2,
+          valid: 1,
+          invalid: 1,
+        });
+      });
+
+      it('--json: missing file prints READ_ERROR', () => {
+        const missing = join(mkdtempSync(join(tmpdir(), 'vn-skills-')), 'nofile');
+        const r = run(['--json', ...c.cmd, missing]);
+        expect(r.code).toBe(1);
+        expect(r.json()).toMatchObject({ ok: false, error: { code: 'READ_ERROR' } });
+      });
+
+      it('--json: unknown column prints COLUMN_NOT_FOUND', () => {
+        const file = tmpFile('col.csv', `id,value\n1,${c.good}\n`);
+        const r = run(['--json', ...c.cmd, file, '--csv', '--column', 'nope']);
+        expect(r.code).toBe(1);
+        expect(r.json()).toMatchObject({ ok: false, error: { code: 'COLUMN_NOT_FOUND' } });
+      });
+    });
+  }
+
+  it('phone <number> still works as a single-value command', () => {
+    expect(run(['--json', 'phone', '0912345678']).json().e164).toBe('+84912345678');
+  });
+});
+
 function words15() {
   const r = numberToWords(15);
   if (!r.ok) throw new Error(r.error.message);
