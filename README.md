@@ -77,6 +77,14 @@ they call `npx -y @vn-skills/cli`. `.agents/skills/` is read by Codex ([docs](ht
 
 **Inside this repository** run `node packages/cli/dist/index.js …` instead of `npx -y @vn-skills/cli …` to get clean JSON. `pnpm vn-skills …` also works but adds wrapper output (the echoed command and `[ELIFECYCLE]` on failures).
 
+### claude.ai and the Claude API
+
+```bash
+npx -y @vn-skills/cli install all --zip skills-zip    # writes skills-zip/<skill>.zip
+```
+
+Upload the zips in claude.ai under Customize > Skills, or through the Claude API Skills endpoint. On claude.ai each user uploads their own copy. Only `vietqr`, `vn-money-words` and `vn-tax-id` bundle Python scripts that work there without npx or network; the other skills need Node.js and network (`npx`), so they may not work on the Claude API. Existing zips are kept without `--force`; `--dry-run` writes nothing.
+
 ## MCP server
 
 ```bash
