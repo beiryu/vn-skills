@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.9.0](https://github.com/beiryu/vn-skills/compare/v0.8.0...v0.9.0) (2026-11-05)
+
+
+### Features
+
+* **cli:** add --encoding and BOM detection for file input ([#322](https://github.com/beiryu/vn-skills/issues/322)) ([d555cc1](https://github.com/beiryu/vn-skills/commit/d555cc13a7e9c0c54a666877960bc9ee37879be9)), closes [#319](https://github.com/beiryu/vn-skills/issues/319)
+* **cli:** add install --zip to build per-skill zips ([#321](https://github.com/beiryu/vn-skills/issues/321)) ([9931107](https://github.com/beiryu/vn-skills/commit/99311074515323d32a31fda39d03105cb7599ffd)), closes [#320](https://github.com/beiryu/vn-skills/issues/320)
+* **mcp:** add batch tools for tax ID, CCCD and phone checks ([#324](https://github.com/beiryu/vn-skills/issues/324)) ([54cf166](https://github.com/beiryu/vn-skills/commit/54cf166c5b0ef427b35a6e569f6510510ea0c72a)), closes [#317](https://github.com/beiryu/vn-skills/issues/317)
+* **mcp:** serve OpenAPI 3.1 and REST tool routes with --http --rest ([#305](https://github.com/beiryu/vn-skills/issues/305)) ([7087ef8](https://github.com/beiryu/vn-skills/commit/7087ef87fc4f902925feedcc3fe2f330449713f1)), closes [#302](https://github.com/beiryu/vn-skills/issues/302)
+* **vietqr:** add stdlib-only Python fallback script for the skill ([#312](https://github.com/beiryu/vn-skills/issues/312)) ([4465c86](https://github.com/beiryu/vn-skills/commit/4465c865afe17e59c084cb25e28941cfd9f411ac)), closes [#307](https://github.com/beiryu/vn-skills/issues/307)
+* **vn-money-words:** bundle stdlib Python scripts for money-words and tax-id ([#311](https://github.com/beiryu/vn-skills/issues/311)) ([7a55b64](https://github.com/beiryu/vn-skills/commit/7a55b64dfb5d71321901caa0f8951f86ce9b78a8)), closes [#308](https://github.com/beiryu/vn-skills/issues/308)
+* **vn-number-format:** add maskVndInput for live VND input masking ([#304](https://github.com/beiryu/vn-skills/issues/304)) ([ba278a0](https://github.com/beiryu/vn-skills/commit/ba278a0e360df0ff5d9d078772e01fea1ea361f3)), closes [#303](https://github.com/beiryu/vn-skills/issues/303)
+
 ## [0.8.0](https://github.com/beiryu/vn-skills/compare/v0.7.0...v0.8.0) (2026-10-30)
 
 
