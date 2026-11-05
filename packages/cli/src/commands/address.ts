@@ -1,4 +1,3 @@
-import { readFileSync } from 'node:fs';
 import { Command } from 'commander';
 import {
   convertAddress,
@@ -12,8 +11,10 @@ import {
 } from '@vn-skills/core';
 import { parseCsv, toCsv } from '../csv.js';
 import { failExit, kv, printJson, wantsJson } from '../output.js';
+import { readTextInput } from '../input.js';
 
 interface ConvertFileOpts {
+  encoding?: string;
   csv?: boolean;
   column?: string;
   provinceColumn?: string;
@@ -171,6 +172,7 @@ export function registerAddress(program: Command): void {
     .option('--district-column <name>', 'CSV column holding the district (optional)')
     .option('--ward-column <name>', 'CSV column holding the ward (optional)')
     .option('--street-column <name>', 'CSV column holding the street (optional)')
+    .option('--encoding <label>', 'input encoding (utf-8, windows-1258, utf-16le, utf-16be)')
     .action((file: string, opts: ConvertFileOpts, c: Command) => {
       const structured =
         opts.provinceColumn || opts.districtColumn || opts.wardColumn || opts.streetColumn;
@@ -198,16 +200,7 @@ export function registerAddress(program: Command): void {
           message: '--csv requires --column <name> (the address column)',
           hint: 'Pass --column <name> with the CSV header of the address column.',
         });
-      let text: string;
-      try {
-        text = file === '-' ? readFileSync(0, 'utf8') : readFileSync(file, 'utf8');
-      } catch (e) {
-        return failExit(c, {
-          code: 'READ_ERROR',
-          message: `cannot read ${file}: ${(e as Error).message}`,
-          hint: 'Check the path and permissions, or pass "-" to read stdin.',
-        });
-      }
+      const text = readTextInput(file, opts.encoding, c);
       let ok = 0;
       let failed = 0;
       if (opts.csv) {

@@ -1,5 +1,5 @@
 import { Command } from 'commander';
-import { readFileSync } from 'node:fs';
+import { readTextInput } from '../input.js';
 import { moneyToWords, numberToWords, toSpokenText, wordsToNumber } from '@vn-skills/core';
 import { failExit, printJson, wantsJson } from '../output.js';
 
@@ -43,8 +43,9 @@ export function registerMoney(program: Command): void {
     .description(
       'Rewrite numbers, money, %, phones and dates in text as spoken Vietnamese (use - for stdin)',
     )
-    .action((text: string, _opts, c: Command) => {
-      const r = toSpokenText(text === '-' ? readFileSync(0, 'utf8') : text);
+    .option('--encoding <label>', 'encoding of stdin (utf-8, windows-1258, utf-16le, utf-16be)')
+    .action((text: string, opts, c: Command) => {
+      const r = toSpokenText(text === '-' ? readTextInput('-', opts.encoding, c) : text);
       if (!r.ok) failExit(c, r.error);
       if (wantsJson(c))
         printJson({ ok: true, text: r.text, changes: r.changes, skipped: r.skipped });
