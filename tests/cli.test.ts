@@ -52,6 +52,25 @@ describe('vn-skills CLI', () => {
       expect(r.out).toContain(c);
   });
 
+  it('vietqr build --data adds tag 62 sub-fields and parse shows them', () => {
+    const b = run([
+      'vietqr',
+      'build',
+      '--bank',
+      'VCB',
+      '--account',
+      '0011001234567',
+      '--data',
+      '05=ORDER123',
+      '--data',
+      '07=POS01',
+      '--json',
+    ]);
+    expect(b.code).toBe(0);
+    const p = run(['vietqr', 'parse', String(b.json().payload), '--json']);
+    expect(p.json().additionalData).toEqual({ '05': 'ORDER123', '07': 'POS01' });
+    expect(run(['vietqr', 'parse', String(b.json().payload)]).out).toContain('ORDER123');
+  });
   it('vietqr build writes a scannable PNG whose payload parses back', () => {
     const dir = mkdtempSync(join(tmpdir(), 'vn-skills-'));
     const file = join(dir, 'qr.png');

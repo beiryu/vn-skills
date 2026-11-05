@@ -29,6 +29,48 @@
     "searchBanksFirst": [{ "name": "exact match first", "input": "vcb", "expected": { "bin": "970436" } }],
     "buildVietQR": [
       {
+        "name": "additionalData round trip payload",
+        "input": { "bank": "VCB", "account": "0011001234567", "additionalData": { "05": "ORDER123" } },
+        "expected": {
+          "ok": true,
+          "payload": "00020101021138570010A00000072701270006970436011300110012345670208QRIBFTTA53037045802VN62120508ORDER12363040CF0"
+        }
+      },
+      {
+        "name": "additionalData key 08 is rejected",
+        "input": { "bank": "VCB", "account": "123", "additionalData": { "08": "x" } },
+        "expected": { "ok": false, "error": { "code": "INVALID_ADDITIONAL_DATA" } }
+      },
+      {
+        "name": "additionalData key must be two digits",
+        "input": { "bank": "VCB", "account": "123", "additionalData": { "8": "x" } },
+        "expected": { "ok": false, "error": { "code": "INVALID_ADDITIONAL_DATA" } }
+      },
+      {
+        "name": "additionalData key ab is rejected",
+        "input": { "bank": "VCB", "account": "123", "additionalData": { "ab": "x" } },
+        "expected": { "ok": false, "error": { "code": "INVALID_ADDITIONAL_DATA" } }
+      },
+      {
+        "name": "additionalData value over 99 chars is rejected",
+        "input": { "bank": "VCB", "account": "123", "additionalData": { "05": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" } },
+        "expected": { "ok": false, "error": { "code": "INVALID_ADDITIONAL_DATA" } }
+      },
+      {
+        "name": "additionalData tag 62 over 99 chars is rejected",
+        "input": {
+          "bank": "VCB",
+          "account": "123",
+          "additionalData": { "05": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "07": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb" }
+        },
+        "expected": { "ok": false, "error": { "code": "INVALID_ADDITIONAL_DATA" } }
+      },
+      {
+        "name": "additionalData empty value is rejected",
+        "input": { "bank": "VCB", "account": "123", "additionalData": { "05": "" } },
+        "expected": { "ok": false, "error": { "code": "INVALID_ADDITIONAL_DATA" } }
+      },
+      {
         "name": "inner spaces in the account are removed with a warning",
         "input": { "bank": "VCB", "account": "0011 0012 34567" },
         "expected": {
@@ -158,6 +200,11 @@
       }
     ],
     "parseVietQR": [
+      {
+        "name": "additionalData is read from tag 62",
+        "input": "00020101021138570010A00000072701270006970436011300110012345670208QRIBFTTA53037045802VN62120508ORDER12363040CF0",
+        "expected": { "ok": true, "crcValid": true, "additionalData": { "05": "ORDER123" } }
+      },
       {
         "name": "CRC value 6304 is not mistaken for the CRC tag header",
         "input": "00020101021238470010A0000007270117000697043601031230208QRIBFTTA530370454061484445802VN63046304",

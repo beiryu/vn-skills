@@ -109,6 +109,19 @@ describe('vn-skills MCP server', () => {
     for (const t of tools) expect(t.description?.length ?? 0).toBeGreaterThan(30);
   });
 
+  it('vietqr_build accepts additionalData and vietqr_parse returns it', async () => {
+    const b = text(
+      await client.callTool({
+        name: 'vietqr_build',
+        arguments: { bank: 'VCB', account: '0011001234567', additionalData: { '05': 'ORDER123' } },
+      }),
+    );
+    expect(b.ok).toBe(true);
+    const p = text(
+      await client.callTool({ name: 'vietqr_parse', arguments: { payload: b.payload } }),
+    );
+    expect(p.additionalData).toEqual({ '05': 'ORDER123' });
+  });
   it('vietqr_build returns payload and image', async () => {
     const r = await client.callTool({
       name: 'vietqr_build',
