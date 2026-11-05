@@ -41,7 +41,10 @@ Bulk-convert stored addresses (one per line → NDJSON, or a CSV column; exit co
 vn-skills address convert-file addresses.txt
 vn-skills address convert-file customers.csv --csv --column address > converted.csv
 vn-skills address convert-file customers.csv --csv --province-column province --district-column district --ward-column ward > converted.csv
+vn-skills address convert-file addresses.txt --encoding windows-1258
 ```
+
+UTF-8/UTF-16 byte-order marks are detected automatically; use `--encoding <label>` (e.g. `windows-1258`, `utf-16le`) for files saved by Vietnamese Windows/Excel. `einvoice` file commands and `money speak -` accept it too.
 
 ## Install the skills
 
@@ -76,6 +79,14 @@ the actions only.
 they call `npx -y @vn-skills/cli`. `.agents/skills/` is read by Codex ([docs](https://learn.chatgpt.com/docs/build-skills)), Cursor ([docs](https://cursor.com/docs/skills)), Gemini CLI ([docs](https://geminicli.com/docs/cli/skills/)) and GitHub Copilot in VS Code, Copilot CLI and the cloud agent ([docs](https://docs.github.com/en/copilot/concepts/customizations/agent-skills)); install there with `--agent agents`. For the Copilot cloud agent, install in project scope (`--agent agents` without `--global`), because the cloud agent does not load personal skills.
 
 **Inside this repository** run `node packages/cli/dist/index.js …` instead of `npx -y @vn-skills/cli …` to get clean JSON. `pnpm vn-skills …` also works but adds wrapper output (the echoed command and `[ELIFECYCLE]` on failures).
+
+### claude.ai and the Claude API
+
+```bash
+npx -y @vn-skills/cli install all --zip skills-zip    # writes skills-zip/<skill>.zip
+```
+
+Upload the zips in claude.ai under Customize > Skills, or through the Claude API Skills endpoint. On claude.ai each user uploads their own copy. Only `vietqr`, `vn-money-words` and `vn-tax-id` bundle Python scripts that work there without npx or network; the other skills need Node.js and network (`npx`), so they may not work on the Claude API. Existing zips are kept without `--force`; `--dry-run` writes nothing.
 
 ## MCP server
 

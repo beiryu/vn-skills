@@ -1,5 +1,4 @@
 import { Command } from 'commander';
-import { readFileSync } from 'node:fs';
 import {
   validateInvoice,
   computeTotals,
@@ -13,10 +12,13 @@ import {
   type VnError,
 } from '@vn-skills/core';
 import { failExit, printJson, wantsJson } from '../output.js';
+import { readTextInput } from '../input.js';
 
-function readInvoice(file: string, c: Command): unknown {
+const ENCODING_DESC = 'input encoding (utf-8, windows-1258, utf-16le, utf-16be)';
+
+function readInvoice(file: string, c: Command, encoding?: string): unknown {
+  const text = readTextInput(file, encoding, c);
   try {
-    const text = file === '-' ? readFileSync(0, 'utf8') : readFileSync(file, 'utf8');
     return JSON.parse(text);
   } catch (e) {
     return failExit(c, {
@@ -34,8 +36,9 @@ export function registerEinvoice(program: Command): void {
   cmd
     .command('validate <file>')
     .description('Validate an invoice JSON file (use - for stdin)')
-    .action((file: string, _o, c: Command) => {
-      const v = validateInvoice(readInvoice(file, c));
+    .option('--encoding <label>', ENCODING_DESC)
+    .action((file: string, o, c: Command) => {
+      const v = validateInvoice(readInvoice(file, c, o.encoding));
       if (wantsJson(c)) printJson({ ok: v.ok, errors: v.errors, warnings: v.warnings });
       else {
         for (const e of v.errors) process.stdout.write(`error    ${e.path}: ${e.message}\n`);
@@ -51,8 +54,9 @@ export function registerEinvoice(program: Command): void {
     .command('totals <file>')
     .description('Compute line amounts, VAT breakdown, grand total and amount in words')
     .option('--thousand <word>', '"nghìn" (default) or "ngàn"')
+    .option('--encoding <label>', ENCODING_DESC)
     .action((file: string, opts, c: Command) => {
-      const v = validateInvoice(readInvoice(file, c));
+      const v = validateInvoice(readInvoice(file, c, opts.encoding));
       if (!v.ok)
         failExit(c, {
           code: 'INVALID_INVOICE',
@@ -96,8 +100,9 @@ export function registerEinvoice(program: Command): void {
     .command('create <file>')
     .description('Issue an invoice through a provider (only "mock" works in this version)')
     .option('-p, --provider <name>', `provider: ${PROVIDER_NAMES.join(' | ')}`, 'mock')
+    .option('--encoding <label>', ENCODING_DESC)
     .action(async (file: string, opts, c: Command) => {
-      const v = validateInvoice(readInvoice(file, c));
+      const v = validateInvoice(readInvoice(file, c, opts.encoding));
       if (!v.ok)
         failExit(c, {
           code: 'INVALID_INVOICE',

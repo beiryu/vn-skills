@@ -495,6 +495,90 @@ describe('vn-skills CLI', () => {
       expect(rows[0]!.line).toBe(1);
     });
 
+    describe('encodings', () => {
+      const tmpBytes = (name: string, bytes: Buffer) => {
+        const file = join(mkdtempSync(join(tmpdir(), 'vn-skills-')), name);
+        writeFileSync(file, bytes);
+        return file;
+      };
+      // 'P. Bến Nghé, Q.1, TP.HCM' in Windows-1258: ê = EA, combining acute = EC, é = E9.
+      const cp1258 = Buffer.concat([
+        Buffer.from('P. B', 'latin1'),
+        Buffer.from([0xea, 0xec]),
+        Buffer.from('n Ngh', 'latin1'),
+        Buffer.from([0xe9]),
+        Buffer.from(', Q.1, TP.HCM\n', 'latin1'),
+      ]);
+      const expected = () =>
+        ndjson(run(['address', 'convert-file', tmpFile('u.txt', `${OLD}\n`)]).out);
+
+      it('--encoding windows-1258 gives the same output as the UTF-8 file', () => {
+        const r = run([
+          'address',
+          'convert-file',
+          tmpBytes('w.txt', cp1258),
+          '--encoding',
+          'windows-1258',
+        ]);
+        expect(r.code).toBe(0);
+        expect(ndjson(r.out)).toEqual(expected());
+      });
+
+      it('detects a UTF-16LE byte-order mark without --encoding', () => {
+        const buf = Buffer.concat([Buffer.from([0xff, 0xfe]), Buffer.from(`${OLD}\n`, 'utf16le')]);
+        const r = run(['address', 'convert-file', tmpBytes('le.txt', buf)]);
+        expect(r.code).toBe(0);
+        expect(ndjson(r.out)).toEqual(expected());
+      });
+
+      it('detects a UTF-16BE byte-order mark without --encoding', () => {
+        const le = Buffer.from(`${OLD}\n`, 'utf16le');
+        const be = Buffer.from(le).swap16();
+        const r = run([
+          'address',
+          'convert-file',
+          tmpBytes('be.txt', Buffer.concat([Buffer.from([0xfe, 0xff]), be])),
+        ]);
+        expect(r.code).toBe(0);
+        expect(ndjson(r.out)).toEqual(expected());
+      });
+
+      it('Windows-1258 bytes read as UTF-8 give an ENCODING error with a hint', () => {
+        const r = run(['--json', 'address', 'convert-file', tmpBytes('bad.txt', cp1258)]);
+        expect(r.code).toBe(1);
+        const j = r.json() as {
+          ok: boolean;
+          error: { code: string; message: string; hint: string };
+        };
+        expect(j.ok).toBe(false);
+        expect(j.error.code).toBe('ENCODING');
+        expect(j.error.message).toContain('1');
+        expect(j.error.hint).toContain('--encoding windows-1258');
+      });
+
+      it('unknown --encoding label gives an ENCODING error listing known labels', () => {
+        const r = run([
+          '--json',
+          'address',
+          'convert-file',
+          tmpFile('x.txt', `${OLD}\n`),
+          '--encoding',
+          'nope-9',
+        ]);
+        expect(r.code).toBe(1);
+        const j = r.json() as { error: { code: string; hint: string } };
+        expect(j.error.code).toBe('ENCODING');
+        expect(j.error.hint).toContain('windows-1258');
+        expect(j.error.hint).toContain('utf-16be');
+      });
+
+      it('matches decomposed (NFD) Vietnamese text after NFC normalisation', () => {
+        const r = run(['address', 'convert-file', tmpFile('nfd.txt', `${OLD.normalize('NFD')}\n`)]);
+        expect(r.code).toBe(0);
+        expect(ndjson(r.out)).toEqual(expected());
+      });
+    });
+
     it('--csv --column appends result columns in order and handles quoted commas', () => {
       const file = tmpFile(
         'in.csv',

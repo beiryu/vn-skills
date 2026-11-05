@@ -41,7 +41,10 @@ Chuyển hàng loạt địa chỉ đã lưu (mỗi dòng một địa chỉ →
 vn-skills address convert-file addresses.txt
 vn-skills address convert-file customers.csv --csv --column address > converted.csv
 vn-skills address convert-file customers.csv --csv --province-column province --district-column district --ward-column ward > converted.csv
+vn-skills address convert-file addresses.txt --encoding windows-1258
 ```
+
+BOM của UTF-8/UTF-16 được nhận diện tự động; dùng `--encoding <label>` (ví dụ `windows-1258`, `utf-16le`) cho file lưu từ Windows/Excel tiếng Việt. Các lệnh file của `einvoice` và `money speak -` cũng hỗ trợ.
 
 ## Cài skill
 
@@ -74,6 +77,14 @@ npx -y @vn-skills/cli install all --agent cursor --global  # ~/.cursor/skills/*
 Skill chỉ cần Node.js 22+ vì gọi `npx -y @vn-skills/cli`. `.agents/skills/` được Codex ([docs](https://learn.chatgpt.com/docs/build-skills)), Cursor ([docs](https://cursor.com/docs/skills)), Gemini CLI ([docs](https://geminicli.com/docs/cli/skills/)) và GitHub Copilot trong VS Code, Copilot CLI và cloud agent ([docs](https://docs.github.com/en/copilot/concepts/customizations/agent-skills)) đọc; cài vào đó bằng `--agent agents`. Với Copilot cloud agent, hãy cài ở phạm vi dự án (`--agent agents`, không dùng `--global`), vì cloud agent không nạp skill cá nhân.
 
 **Khi làm việc trong repo này** chạy `node packages/cli/dist/index.js …` thay cho `npx -y @vn-skills/cli …` để có JSON sạch. `pnpm vn-skills …` vẫn chạy được nhưng thêm output của wrapper (dòng lệnh được echo và `[ELIFECYCLE]` khi lỗi).
+
+### claude.ai và Claude API
+
+```bash
+npx -y @vn-skills/cli install all --zip skills-zip    # ghi skills-zip/<skill>.zip
+```
+
+Tải các file zip lên claude.ai tại Customize > Skills, hoặc qua endpoint Skills của Claude API. Trên claude.ai, mỗi người dùng tự tải bản của mình. Chỉ `vietqr`, `vn-money-words` và `vn-tax-id` kèm script Python chạy được ở đó mà không cần npx hay mạng; các skill còn lại cần Node.js và mạng (`npx`), nên có thể không chạy trên Claude API. Zip có sẵn không bị ghi đè nếu thiếu `--force`; `--dry-run` không ghi gì.
 
 ## MCP server
 
