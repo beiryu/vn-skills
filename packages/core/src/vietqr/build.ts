@@ -103,14 +103,15 @@ export function buildVietQR(opts: BuildVietQROptions): Result<BuildVietQRData> {
         hint,
       );
     }
-    amount = Number(raw);
+    const digits = raw.replace(/^0+/, '');
+    if (digits === '') return fail('INVALID_AMOUNT', 'Amount must be greater than 0');
+    if (digits.length > 13)
+      return fail('INVALID_AMOUNT', 'Amount exceeds 13 digits allowed by EMVCo');
+    amount = Number(digits);
     if (/,/.test(String(opts.amount)))
       warnings.push(
         `Amount "${opts.amount}" was read as ${amount} VND; in Vietnamese ',' is the decimal mark. Pass plain digits to avoid ambiguity.`,
       );
-    if (amount <= 0) return fail('INVALID_AMOUNT', 'Amount must be greater than 0');
-    if (String(amount).length > 13)
-      return fail('INVALID_AMOUNT', 'Amount exceeds 13 digits allowed by EMVCo');
   }
 
   let note: string | undefined;

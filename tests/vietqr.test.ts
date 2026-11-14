@@ -77,6 +77,19 @@ describe('findBank / searchBanks', () => {
 });
 
 describe('buildVietQR', () => {
+  it('rejects amounts over 13 digits instead of emitting exponent notation', () => {
+    const r = buildVietQR({ bank: 'VCB', account: '123', amount: '9'.repeat(30) });
+    expect(r.ok).toBe(false);
+    expect(!r.ok && r.error.code).toBe('INVALID_AMOUNT');
+  });
+  it('puts the exact 13-digit amount in tag 54', () => {
+    const r = buildVietQR({ bank: 'VCB', account: '123', amount: '9999999999999' });
+    expect(r.ok && r.payload.includes('5413' + '9999999999999' + '5802VN')).toBe(true);
+  });
+  it('strips leading zeros from the amount in tag 54', () => {
+    const r = buildVietQR({ bank: 'VCB', account: '123', amount: '00500000' });
+    expect(r.ok && r.payload.includes('5406500000' + '5802VN')).toBe(true);
+  });
   it('builds a static QR without amount/note', () => {
     const r = buildVietQR({ bank: 'VCB', account: '0011001234567' });
     expect(r.ok && r.payload.startsWith('000201010211')).toBe(true);
