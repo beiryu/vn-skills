@@ -21,6 +21,8 @@ Inside this repo use `pnpm vn-skills` instead of `npx -y @vn-skills/cli`.
 npx -y @vn-skills/cli id parse 048090123456
 ```
 
+Bulk check ("kiểm tra hàng loạt CCCD", "file CSV"): `id parse-file <file>` (`-` = stdin) prints NDJSON `{ line, input, ...result }`; with `--csv --column <name>` it writes the CSV with `valid`, `province` and `birthYear` appended. `--encoding <label>` for non-UTF-8 files. Exit code 2 if any row is invalid; `--json` prints `{ total, valid, invalid }` on stderr.
+
 Library: `import { parseCitizenId } from '@vn-skills/core'`. MCP tools: `vn_id_parse`; `vn_id_parse_batch` for up to 1000 IDs per call.
 
 ## Structure of the 12-digit CCCD
