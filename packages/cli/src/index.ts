@@ -13,6 +13,13 @@ import { registerPhone } from './commands/phone.js';
 import { registerHolidays } from './commands/holidays.js';
 import { registerInstall } from './commands/install.js';
 
+// A reader that closes early (`| head`) is not an error: stop quietly like other Unix tools.
+process.stdout.on('error', (err: NodeJS.ErrnoException) => {
+  if (err.code === 'EPIPE') process.exit(0);
+  process.stderr.write(`${err.message}\n`);
+  process.exit(1);
+});
+
 const program = new Command();
 program
   .name('vn-skills')
