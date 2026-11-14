@@ -55,7 +55,8 @@ All commands print JSON when piped (or with `--json`). Inside this repo use `pnp
    npx -y @vn-skills/cli vietqr parse "00020101021238530010A000000727012300069704230109mynamebvh0208QRIBFTTA53037045405500005802VN62080804test6304AB76"
    ```
 
-   Check `crcValid` and `isVietQR` before trusting `bank`, `account`, `amount`, `note`.
+   Check `crcValid` and `isVietQR` before trusting `bank`, `account`, `amount`, `note`. Other tag 62 sub-fields are
+   returned by ID in `additionalData` (build with `--data 05=ORDER123`); vn-skills does not interpret them.
 
    **From an image** (PNG only): `npx -y @vn-skills/cli vietqr decode qr.png` reads the QR and prints the same fields
    plus `payload`. It fails with `no QR code found` when the image has no readable QR; ask the user for a sharper,

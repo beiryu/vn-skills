@@ -184,7 +184,7 @@ def parse_amount_string(text):
     return None
 
 
-def build(banks, bank_q, account_in, amount_in, note_in, card, static):
+def build(banks, bank_q, account_in, amount_in, note_in, card, static, data=None):
     warnings = []
     bank = find_bank(banks, bank_q or "")
     if not bank:
@@ -244,6 +244,44 @@ def build(banks, bank_q, account_in, amount_in, note_in, card, static):
         if not note:
             note = None
 
+    extra = {}
+    for key, value in (data or {}).items():
+        if not re.fullmatch(r"[0-9]{2}", key):
+            raise Fail(
+                "INVALID_ADDITIONAL_DATA",
+                f'Sub-field ID "{key}" must be exactly two digits',
+                'Use IDs like "05" or "07".',
+            )
+        if key == "08":
+            raise Fail(
+                "INVALID_ADDITIONAL_DATA",
+                "Sub-field 08 is the transfer note",
+                'Use the note option instead of additionalData "08".',
+            )
+        clean = sanitize_note(str(value if value is not None else ""))
+        if clean == "":
+            raise Fail(
+                "INVALID_ADDITIONAL_DATA",
+                f"Sub-field {key} is empty",
+                "Give a non-empty value (letters, digits and spaces), or remove the key.",
+            )
+        if len(clean) > 99:
+            raise Fail(
+                "INVALID_ADDITIONAL_DATA",
+                f"Sub-field {key} is longer than 99 characters",
+                "Shorten the value to 99 characters or fewer.",
+            )
+        extra[key] = clean
+    if note is not None:
+        extra["08"] = note
+    tag62 = "".join(tlv(k, extra[k]) for k in sorted(extra))
+    if len(tag62) > 99:
+        raise Fail(
+            "INVALID_ADDITIONAL_DATA",
+            f"Tag 62 is {len(tag62)} characters; the maximum is 99",
+            "Shorten the values or drop some sub-fields.",
+        )
+
     dynamic = False if static else (amount is not None or note is not None)
     service = "QRIBFTTC" if card else "QRIBFTTA"
     beneficiary = tlv("00", bank["bin"]) + tlv("01", account)
@@ -253,8 +291,8 @@ def build(banks, bank_q, account_in, amount_in, note_in, card, static):
     if amount is not None:
         payload += tlv("54", str(amount))
     payload += tlv("58", "VN")
-    if note is not None:
-        payload += tlv("62", tlv("08", note))
+    if tag62:
+        payload += tlv("62", tag62)
     payload += "6304"
     crc = crc16(payload)
     payload += crc
@@ -345,7 +383,9 @@ def parse(banks, text):
     if currency and currency != "704":
         warnings.append(f"Currency {currency} is not VND (704).")
     country = tlv_value(fields, "58")
-    note = tlv_value((tlv_find(fields, "62") or {}).get("children"), "08")
+    tag62 = (tlv_find(fields, "62") or {}).get("children")
+    note = tlv_value(tag62, "08")
+    additional = {n["tag"]: n["value"] for n in tag62} if tag62 is not None else None
 
     out = {
         "ok": True,
@@ -359,6 +399,7 @@ def parse(banks, text):
         "currency": currency,
         "country": country,
         "note": note,
+        "additionalData": additional,
         "dynamic": dynamic,
         "crc": crc,
         "expectedCrc": expected,
@@ -377,6 +418,8 @@ def main(argv):
     b.add_argument("--amount", "-m")
     b.add_argument("--note", "-n")
     b.add_argument("--service", choices=["QRIBFTTA", "QRIBFTTC"], default="QRIBFTTA")
+    b.add_argument("--data", action="append", default=[], metavar="ID=VALUE",
+                   help="extra tag 62 sub-field, repeatable")
     b.add_argument("--static", action="store_true", help="force static QR")
     b.add_argument("--out", "-o")
     pa = sub.add_parser("parse")
@@ -396,8 +439,12 @@ def main(argv):
                     "Image output (--out) is not available in the Python fallback",
                     "Image output needs the Node CLI: npx -y @vn-skills/cli vietqr build ... --out qr.png",
                 )
+            data = {}
+            for item in args.data:
+                k, _, v = item.partition("=")
+                data[k] = v
             emit(build(banks, args.bank, args.account, args.amount, args.note,
-                       args.service == "QRIBFTTC", args.static))
+                       args.service == "QRIBFTTC", args.static, data))
         elif args.cmd == "parse":
             emit(parse(banks, args.payload))
         else:

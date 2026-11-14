@@ -332,3 +332,69 @@ describe('SWIFT/BIC lookup', () => {
     expect(r.ok && r.payload.includes('970436')).toBe(true);
   });
 });
+
+describe('tag 62 additionalData', () => {
+  const head = GOLDEN.slice(0, GOLDEN.indexOf('6208'));
+  const withTag62 = (t62: string) => {
+    const body = `${head}${t62}6304`;
+    return body + crc16CcittFalse(body);
+  };
+  const base = { bank: 'VCB', account: '0011001234567' };
+
+  it('parses a single sub-field', () => {
+    const p = parseVietQR(withTag62('62190515MOMOW2W12345678'));
+    expect(p.ok && p.additionalData).toEqual({ '05': 'MOMOW2W12345678' });
+    expect(p.ok && p.crcValid).toBe(true);
+  });
+  it('parses several sub-fields and keeps note as 08', () => {
+    const p = parseVietQR(
+      withTag62('62600312CPSHN ONLINE0517021908061613127850705ONLHN0810CellphoneS'),
+    );
+    expect(p.ok && p.additionalData).toEqual({
+      '03': 'CPSHN ONLINE',
+      '05': '02190806161312785',
+      '07': 'ONLHN',
+      '08': 'CellphoneS',
+    });
+    expect(p.ok && p.note).toBe('CellphoneS');
+  });
+  it('leaves additionalData undefined without tag 62', () => {
+    const p = parseVietQR(withTag62(''));
+    expect(p.ok && p.additionalData).toBeUndefined();
+  });
+  it('round-trips through build', () => {
+    const r = buildVietQR({ ...base, additionalData: { '05': 'ORDER123' } });
+    expect(r.ok).toBe(true);
+    if (!r.ok) return;
+    const p = parseVietQR(r.payload);
+    expect(p.ok && p.additionalData).toEqual({ '05': 'ORDER123' });
+    expect(p.ok && p.crcValid).toBe(true);
+  });
+  it('orders sub-fields by ID with 08 in its numeric place', () => {
+    const r = buildVietQR({
+      ...base,
+      note: 'hi',
+      additionalData: { '10': 'Z', '05': 'A', '07': 'B' },
+    });
+    expect(r.ok && r.payload).toContain('62210501A0701B0802hi1001Z6304');
+  });
+  it('does not change the payload for empty additionalData', () => {
+    const a = buildVietQR({ ...base, note: 'test' });
+    const b = buildVietQR({ ...base, note: 'test', additionalData: {} });
+    expect(a.ok && b.ok && a.payload === b.payload).toBe(true);
+  });
+  it.each([
+    ['key 8', { '8': 'x' }],
+    ['key ab', { ab: 'x' }],
+    ['key 08', { '08': 'x' }],
+    ['empty value', { '05': '' }],
+    ['value over 99 chars', { '05': 'a'.repeat(100) }],
+    ['tag 62 over 99 chars', { '05': 'a'.repeat(60), '07': 'b'.repeat(60) }],
+  ])('rejects %s', (_, additionalData) => {
+    const r = buildVietQR({ ...base, additionalData });
+    expect(r.ok).toBe(false);
+    if (r.ok) return;
+    expect(r.error.code).toBe('INVALID_ADDITIONAL_DATA');
+    expect(r.error.hint).toBeTruthy();
+  });
+});

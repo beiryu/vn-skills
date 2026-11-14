@@ -23,6 +23,7 @@ function printParsed(payload: string, c: Command, extra: Record<string, unknown>
     currency: r.currency,
     country: r.country,
     note: r.note,
+    additionalData: r.additionalData,
     dynamic: r.dynamic,
     crc: r.crc,
     expectedCrc: r.expectedCrc,
@@ -45,11 +46,20 @@ function printParsed(payload: string, c: Command, extra: Record<string, unknown>
             : '(payer enters)',
         ],
         ['Note', r.note],
+        ...Object.entries(r.additionalData ?? {}).map(([k, v]): [string, string] => [
+          `Data ${k}`,
+          v,
+        ]),
         ['Dynamic', r.dynamic ? 'yes' : 'no'],
       ]) + '\n',
     );
     for (const w of r.warnings) process.stderr.write(`warning: ${w}\n`);
   }
+}
+
+function collectData(value: string, prev: Record<string, string> = {}): Record<string, string> {
+  const i = value.indexOf('=');
+  return { ...prev, [i < 0 ? value : value.slice(0, i)]: i < 0 ? '' : value.slice(i + 1) };
 }
 
 const BANKS_OPT = '--banks <file>';
@@ -82,6 +92,11 @@ export function registerVietqr(program: Command): void {
     .requiredOption('-a, --account <account>', 'beneficiary account number')
     .option('-m, --amount <vnd>', 'amount in VND (integer); omit for a static QR')
     .option('-n, --note <text>', 'transfer note (diacritics are removed, max 25 chars)')
+    .option(
+      '--data <id=value>',
+      'extra tag 62 sub-field, repeatable (e.g. 05=ORDER123)',
+      collectData,
+    )
     .option('--card', 'account is a card number (QRIBFTTC)')
     .option('--static', 'force static QR (payer enters the amount)')
     .option('-o, --out <file>', 'write image: .png or .svg (also prints payload)')
@@ -95,6 +110,7 @@ export function registerVietqr(program: Command): void {
         account: opts.account,
         amount: opts.amount,
         note: opts.note,
+        additionalData: opts.data,
         service: opts.card ? 'card' : 'account',
         dynamic: opts.static ? false : undefined,
       });

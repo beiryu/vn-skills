@@ -22,6 +22,8 @@ export interface BuildVietQROptions {
   note?: string;
   /** Force dynamic (12) or static (11) point-of-initiation. Defaults to dynamic when amount or note present. */
   dynamic?: boolean;
+  /** Extra tag 62 sub-fields keyed by two-digit ID (not `08`; use `note`). Passed through, not interpreted. */
+  additionalData?: Record<string, string>;
   service?: 'account' | 'card';
   /** Keep diacritics/punctuation in note instead of sanitizing (not recommended). */
   rawNote?: boolean;
@@ -127,6 +129,47 @@ export function buildVietQR(opts: BuildVietQROptions): Result<BuildVietQRData> {
     if (note.length === 0) note = undefined;
   }
 
+  const extra: Record<string, string> = {};
+  for (const [key, value] of Object.entries(opts.additionalData ?? {})) {
+    if (!/^\d{2}$/.test(key))
+      return fail(
+        'INVALID_ADDITIONAL_DATA',
+        `Sub-field ID "${key}" must be exactly two digits`,
+        'Use IDs like "05" or "07".',
+      );
+    if (key === '08')
+      return fail(
+        'INVALID_ADDITIONAL_DATA',
+        'Sub-field 08 is the transfer note',
+        'Use the note option instead of additionalData "08".',
+      );
+    const clean = sanitizeNote(String(value ?? ''));
+    if (clean === '')
+      return fail(
+        'INVALID_ADDITIONAL_DATA',
+        `Sub-field ${key} is empty`,
+        'Give a non-empty value (letters, digits and spaces), or remove the key.',
+      );
+    if (clean.length > 99)
+      return fail(
+        'INVALID_ADDITIONAL_DATA',
+        `Sub-field ${key} is longer than 99 characters`,
+        'Shorten the value to 99 characters or fewer.',
+      );
+    extra[key] = clean;
+  }
+  if (note !== undefined) extra['08'] = note;
+  const tag62 = Object.keys(extra)
+    .sort()
+    .map((k) => tlvEncode(k, extra[k]!))
+    .join('');
+  if (tag62.length > 99)
+    return fail(
+      'INVALID_ADDITIONAL_DATA',
+      `Tag 62 is ${tag62.length} characters; the maximum is 99`,
+      'Shorten the values or drop some sub-fields.',
+    );
+
   const dynamic = opts.dynamic ?? (amount !== undefined || note !== undefined);
   const service = opts.service === 'card' ? SERVICE_CARD : SERVICE_ACCOUNT;
 
@@ -139,7 +182,7 @@ export function buildVietQR(opts: BuildVietQROptions): Result<BuildVietQRData> {
   payload += tlvEncode('53', '704');
   if (amount !== undefined) payload += tlvEncode('54', String(amount));
   payload += tlvEncode('58', 'VN');
-  if (note !== undefined) payload += tlvEncode('62', tlvEncode('08', note));
+  if (tag62 !== '') payload += tlvEncode('62', tag62);
   payload += '6304';
   const crc = crc16CcittFalse(payload);
   payload += crc;
