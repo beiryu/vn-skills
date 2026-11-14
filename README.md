@@ -46,6 +46,14 @@ vn-skills address convert-file addresses.txt --encoding windows-1258
 
 UTF-8/UTF-16 byte-order marks are detected automatically; use `--encoding <label>` (e.g. `windows-1258`, `utf-16le`) for files saved by Vietnamese Windows/Excel. `einvoice` file commands and `money speak -` accept it too.
 
+Bulk-check tax IDs, CCCD numbers or phones (one per line → NDJSON, or a CSV column with `valid` and result columns appended; exit code 2 if some rows are invalid; `--encoding <label>` works as above):
+
+```bash
+vn-skills taxid validate-file suppliers.csv --csv --column mst > checked.csv
+vn-skills id parse-file ids.txt
+vn-skills phone parse-file phones.txt
+```
+
 ## Install the skills
 
 **Claude Code plugin** (all skills + the MCP server, one command):

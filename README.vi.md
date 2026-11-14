@@ -46,6 +46,14 @@ vn-skills address convert-file addresses.txt --encoding windows-1258
 
 BOM của UTF-8/UTF-16 được nhận diện tự động; dùng `--encoding <label>` (ví dụ `windows-1258`, `utf-16le`) cho file lưu từ Windows/Excel tiếng Việt. Các lệnh file của `einvoice` và `money speak -` cũng hỗ trợ.
 
+Kiểm tra hàng loạt mã số thuế, CCCD hoặc số điện thoại (mỗi dòng một giá trị → NDJSON, hoặc một cột CSV kèm cột `valid` và các cột kết quả; thoát với mã 2 nếu có dòng không hợp lệ; hỗ trợ `--encoding <label>` như trên):
+
+```bash
+vn-skills taxid validate-file suppliers.csv --csv --column mst > checked.csv
+vn-skills id parse-file ids.txt
+vn-skills phone parse-file phones.txt
+```
+
 ## Cài skill
 
 **Plugin Claude Code** (tất cả skill + MCP server, một lệnh):
