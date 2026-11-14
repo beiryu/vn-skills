@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { spawnSync } from 'node:child_process';
+import { spawn, spawnSync } from 'node:child_process';
 import { existsSync, mkdtempSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
@@ -459,6 +459,19 @@ describe('vn-skills CLI', () => {
     it('is listed in address --help', () => {
       expect(run(['address', '--help']).out).toContain('convert-file');
     });
+
+    it('exits 0 without an EPIPE trace when stdout is closed early', async () => {
+      const file = tmpFile('big.txt', `${OLD}\n`.repeat(800));
+      const child = spawn(process.execPath, [CLI, '--json', 'address', 'convert-file', file]);
+      let err = '';
+      child.stderr.setEncoding('utf8');
+      child.stderr.on('data', (d: string) => (err += d));
+      child.stdout.once('data', () => child.stdout.destroy());
+      const code = await new Promise<number | null>((done) => child.on('close', done));
+      expect(err).not.toContain('EPIPE');
+      expect(err).not.toContain('Unhandled');
+      expect(code).toBe(0);
+    }, 30_000);
 
     it('converts lines, skips blanks, keeps 1-based line numbers, exits 2 on failures', () => {
       const file = tmpFile('addr.txt', `${OLD}\n\nasdf qwerty 123\n`);
