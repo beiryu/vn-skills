@@ -144,6 +144,21 @@
         "expected": { "ok": false, "error": { "code": "INVALID_AMOUNT" } }
       },
       {
+        "name": "rejects a 30-digit amount (no exponent notation in tag 54)",
+        "input": { "bank": "VCB", "account": "123", "amount": "999999999999999999999999999999" },
+        "expected": { "ok": false, "error": { "code": "INVALID_AMOUNT" } }
+      },
+      {
+        "name": "rejects a 20-digit amount",
+        "input": { "bank": "VCB", "account": "123", "amount": "12345678901234567890" },
+        "expected": { "ok": false, "error": { "code": "INVALID_AMOUNT" } }
+      },
+      {
+        "name": "accepts a 13-digit amount",
+        "input": { "bank": "VCB", "account": "123", "amount": "9999999999999" },
+        "expected": { "ok": true, "amount": 9999999999999 }
+      },
+      {
         "name": "rejects 1.5",
         "input": { "bank": "VCB", "account": "123", "amount": "1.5" },
         "expected": { "ok": false }
