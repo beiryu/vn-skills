@@ -53,6 +53,7 @@ function buildArgs(o: BuildVietQROptions): string[] {
   const a = ['build', `--bank=${o.bank}`, `--account=${o.account}`];
   if (o.amount !== undefined && o.amount !== null) a.push(`--amount=${o.amount}`);
   if (typeof o.note === 'string' || typeof o.note === 'number') a.push(`--note=${o.note}`);
+  for (const [k, v] of Object.entries(o.additionalData ?? {})) a.push(`--data=${k}=${v}`);
   if (o.service === 'card') a.push('--service=QRIBFTTC');
   return a;
 }
