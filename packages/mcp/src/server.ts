@@ -14,6 +14,7 @@ import {
   initials,
   sortNames,
   convertAddress,
+  toPostalAddress,
   convertAddresses,
   searchWards,
   parsePhone,
@@ -318,6 +319,7 @@ export function createServer(): McpServer {
           },
           street: r.new.street,
           formatted: r.new.formatted,
+          postalAddress: r.new.postalAddress,
         },
         candidates: r.candidates.map((c) => ({
           code: c.ward.code,
@@ -373,6 +375,11 @@ export function createServer(): McpServer {
           formatted: [r.new.street, pick.ward.fullName, pick.province.fullName]
             .filter(Boolean)
             .join(', '),
+          postalAddress: toPostalAddress({
+            street: r.new.street,
+            ward: pick.ward,
+            province: pick.province,
+          }),
         },
         candidates: out.candidates.map((c) => ({ ...c, isDefault: c.code === pick.ward.code })),
         chosenBy: 'user',

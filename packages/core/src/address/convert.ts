@@ -9,6 +9,7 @@ import {
   type LegacyDistrict,
   type LegacyWard,
 } from './data.js';
+import { toPostalAddress, type PostalAddress } from './postal.js';
 import { parseAddressLegacy, parseAddress2025, type ParsedAddressLegacy } from './parse.js';
 
 export interface ConvertCandidate {
@@ -31,6 +32,7 @@ export interface ConvertedAddress {
     ward?: Ward;
     street?: string;
     formatted: string;
+    postalAddress: PostalAddress;
   };
   /** 'unchanged' | 'merged' | 'divided' | 'province-only' | 'already-new' */
   mappingType: 'unchanged' | 'merged' | 'divided' | 'province-only' | 'already-new';
@@ -116,6 +118,11 @@ export function convertAddress(input: string | ConvertInput): Result<ConvertedAd
           formatted: [cur.street, cur.ward.fullName, newProvince.fullName]
             .filter(Boolean)
             .join(', '),
+          postalAddress: toPostalAddress({
+            street: cur.street,
+            ward: cur.ward,
+            province: newProvince,
+          }),
         },
         mappingType: 'unchanged',
         candidates: [{ ward: cur.ward, province: newProvince, isDefault: true }],
@@ -137,6 +144,7 @@ export function convertAddress(input: string | ConvertInput): Result<ConvertedAd
         province: newProvince,
         street: l.street,
         formatted: [l.street, newProvince.fullName].filter(Boolean).join(', '),
+        postalAddress: toPostalAddress({ street: l.street, province: newProvince }),
       },
       mappingType: 'province-only',
       candidates: [],
@@ -181,6 +189,7 @@ export function convertAddress(input: string | ConvertInput): Result<ConvertedAd
       formatted: [street, chosen.ward.fullName, chosen.province.fullName]
         .filter(Boolean)
         .join(', '),
+      postalAddress: toPostalAddress({ street, ward: chosen.ward, province: chosen.province }),
     },
     mappingType: divided ? 'divided' : unchanged ? 'unchanged' : 'merged',
     candidates,
@@ -204,7 +213,13 @@ function alreadyNew(
     ok: true,
     input: text,
     old: { street, formatted: text },
-    new: { province, ward, street, formatted },
+    new: {
+      province,
+      ward,
+      street,
+      formatted,
+      postalAddress: toPostalAddress({ street, ward, province }),
+    },
     mappingType: 'already-new',
     candidates: [{ ward, province, isDefault: true }],
     confidence,
