@@ -92,6 +92,28 @@ describe('vn-skills MCP server --http --rest', () => {
     expect(body).toEqual(JSON.parse(r.content.find((c) => c.type === 'text')!.text));
   });
 
+  it('POST /tools/vietqr_decode accepts base64 data and openapi lists it', async () => {
+    const client = new Client({ name: 'test', version: '0.0.0' });
+    await client.connect(new StdioClientTransport({ command: process.execPath, args: [SERVER] }));
+    const built = (await client.callTool({
+      name: 'vietqr_build',
+      arguments: { bank: 'MB', account: '0123456789', image: true },
+    })) as { content: Array<{ type: string; data?: string }> };
+    await client.close();
+    const png = Buffer.from(built.content.find((c) => c.type === 'image')!.data!, 'base64');
+    const res = await post(
+      `${rest.base}/tools/vietqr_decode`,
+      JSON.stringify({ data: png.toString('base64') }),
+    );
+    expect(res.status).toBe(200);
+    const j = (await res.json()) as { ok: boolean; account: string };
+    expect(j.ok).toBe(true);
+    expect(j.account).toBe('0123456789');
+    const doc = await (await fetch(`${rest.base}/openapi.json`)).text();
+    expect(doc).toContain('"data"');
+    expect(doc).toContain('"mimeType"');
+  });
+
   it('returns 400 with ok:false for an invalid tax id', async () => {
     const res = await post(`${rest.base}/tools/vn_tax_id_validate`, '{"taxId":"123"}');
     expect(res.status).toBe(400);
