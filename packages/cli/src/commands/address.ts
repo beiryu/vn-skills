@@ -1,7 +1,9 @@
+import { writeFileSync } from 'node:fs';
 import { Command } from 'commander';
 import {
   convertAddress,
   convertAddresses,
+  exportAddressCatalogue,
   formerUnits,
   lookupProvince,
   provincesList,
@@ -11,6 +13,7 @@ import {
 } from '@vn-skills/core';
 import { parseCsv, toCsv } from '../csv.js';
 import { failExit, kv, printJson, wantsJson } from '../output.js';
+import { toCatalogueCsv, toCatalogueSql } from '../export-format.js';
 import { readTextInput } from '../input.js';
 
 interface ConvertFileOpts {
@@ -363,5 +366,33 @@ export function registerAddress(program: Command): void {
       if (!result.ok) failExit(c, result.error);
       if (wantsJson(c)) printJson(result);
       else process.stdout.write(kv(Object.entries(result).filter(([k]) => k !== 'ok')) + '\n');
+    });
+
+  cmd
+    .command('export <table>')
+    .description(
+      'Export the bundled catalogue (provinces, wards, mapping, legacy-provinces, legacy-districts, legacy-wards)',
+    )
+    .option('--format <format>', 'json, csv or sql', 'json')
+    .option('--out <file>', 'write to a file instead of stdout')
+    .action((table: string, opts: { format: string; out?: string }, c: Command) => {
+      if (!['json', 'csv', 'sql'].includes(opts.format))
+        failExit(c, {
+          code: 'INVALID_FORMAT',
+          message: `Unknown format "${opts.format}"`,
+          hint: 'Valid formats: json, csv, sql',
+        });
+      const r = exportAddressCatalogue({ table });
+      if (!r.ok) failExit(c, r.error);
+      const text =
+        opts.format === 'csv'
+          ? toCatalogueCsv(r)
+          : opts.format === 'sql'
+            ? toCatalogueSql(r)
+            : JSON.stringify(r, null, 2) + '\n';
+      if (opts.out) {
+        writeFileSync(opts.out, text);
+        printJson({ ok: true, file: opts.out, rows: r.rows.length });
+      } else process.stdout.write(text);
     });
 }
