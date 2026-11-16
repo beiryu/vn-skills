@@ -101,6 +101,8 @@ Tải các file zip lên claude.ai tại Customize > Skills, hoặc qua endpoint
 claude mcp add vn-skills -- npx -y @vn-skills/mcp
 ```
 
+Server gửi hướng dẫn sử dụng cho client khi kết nối (trong kết quả `initialize`), nên cài chỉ MCP mà không có thư mục `skills/` vẫn có các quy tắc chính.
+
 Hoặc trong cấu hình MCP bất kỳ:
 
 ```json

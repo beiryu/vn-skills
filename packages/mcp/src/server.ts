@@ -1,3 +1,4 @@
+import { SERVER_INSTRUCTIONS } from './instructions.js';
 import { McpServer, ResourceTemplate } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
 import { registerPrompts } from './prompts.js';
@@ -105,7 +106,10 @@ const OFFLINE_READ_ONLY = {
 };
 
 export function createServer(): McpServer {
-  const server = new McpServer({ name: 'vn-skills', version: VERSION });
+  const server = new McpServer(
+    { name: 'vn-skills', version: VERSION },
+    { instructions: SERVER_INSTRUCTIONS },
+  );
 
   server.registerTool(
     'vietqr_build',
