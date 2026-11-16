@@ -58,6 +58,13 @@ describe('vn_address_convert elicitation', () => {
     expect(out.chosenBy).toBe('user');
     expect(out.new.ward.code).toBe(other.ward.code);
     expect(out.new.formatted).toContain(other.ward.fullName);
+    expect(out.new.postalAddress).toMatchObject({
+      '@type': 'PostalAddress',
+      addressLocality: other.ward.fullName,
+      addressRegion: other.province.fullName,
+      addressCountry: 'VN',
+    });
+    expect(out.new.postalAddress.postalCode).toBe(other.ward.postalCode);
     const flags = Object.fromEntries(out.candidates.map((c: any) => [c.code, c.isDefault]));
     expect(flags[other.ward.code]).toBe(true);
     expect(Object.values(flags).filter(Boolean)).toHaveLength(1);

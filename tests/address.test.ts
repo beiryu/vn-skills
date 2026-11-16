@@ -10,6 +10,9 @@ import {
   LEGACY_PROVINCES,
   MAPPING,
   formatAddress,
+  wardByCode,
+  toPostalAddress,
+  convertAddress as convertAddressFn,
   formerUnits,
   parseAddressLegacy,
   type ConvertInput,
@@ -32,6 +35,10 @@ const golden = loadGolden<{
   formerUnits: Case<[query: string, province?: string], Subset>[];
   searchWardsFirst: Case<[query: string, province?: string], Subset>[];
   formatAddress: Case<Parameters<typeof formatAddress>[0], string>[];
+  toPostalAddress: Case<
+    Omit<Parameters<typeof toPostalAddress>[0], 'ward'> & { ward?: string; wardCode?: string },
+    Record<string, string>
+  >[];
 }>('vn-address');
 
 const cases = <I, E>(list: Case<I, E>[]) => list.map((c) => [title(c), c] as const);
@@ -86,6 +93,23 @@ describe('golden fixtures', () => {
   it.each(cases(golden.formatAddress))('formatAddress: %s', (_, c) =>
     expect(formatAddress(c.input)).toBe(c.expected),
   );
+  it.each(cases(golden.toPostalAddress))('toPostalAddress: %s', (_, c) => {
+    const { wardCode, ...rest } = c.input;
+    const ward = wardCode ? wardByCode.get(wardCode)?.ward : rest.ward;
+    expect(toPostalAddress({ ...rest, ward })).toEqual(c.expected);
+  });
+  it('convertAddress returns the README example as a PostalAddress', () => {
+    const r = convertAddressFn('12 Nguyễn Huệ, P. Bến Nghé, Q.1, TP.HCM');
+    if (!r.ok) throw new Error('convert failed');
+    expect(r.new.postalAddress).toEqual({
+      '@type': 'PostalAddress',
+      streetAddress: '12 Nguyễn Huệ',
+      addressLocality: 'Phường Sài Gòn',
+      addressRegion: 'Thành phố Hồ Chí Minh',
+      postalCode: '71016',
+      addressCountry: 'VN',
+    });
+  });
 });
 
 describe('parseAddress2025', () => {
