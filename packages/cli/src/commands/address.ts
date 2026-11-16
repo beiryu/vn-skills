@@ -106,9 +106,11 @@ export function registerAddress(program: Command): void {
     .description(
       'Convert a pre-2025 address (province/district/ward) to the new 2-level structure (quotes optional)',
     )
-    .action((words: string[], _o, c: Command) => {
+    .option('--schema', 'Print the new address as a schema.org PostalAddress (JSON-LD)')
+    .action((words: string[], o: { schema?: boolean }, c: Command) => {
       const r = convertAddress(words.join(' '));
       if (!r.ok) failExit(c, r.error);
+      if (o.schema && c.optsWithGlobals().json !== true) return printJson(r.new.postalAddress);
       const result = {
         ok: true,
         input: r.input,
@@ -129,6 +131,7 @@ export function registerAddress(program: Command): void {
           },
           street: r.new.street,
           formatted: r.new.formatted,
+          postalAddress: r.new.postalAddress,
         },
         candidates: r.candidates.map((x) => ({
           code: x.ward.code,

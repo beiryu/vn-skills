@@ -38,6 +38,7 @@ pre-2025 provinces and districts, misread amounts in words, or confuse the Chine
 Bulk-convert stored addresses (one per line → NDJSON, or a CSV column; exit code 2 if some rows fail):
 
 ```bash
+vn-skills address convert --schema "12 Nguyễn Huệ, P. Bến Nghé, Q.1, TP.HCM"   # schema.org PostalAddress JSON-LD
 vn-skills address convert-file addresses.txt
 vn-skills address convert-file customers.csv --csv --column address > converted.csv
 vn-skills address convert-file customers.csv --csv --province-column province --district-column district --ward-column ward > converted.csv
