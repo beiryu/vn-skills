@@ -3,7 +3,7 @@ import { z } from 'zod';
 import { registerPrompts } from './prompts.js';
 import { MCP_APP_MIME, VIETQR_APP_HTML, VIETQR_APP_URI } from './apps/vietqr.js';
 import QRCode from 'qrcode';
-import { decodeQrPng } from '@vn-skills/cli/decode';
+import { decodeQrBuffer, decodeQrPng, MAX_IMAGE_BYTES } from '@vn-skills/cli/decode';
 import {
   buildVietQR,
   parseVietQR,
@@ -180,11 +180,61 @@ export function createServer(): McpServer {
       title: 'Decode VietQR image',
       annotations: OFFLINE_READ_ONLY,
       description:
-        'Read the QR code in a PNG image file and decode it like vietqr_parse: bank, account, amount, note, CRC validity. Returns READ_ERROR for an unreadable/non-PNG file and NO_QR when no QR code is found.',
-      inputSchema: { path: z.string().describe('Path to a PNG image containing a VietQR code') },
+        'Read the QR code in a PNG image and decode it like vietqr_parse: bank, account, amount, note, CRC validity. Give exactly one of `path` (a file on the server) or `data` (base64 of the PNG, or a data:image/png;base64, URL; max 5 MB decoded). Returns INVALID_INPUT unless exactly one is given, TOO_LARGE over the cap, READ_ERROR for bad base64 or an unreadable/non-PNG image and NO_QR when no QR code is found.',
+      inputSchema: {
+        path: z.string().optional().describe('Path to a PNG image on the server'),
+        data: z
+          .string()
+          .optional()
+          .describe('Base64 PNG bytes, or a data:image/png;base64,... URL (max 5 MB decoded)'),
+        mimeType: z.string().optional().describe('MIME type of `data`, e.g. image/png'),
+      },
     },
-    async ({ path }) => {
-      const d = decodeQrPng(path);
+    async ({ path, data }) => {
+      const hasPath = path !== undefined && path !== '';
+      const hasData = data !== undefined && data !== '';
+      if (hasPath === hasData)
+        return json(
+          {
+            ok: false,
+            error: {
+              code: 'INVALID_INPUT',
+              message: hasPath ? 'Give either path or data, not both' : 'Give one of path or data',
+              hint: 'Pass `path` (file on the server) or `data` (base64 PNG or data: URL).',
+            },
+          },
+          true,
+        );
+      let d;
+      if (hasPath) d = decodeQrPng(path);
+      else {
+        const b64 = data!.replace(/^data:[^,]*;base64,/i, '').replace(/\s+/g, '');
+        if (Math.floor((b64.length * 3) / 4) > MAX_IMAGE_BYTES)
+          return json(
+            {
+              ok: false,
+              error: {
+                code: 'TOO_LARGE',
+                message: `Image is larger than ${MAX_IMAGE_BYTES} bytes`,
+                hint: 'Send an image of at most 5 MB.',
+              },
+            },
+            true,
+          );
+        if (!/^[A-Za-z0-9+/]*={0,2}$/.test(b64) || b64.length % 4 === 1)
+          return json(
+            {
+              ok: false,
+              error: {
+                code: 'READ_ERROR',
+                message: 'data is not valid base64',
+                hint: 'Send standard base64, optionally as a data:image/png;base64, URL.',
+              },
+            },
+            true,
+          );
+        d = decodeQrBuffer(Buffer.from(b64, 'base64'));
+      }
       if (!d.ok) return json({ ok: false, error: d.error }, true);
       const r = parseVietQR(d.payload);
       return r.ok

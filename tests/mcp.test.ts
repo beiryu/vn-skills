@@ -168,6 +168,57 @@ describe('vn-skills MCP server', () => {
     expect(j.account).toBe('0123456789');
     expect(j.amount).toBe(150000);
   });
+  describe('vietqr_decode data input', () => {
+    const buildPng = async () => {
+      const built = await client.callTool({
+        name: 'vietqr_build',
+        arguments: { bank: 'MB', account: '0123456789', amount: 150000, image: true },
+      });
+      const img = (built.content as Array<{ type: string; data?: string }>).find(
+        (c) => c.type === 'image',
+      );
+      return img!.data!;
+    };
+    const decode = async (args: Record<string, unknown>) => {
+      const r = await client.callTool({ name: 'vietqr_decode', arguments: args });
+      return { isError: r.isError, j: text(r) };
+    };
+    it('matches the path result for base64 data', async () => {
+      const b64 = await buildPng();
+      const file = join(mkdtempSync(join(tmpdir(), 'vn-skills-')), 'qr.png');
+      writeFileSync(file, Buffer.from(b64, 'base64'));
+      const a = await decode({ path: file });
+      const b = await decode({ data: b64, mimeType: 'image/png' });
+      expect(b.isError).toBeFalsy();
+      expect(b.j).toEqual(a.j);
+      expect(b.j.account).toBe('0123456789');
+    });
+    it('accepts a data: URL', async () => {
+      const b64 = await buildPng();
+      const r = await decode({ data: `data:image/png;base64,${b64}` });
+      expect(r.j.ok).toBe(true);
+      expect(r.j.bin).toBe('970422');
+    });
+    it('returns INVALID_INPUT for neither or both of path/data', async () => {
+      for (const args of [{}, { path: 'a.png', data: 'AAAA' }]) {
+        const r = await decode(args);
+        expect(r.isError).toBe(true);
+        expect((r.j.error as { code: string; hint?: string }).code).toBe('INVALID_INPUT');
+        expect((r.j.error as { hint?: string }).hint).toBeTruthy();
+      }
+    });
+    it('returns READ_ERROR for bad base64 and non-PNG bytes', async () => {
+      const bad = await decode({ data: '***not base64***' });
+      expect((bad.j.error as { code: string }).code).toBe('READ_ERROR');
+      const notPng = await decode({ data: Buffer.from('hello').toString('base64') });
+      expect((notPng.j.error as { code: string }).code).toBe('READ_ERROR');
+    });
+    it('returns TOO_LARGE over the cap', async () => {
+      const r = await decode({ data: Buffer.alloc(6 * 1024 * 1024).toString('base64') });
+      expect(r.isError).toBe(true);
+      expect((r.j.error as { code: string }).code).toBe('TOO_LARGE');
+    });
+  });
   it('vietqr_decode returns NO_QR for a PNG without a QR code', async () => {
     const file = join(mkdtempSync(join(tmpdir(), 'vn-skills-')), 'blank.png');
     const png = new PNG({ width: 64, height: 64 });
