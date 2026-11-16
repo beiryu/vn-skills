@@ -414,6 +414,16 @@ describe('vn-skills CLI', () => {
     expect(r.code).toBe(0);
     expect((r.json().new as { ward: { fullName: string } }).ward.fullName).toBe('Phường Sài Gòn');
   });
+  it('address convert --schema prints a PostalAddress', () => {
+    const r = run(['address', 'convert', '--schema', '12 Nguyễn Huệ, P. Bến Nghé, Q.1, TP.HCM']);
+    expect(r.code).toBe(0);
+    expect(r.json()).toMatchObject({
+      '@type': 'PostalAddress',
+      addressLocality: 'Phường Sài Gòn',
+      postalCode: '71016',
+      addressCountry: 'VN',
+    });
+  });
   it('address parse', () => {
     const r = run(['address', 'parse', 'Phường Hoàn Kiếm, Hà Nội']);
     expect((r.json().ward as { fullName: string }).fullName).toBe('Phường Hoàn Kiếm');
