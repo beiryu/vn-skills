@@ -83,6 +83,8 @@ MCP: `vn_address_convert_batch` converts up to 1000 addresses in one call (`{ ad
 
 Library: `parseAddress`, `convertAddress`, `convertAddresses`, `findProvince`, `searchWards`, `formerUnits`, `PROVINCES` from `@vn-skills/core`.
 
+4. **Export the catalogue** (seed a DB/dropdown): `address export <provinces|wards|mapping|legacy-provinces|legacy-districts|legacy-wards> [--format json|csv|sql] [--out <file>]`. CSV/SQL start with a comment naming the dataset version, the decree and `SOURCES.md`; `--out` prints `{ ok, file, rows }`.
+
 ## Rules and gotchas
 
 - Always write results as `street, ward, province` with full unit names (`Phường Sài Gòn, Thành phố Hồ Chí Minh`). Do not add a district.

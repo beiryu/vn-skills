@@ -12,6 +12,13 @@ export {
   type LegacyWard,
 } from './data.js';
 export {
+  exportAddressCatalogue,
+  ADDRESS_TABLES,
+  type AddressCatalogue,
+  type AddressTable,
+  type CatalogueRow,
+} from './export.js';
+export {
   parseAddress,
   parseAddress2025,
   parseAddressLegacy,

@@ -46,6 +46,8 @@ vn-skills address convert-file addresses.txt --encoding windows-1258
 
 UTF-8/UTF-16 byte-order marks are detected automatically; use `--encoding <label>` (e.g. `windows-1258`, `utf-16le`) for files saved by Vietnamese Windows/Excel. `einvoice` file commands and `money speak -` accept it too.
 
+Export the bundled catalogue for seeding a database or dropdown: `vn-skills address export <provinces|wards|mapping|legacy-provinces|legacy-districts|legacy-wards> [--format json|csv|sql] [--out <file>]`. CSV and SQL start with a comment naming the dataset version, the decree and `SOURCES.md`.
+
 Bulk-check tax IDs, CCCD numbers or phones (one per line → NDJSON, or a CSV column with `valid` and result columns appended; exit code 2 if some rows are invalid; `--encoding <label>` works as above):
 
 ```bash
