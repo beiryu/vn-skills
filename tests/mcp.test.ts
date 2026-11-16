@@ -125,6 +125,20 @@ describe('vn-skills MCP server', () => {
     );
     expect(p.additionalData).toEqual({ '05': 'ORDER123' });
   });
+  it('vietqr_build with template returns a card SVG; without it no card', async () => {
+    const args = { bank: 'VCB', account: '0011001234567', amount: 500000 };
+    const withCard = text(
+      await client.callTool({
+        name: 'vietqr_build',
+        arguments: { ...args, template: 'card', accountName: 'NGUYEN VAN A' },
+      }),
+    );
+    expect(withCard.ok).toBe(true);
+    expect(String(withCard.card)).toContain('<svg');
+    expect(String(withCard.card)).toContain('NGUYEN VAN A');
+    const plain = text(await client.callTool({ name: 'vietqr_build', arguments: args }));
+    expect(plain.card).toBeUndefined();
+  });
   it('vietqr_build returns payload and image', async () => {
     const r = await client.callTool({
       name: 'vietqr_build',

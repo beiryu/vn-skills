@@ -19,3 +19,9 @@ export {
   type BuildVietQRData,
 } from './build.js';
 export { parseVietQR, type ParsedVietQR } from './parse.js';
+export {
+  renderVietQRCard,
+  type VietQRCardData,
+  type VietQRCardInput,
+  type VietQRCardOptions,
+} from './card.js';

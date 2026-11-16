@@ -124,6 +124,8 @@ The server exposes 40 tools, grouped by skill. All tools are declared read-only 
 | `vn-name`          | `vn_name`                                                                                                                                                            |
 | `vn-number-format` | `vn_number_format`                                                                                                                                                   |
 
+Printable card (bank, account, amount in words) as SVG: `vn-skills vietqr build --bank VCB --account 0011001234567 --amount 500000 --template card -o card.svg`
+
 MCP Apps hosts (Claude, ChatGPT, VS Code, …) show VietQR results (built with `image: true`) as an inline VietQR card with bank, account, amount and copy buttons; other clients see the usual JSON and image.
 
 When a client declares the MCP `elicitation` capability, the address converter asks the user to pick the new ward if the old ward was split, and reports `chosenBy` (`user` or `default`).

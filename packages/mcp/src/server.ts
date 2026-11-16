@@ -6,6 +6,7 @@ import QRCode from 'qrcode';
 import { decodeQrBuffer, decodeQrPng, MAX_IMAGE_BYTES } from '@vn-skills/cli/decode';
 import {
   buildVietQR,
+  renderVietQRCard,
   parseVietQR,
   searchBanks,
   parseAddress,
@@ -129,9 +130,17 @@ export function createServer(): McpServer {
             'Extra tag 62 sub-fields keyed by two-digit ID, e.g. {"05":"ORDER123"}. Passed through, not interpreted. Use note for 08.',
           ),
         image: z.boolean().optional().describe('Also return a PNG image (base64). Default false.'),
+        template: z
+          .enum(['card', 'print'])
+          .optional()
+          .describe('Also return a printable SVG card (QR + bank, account, amount) as `card`.'),
+        accountName: z
+          .string()
+          .optional()
+          .describe('Account holder shown on the card (display only, not in the payload).'),
       },
     },
-    async ({ bank, account, amount, note, additionalData, image }) => {
+    async ({ bank, account, amount, note, additionalData, image, template, accountName }) => {
       const r = buildVietQR({ bank, account, amount, note, additionalData });
       if (!r.ok) return json({ ok: false, error: r.error }, true);
       const data = {
@@ -145,7 +154,20 @@ export function createServer(): McpServer {
         crc: r.crc,
         warnings: r.warnings,
       };
-      const result = json(data);
+      let card: string | undefined;
+      if (template) {
+        const { modules } = QRCode.create(r.payload, { errorCorrectionLevel: 'M' });
+        const rows: boolean[][] = [];
+        for (let y = 0; y < modules.size; y++) {
+          const row: boolean[] = [];
+          for (let x = 0; x < modules.size; x++) row.push(!!modules.get(x, y));
+          rows.push(row);
+        }
+        const c = renderVietQRCard({ ...r, modules: rows }, { template, accountName });
+        if (!c.ok) return json({ ok: false, error: c.error }, true);
+        card = c.svg;
+      }
+      const result = json(card ? { ...data, card } : data);
       if (image) {
         const dataUrl = await QRCode.toDataURL(r.payload, {
           errorCorrectionLevel: 'M',

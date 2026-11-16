@@ -1,7 +1,14 @@
 import { Command } from 'commander';
 import { readFileSync, writeFileSync } from 'node:fs';
 import QRCode from 'qrcode';
-import { buildVietQR, parseVietQR, registerBanks, searchBanks, type Bank } from '@vn-skills/core';
+import {
+  buildVietQR,
+  parseVietQR,
+  registerBanks,
+  renderVietQRCard,
+  searchBanks,
+  type Bank,
+} from '@vn-skills/core';
 import { decodeQrPng } from '../decode.js';
 import { failExit, kv, printJson, wantsJson } from '../output.js';
 
@@ -100,6 +107,8 @@ export function registerVietqr(program: Command): void {
     .option('--card', 'account is a card number (QRIBFTTC)')
     .option('--static', 'force static QR (payer enters the amount)')
     .option('-o, --out <file>', 'write image: .png or .svg (also prints payload)')
+    .option('--template <name>', 'render a printable card (card|print); needs an .svg --out')
+    .option('--account-name <text>', 'account holder shown on the card (display only)')
     .option('--ascii', 'print the QR as ASCII art to the terminal')
     .option('--data-url', 'include a base64 PNG data URL in the JSON output')
     .option(BANKS_OPT, BANKS_DESC)
@@ -116,9 +125,35 @@ export function registerVietqr(program: Command): void {
       });
       if (!r.ok) failExit(c, r.error);
       let out: string | undefined;
+      if (opts.template && opts.template !== 'card' && opts.template !== 'print')
+        failExit(c, {
+          code: 'INVALID_OPTION',
+          message: `Unknown template "${opts.template}"`,
+          hint: 'Use --template card or --template print',
+        });
+      if (opts.template && opts.out && !String(opts.out).toLowerCase().endsWith('.svg'))
+        failExit(c, {
+          code: 'UNSUPPORTED_FORMAT',
+          message: '--template only supports .svg output',
+          hint: 'use .svg with --template',
+        });
       if (opts.out) {
         const file = String(opts.out);
-        if (file.toLowerCase().endsWith('.svg')) {
+        if (opts.template) {
+          const { modules } = QRCode.create(r.payload, { errorCorrectionLevel: 'M' });
+          const rows: boolean[][] = [];
+          for (let y = 0; y < modules.size; y++) {
+            const row: boolean[] = [];
+            for (let x = 0; x < modules.size; x++) row.push(!!modules.get(x, y));
+            rows.push(row);
+          }
+          const card = renderVietQRCard(
+            { ...r, modules: rows },
+            { template: opts.template, accountName: opts.accountName },
+          );
+          if (!card.ok) failExit(c, card.error);
+          writeFileSync(file, card.svg);
+        } else if (file.toLowerCase().endsWith('.svg')) {
           writeFileSync(
             file,
             await QRCode.toString(r.payload, { type: 'svg', errorCorrectionLevel: 'M', margin: 2 }),
