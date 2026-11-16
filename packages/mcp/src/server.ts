@@ -592,9 +592,13 @@ export function createServer(): McpServer {
       title: 'Amount in Vietnamese words',
       annotations: OFFLINE_READ_ONLY,
       description:
-        'Read an integer VND amount in Vietnamese words, e.g. 1200000 -> "một triệu hai trăm nghìn đồng". Also reads plain numbers without a unit with plain: true, e.g. 30 -> "ba mươi". Options: thousand "nghìn"/"ngàn", odd "lẻ"/"linh", capitalize, unit.',
+        'Read an integer VND amount in Vietnamese words, e.g. 1200000 -> "một triệu hai trăm nghìn đồng". Also reads plain numbers without a unit with plain: true, e.g. 30 -> "ba mươi". Options: thousand "nghìn"/"ngàn", odd "lẻ"/"linh", capitalize, unit, lang "en" for English words (e.g. "one million two hundred thousand dong").',
       inputSchema: {
         amount: z.union([z.number(), z.string()]),
+        lang: z
+          .enum(['vi', 'en'])
+          .optional()
+          .describe('"vi" (default) or "en" (English words, default unit "dong")'),
         thousand: z.enum(['nghìn', 'ngàn']).optional(),
         odd: z.enum(['lẻ', 'linh']).optional(),
         unit: z.string().optional().describe('Default "đồng"; "" for none'),

@@ -303,6 +303,14 @@ describe('vn-skills CLI', () => {
     const r = run(['money', 'words', '1200000']);
     expect(r.json().words).toBe('một triệu hai trăm nghìn đồng');
   });
+  it('money words --en', () => {
+    expect(run(['money', 'words', '1200000', '--en']).json().words).toBe(
+      'one million two hundred thousand dong',
+    );
+    expect(run(['money', 'words', '105', '--en', '--plain', '--pretty']).out.trim()).toBe(
+      'one hundred five',
+    );
+  });
   it('money words --plain reads without a unit', () => {
     expect(run(['money', 'words', '30', '--plain', '--pretty']).out.trim()).toBe('ba mươi');
     expect(run(['money', 'words', '105', '--plain', '--pretty']).out.trim()).toBe(

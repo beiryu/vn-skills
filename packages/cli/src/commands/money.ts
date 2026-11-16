@@ -16,6 +16,10 @@ export function registerMoney(program: Command): void {
     .option('--no-tu', 'read 4 as "bốn" instead of "tư" in 24, 34, ...')
     .option('-c, --capitalize', 'capitalize the first letter')
     .option('--chan', 'append "chẵn" for round amounts')
+    .option(
+      '--en',
+      'read in English words, e.g. 1200000 -> "one million two hundred thousand dong"',
+    )
     .option('--plain', 'read a plain number without a unit, e.g. 30 -> "ba mươi"')
     .addHelpText(
       'after',
@@ -30,6 +34,7 @@ export function registerMoney(program: Command): void {
         odd: opts.odd,
         useTu: opts.tu,
         capitalize: opts.capitalize,
+        lang: opts.en ? ('en' as const) : undefined,
       };
       const r = opts.plain
         ? numberToWords(amount, common)

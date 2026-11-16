@@ -254,6 +254,15 @@ describe('vn-skills MCP server', () => {
     );
     expect(j.words).toBe('một triệu hai trăm nghìn đồng');
   });
+  it('vn_money_to_words lang en', async () => {
+    const j = text(
+      await client.callTool({
+        name: 'vn_money_to_words',
+        arguments: { amount: 1200000, lang: 'en' },
+      }),
+    );
+    expect(j.words).toBe('one million two hundred thousand dong');
+  });
   it('vn_money_to_words plain', async () => {
     const call = async (args: Record<string, unknown>) =>
       text(await client.callTool({ name: 'vn_money_to_words', arguments: args }));
