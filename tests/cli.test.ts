@@ -5,6 +5,7 @@ import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { PNG } from 'pngjs';
 import jsqrModule from 'jsqr';
+import { parseCsv } from '../packages/cli/src/csv.js';
 import { convertAddress, numberToWords, parseVietQR, VERSION } from '@vn-skills/core';
 
 const CLI = resolve(__dirname, '..', 'packages', 'cli', 'dist', 'index.js');
@@ -421,6 +422,16 @@ describe('vn-skills CLI', () => {
     const r = run(['address', 'convert', '12 Nguyễn Huệ, P. Bến Nghé, Q.1, TP.HCM']);
     expect(r.code).toBe(0);
     expect((r.json().new as { ward: { fullName: string } }).ward.fullName).toBe('Phường Sài Gòn');
+  });
+  it('address convert --schema prints a PostalAddress', () => {
+    const r = run(['address', 'convert', '--schema', '12 Nguyễn Huệ, P. Bến Nghé, Q.1, TP.HCM']);
+    expect(r.code).toBe(0);
+    expect(r.json()).toMatchObject({
+      '@type': 'PostalAddress',
+      addressLocality: 'Phường Sài Gòn',
+      postalCode: '71016',
+      addressCountry: 'VN',
+    });
   });
   it('address parse', () => {
     const r = run(['address', 'parse', 'Phường Hoàn Kiếm, Hà Nội']);
@@ -1159,3 +1170,46 @@ function words15() {
   if (!r.ok) throw new Error(r.error.message);
   return r.words;
 }
+
+describe('vn-skills address export', () => {
+  it('json (default) prints the Result with 34 provinces', () => {
+    const r = run(['address', 'export', 'provinces']).json() as { ok: boolean; rows: unknown[] };
+    expect(r.ok).toBe(true);
+    expect(r.rows).toHaveLength(34);
+  });
+  it('csv wards parses back to the same number of rows as json', () => {
+    const json = run(['address', 'export', 'wards']).json() as { rows: unknown[] };
+    const csv = run(['address', 'export', 'wards', '--format', 'csv']);
+    expect(csv.code).toBe(0);
+    const lines = csv.out.split('\n');
+    expect(lines[0]).toMatch(/^#.*SOURCES\.md/);
+    const rows = parseCsv(lines.slice(1).join('\n'));
+    expect(rows).toHaveLength(json.rows.length + 1);
+  });
+  it('sql provinces creates the table and inserts 34 rows', () => {
+    const r = run(['address', 'export', 'provinces', '--format', 'sql']);
+    expect(r.out).toContain('CREATE TABLE IF NOT EXISTS provinces');
+    expect(r.out.match(/INSERT INTO provinces/g)).toHaveLength(34);
+  });
+  it('--out writes the file and prints { ok, file, rows }', () => {
+    const file = join(mkdtempSync(join(tmpdir(), 'vn-export-')), 'p.csv');
+    const r = run(['address', 'export', 'provinces', '--format', 'csv', '--out', file]).json();
+    expect(r).toMatchObject({ ok: true, file, rows: 34 });
+    expect(existsSync(file)).toBe(true);
+  });
+  it('unknown table gives a JSON error with a hint under --json', () => {
+    const r = run(['address', 'export', 'nope', '--json']);
+    expect(r.code).not.toBe(0);
+    const j = JSON.parse(r.out || r.err) as { ok: boolean; error: { code: string; hint?: string } };
+    expect(j.ok).toBe(false);
+    expect(j.error.code).toBe('INVALID_TABLE');
+    expect(j.error.hint).toBeTruthy();
+  });
+  it('unknown format gives a JSON error with a hint under --json', () => {
+    const r = run(['address', 'export', 'provinces', '--format', 'xml', '--json']);
+    expect(r.code).not.toBe(0);
+    const j = JSON.parse(r.out || r.err) as { ok: boolean; error: { hint?: string } };
+    expect(j.ok).toBe(false);
+    expect(j.error.hint).toBeTruthy();
+  });
+});

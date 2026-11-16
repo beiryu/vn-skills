@@ -330,6 +330,10 @@ describe('vn-skills MCP server', () => {
       }),
     );
     expect((j.new as { ward: { fullName: string } }).ward.fullName).toBe('Phường Sài Gòn');
+    expect((j.new as { postalAddress: { addressRegion: string } }).postalAddress).toMatchObject({
+      '@type': 'PostalAddress',
+      addressRegion: 'Thành phố Hồ Chí Minh',
+    });
   });
   it('vn_address_convert_batch', async () => {
     const j = text(

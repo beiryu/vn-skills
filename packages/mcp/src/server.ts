@@ -1,3 +1,4 @@
+import { SERVER_INSTRUCTIONS } from './instructions.js';
 import { McpServer, ResourceTemplate } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
 import { registerPrompts } from './prompts.js';
@@ -14,6 +15,7 @@ import {
   initials,
   sortNames,
   convertAddress,
+  toPostalAddress,
   convertAddresses,
   searchWards,
   parsePhone,
@@ -104,7 +106,10 @@ const OFFLINE_READ_ONLY = {
 };
 
 export function createServer(): McpServer {
-  const server = new McpServer({ name: 'vn-skills', version: VERSION });
+  const server = new McpServer(
+    { name: 'vn-skills', version: VERSION },
+    { instructions: SERVER_INSTRUCTIONS },
+  );
 
   server.registerTool(
     'vietqr_build',
@@ -368,6 +373,7 @@ export function createServer(): McpServer {
           },
           street: r.new.street,
           formatted: r.new.formatted,
+          postalAddress: r.new.postalAddress,
         },
         candidates: r.candidates.map((c) => ({
           code: c.ward.code,
@@ -423,6 +429,11 @@ export function createServer(): McpServer {
           formatted: [r.new.street, pick.ward.fullName, pick.province.fullName]
             .filter(Boolean)
             .join(', '),
+          postalAddress: toPostalAddress({
+            street: r.new.street,
+            ward: pick.ward,
+            province: pick.province,
+          }),
         },
         candidates: out.candidates.map((c) => ({ ...c, isDefault: c.code === pick.ward.code })),
         chosenBy: 'user',
