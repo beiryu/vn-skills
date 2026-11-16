@@ -102,6 +102,8 @@ Upload the zips in claude.ai under Customize > Skills, or through the Claude API
 claude mcp add vn-skills -- npx -y @vn-skills/mcp
 ```
 
+The server sends usage instructions to the client when it connects (the `initialize` result), so installs without the `skills/` folders still get the key rules.
+
 Setup for other clients is in [MCP client setup](#mcp-client-setup). Or in any MCP client config:
 
 ```json
