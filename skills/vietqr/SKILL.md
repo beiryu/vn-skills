@@ -69,6 +69,16 @@ All commands print JSON when piped (or with `--json`). Inside this repo use `pnp
 
 Library use (TypeScript): `import { buildVietQR, parseVietQR, findBank } from '@vn-skills/core'`.
 
+## Printable card
+
+For "in mã QR", "bảng QR quầy" or a QR to print/send with the bank, account and amount in words, add `--template card|print` (SVG only; `.png` gives `UNSUPPORTED_FORMAT`):
+
+```bash
+npx -y @vn-skills/cli vietqr build --bank VCB --account 0011001234567 --amount 500000 --template card --account-name "NGUYEN VAN A" -o card.svg
+```
+
+The MCP `vietqr_build` tool returns the same SVG as `card` when `template` is set. `--account-name` is display text only, not in the payload.
+
 ## No `npx` (claude.ai, Claude API)
 
 If `npx` is unavailable (no network, Node.js missing), run the bundled Python 3 script (standard library only, offline) from the skill folder. It prints the same JSON as the CLI but cannot write PNG/SVG (`--out` returns an error; use the Node CLI for images).

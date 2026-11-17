@@ -72,6 +72,30 @@ describe('vn-skills CLI', () => {
     expect(p.json().additionalData).toEqual({ '05': 'ORDER123', '07': 'POS01' });
     expect(run(['vietqr', 'parse', String(b.json().payload)]).out).toContain('ORDER123');
   });
+  it('vietqr build --template card writes an SVG card; .png is UNSUPPORTED_FORMAT', () => {
+    const dir = mkdtempSync(join(tmpdir(), 'vn-skills-'));
+    const base = ['vietqr', 'build', '--bank', 'VCB', '--account', '0011001234567'];
+    const svgFile = join(dir, 'x.svg');
+    const ok = run([
+      ...base,
+      '--amount',
+      '500000',
+      '--template',
+      'card',
+      '--account-name',
+      'NGUYEN VAN A',
+      '-o',
+      svgFile,
+      '--json',
+    ]);
+    expect(ok.code).toBe(0);
+    const svg = readFileSync(svgFile, 'utf8');
+    expect(svg).toContain('<svg');
+    expect(svg).toContain('NGUYEN VAN A');
+    const bad = run([...base, '--template', 'card', '-o', join(dir, 'x.png'), '--json']);
+    expect(bad.json()).toMatchObject({ ok: false, error: { code: 'UNSUPPORTED_FORMAT' } });
+  });
+
   it('vietqr build writes a scannable PNG whose payload parses back', () => {
     const dir = mkdtempSync(join(tmpdir(), 'vn-skills-'));
     const file = join(dir, 'qr.png');
