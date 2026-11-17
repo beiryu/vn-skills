@@ -1,6 +1,7 @@
 import { Command } from 'commander';
 import { readFileSync, writeFileSync } from 'node:fs';
 import QRCode from 'qrcode';
+import { PNG } from 'pngjs';
 import {
   buildVietQR,
   parseVietQR,
@@ -87,6 +88,70 @@ function loadBanks(opts: { banks?: string }, c: Command): void {
   if (!r.ok) failExit(c, r.error);
 }
 
+const LOGO_MAX_PLATE = 0.22;
+const LOGO_PAD_PX = 4;
+
+interface LogoLayout {
+  plate: number;
+  width: number;
+  height: number;
+  scale: number;
+}
+
+// Sizes in pixels of a render `totalPx` wide; the plate stays <= 22% of the module area.
+function layoutLogo(logo: PNG, totalPx: number, size: number): LogoLayout {
+  const plate = Math.max(1, Math.floor((LOGO_MAX_PLATE * totalPx * size) / (size + 4)));
+  const inner = Math.max(1, plate - 2 * LOGO_PAD_PX);
+  const scale = Math.min(1, inner / logo.width, inner / logo.height);
+  return {
+    plate,
+    width: Math.max(1, Math.round(logo.width * scale)),
+    height: Math.max(1, Math.round(logo.height * scale)),
+    scale,
+  };
+}
+
+function compositeLogo(qr: PNG, logo: PNG, l: LogoLayout): void {
+  const px = (v: number, n: number) => Math.min(n - 1, Math.max(0, v));
+  const px0 = Math.floor((qr.width - l.plate) / 2);
+  const py0 = Math.floor((qr.height - l.plate) / 2);
+  for (let y = 0; y < l.plate; y++)
+    for (let x = 0; x < l.plate; x++)
+      qr.data.set([255, 255, 255, 255], ((py0 + y) * qr.width + px0 + x) * 4);
+  const lx0 = Math.floor((qr.width - l.width) / 2);
+  const ly0 = Math.floor((qr.height - l.height) / 2);
+  for (let y = 0; y < l.height; y++)
+    for (let x = 0; x < l.width; x++) {
+      // area-average the source pixels covered by this target pixel
+      const sx0 = Math.floor(x / l.scale);
+      const sx1 = Math.max(sx0 + 1, Math.floor((x + 1) / l.scale));
+      const sy0 = Math.floor(y / l.scale);
+      const sy1 = Math.max(sy0 + 1, Math.floor((y + 1) / l.scale));
+      let r = 0,
+        g = 0,
+        b = 0,
+        a = 0,
+        n = 0;
+      for (let sy = sy0; sy < sy1; sy++)
+        for (let sx = sx0; sx < sx1; sx++) {
+          const i = (px(sy, logo.height) * logo.width + px(sx, logo.width)) * 4;
+          const al = logo.data[i + 3]!;
+          r += logo.data[i]! * al;
+          g += logo.data[i + 1]! * al;
+          b += logo.data[i + 2]! * al;
+          a += al;
+          n++;
+        }
+      if (a === 0) continue;
+      const alpha = a / n / 255;
+      const o = ((ly0 + y) * qr.width + lx0 + x) * 4;
+      qr.data[o] = Math.round((r / a) * alpha + qr.data[o]! * (1 - alpha));
+      qr.data[o + 1] = Math.round((g / a) * alpha + qr.data[o + 1]! * (1 - alpha));
+      qr.data[o + 2] = Math.round((b / a) * alpha + qr.data[o + 2]! * (1 - alpha));
+      qr.data[o + 3] = 255;
+    }
+}
+
 export function registerVietqr(program: Command): void {
   const cmd = program
     .command('vietqr')
@@ -109,6 +174,7 @@ export function registerVietqr(program: Command): void {
     .option('-o, --out <file>', 'write image: .png or .svg (also prints payload)')
     .option('--template <name>', 'render a printable card (card|print); needs an .svg --out')
     .option('--account-name <text>', 'account holder shown on the card (display only)')
+    .option('--logo <file>', 'PNG logo centred in the QR (needs --out; uses error correction H)')
     .option('--ascii', 'print the QR as ASCII art to the terminal')
     .option('--data-url', 'include a base64 PNG data URL in the JSON output')
     .option(BANKS_OPT, BANKS_DESC)
@@ -131,12 +197,38 @@ export function registerVietqr(program: Command): void {
           message: `Unknown template "${opts.template}"`,
           hint: 'Use --template card or --template print',
         });
+      if (opts.logo && !opts.out)
+        failExit(c, {
+          code: 'LOGO_NEEDS_OUT',
+          message: '--logo needs --out',
+          hint: 'add -o qr.png or -o qr.svg',
+        });
+      if (opts.logo && opts.template)
+        failExit(c, {
+          code: 'INVALID_OPTION',
+          message: '--logo cannot be combined with --template',
+          hint: 'use either --logo or --template',
+        });
       if (opts.template && opts.out && !String(opts.out).toLowerCase().endsWith('.svg'))
         failExit(c, {
           code: 'UNSUPPORTED_FORMAT',
           message: '--template only supports .svg output',
           hint: 'use .svg with --template',
         });
+      const ecl = opts.logo ? 'H' : 'M';
+      let logo: PNG | undefined;
+      let logoInfo: { width: number; height: number; scale: number } | undefined;
+      if (opts.logo) {
+        try {
+          logo = PNG.sync.read(readFileSync(String(opts.logo)));
+        } catch (e) {
+          failExit(c, {
+            code: 'LOGO_READ_ERROR',
+            message: `cannot read logo ${opts.logo}: ${e instanceof Error ? e.message : String(e)}`,
+            hint: 'pass an existing PNG file',
+          });
+        }
+      }
       if (opts.out) {
         const file = String(opts.out);
         if (opts.template) {
@@ -154,10 +246,40 @@ export function registerVietqr(program: Command): void {
           if (!card.ok) failExit(c, card.error);
           writeFileSync(file, card.svg);
         } else if (file.toLowerCase().endsWith('.svg')) {
-          writeFileSync(
-            file,
-            await QRCode.toString(r.payload, { type: 'svg', errorCorrectionLevel: 'M', margin: 2 }),
+          let svg = await QRCode.toString(r.payload, {
+            type: 'svg',
+            errorCorrectionLevel: ecl,
+            margin: 2,
+          });
+          if (logo) {
+            const n = QRCode.create(r.payload, { errorCorrectionLevel: ecl }).modules.size;
+            const total = n + 4;
+            const l = layoutLogo(logo, 512, n);
+            logoInfo = { width: l.width, height: l.height, scale: l.scale };
+            const u = total / 512;
+            const f = (v: number) => Number((v * u).toFixed(4));
+            const href = `data:image/png;base64,${PNG.sync.write(logo).toString('base64')}`;
+            svg = svg.replace(
+              '</svg>',
+              `<rect x="${f(256 - l.plate / 2)}" y="${f(256 - l.plate / 2)}" width="${f(l.plate)}" height="${f(l.plate)}" fill="#ffffff"/>` +
+                `<image x="${f(256 - l.width / 2)}" y="${f(256 - l.height / 2)}" width="${f(l.width)}" height="${f(l.height)}" href="${href}"/></svg>`,
+            );
+          }
+          writeFileSync(file, svg);
+        } else if (logo) {
+          const n = QRCode.create(r.payload, { errorCorrectionLevel: ecl }).modules.size;
+          const qr = PNG.sync.read(
+            await QRCode.toBuffer(r.payload, {
+              type: 'png',
+              errorCorrectionLevel: ecl,
+              margin: 2,
+              width: 512,
+            }),
           );
+          const l = layoutLogo(logo, qr.width, n);
+          logoInfo = { width: l.width, height: l.height, scale: l.scale };
+          compositeLogo(qr, logo, l);
+          writeFileSync(file, PNG.sync.write(qr));
         } else {
           await QRCode.toFile(file, r.payload, {
             type: 'png',
@@ -169,7 +291,7 @@ export function registerVietqr(program: Command): void {
         out = file;
       }
       const dataUrl = opts.dataUrl
-        ? await QRCode.toDataURL(r.payload, { errorCorrectionLevel: 'M', margin: 2, width: 512 })
+        ? await QRCode.toDataURL(r.payload, { errorCorrectionLevel: ecl, margin: 2, width: 512 })
         : undefined;
       const result = {
         ok: true,
@@ -187,6 +309,7 @@ export function registerVietqr(program: Command): void {
         crc: r.crc,
         file: out,
         dataUrl,
+        logo: logoInfo,
         warnings: r.warnings,
       };
       if (wantsJson(c)) printJson(result);

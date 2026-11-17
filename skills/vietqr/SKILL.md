@@ -79,6 +79,14 @@ npx -y @vn-skills/cli vietqr build --bank VCB --account 0011001234567 --amount 5
 
 The MCP `vietqr_build` tool returns the same SVG as `card` when `template` is set. `--account-name` is display text only, not in the payload.
 
+## Shop logo
+
+For "chèn logo cửa hàng vào giữa mã QR", add `--logo logo.png` (PNG only; needs `-o`; not with `--template`). The QR is built at error-correction level H and the logo is centred on a white plate of at most 22% of the QR side. Errors: `LOGO_NEEDS_OUT`, `LOGO_READ_ERROR`, `INVALID_OPTION`. Always test-scan the printed result with a banking app before using it.
+
+```bash
+npx -y @vn-skills/cli vietqr build --bank VCB --account 0011001234567 --amount 500000 --logo logo.png -o qr.png
+```
+
 ## No `npx` (claude.ai, Claude API)
 
 If `npx` is unavailable (no network, Node.js missing), run the bundled Python 3 script (standard library only, offline) from the skill folder. It prints the same JSON as the CLI but cannot write PNG/SVG (`--out` returns an error; use the Node CLI for images).
