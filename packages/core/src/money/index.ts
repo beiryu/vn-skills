@@ -1,11 +1,13 @@
 import { fail, type Result } from '../shared/result.js';
 
 export interface MoneyToWordsOptions {
+  /** Output language: "vi" (default) or "en" (short scale, no "and", default unit "dong"). `thousand`, `odd`, `useTu` and `chan` are Vietnamese-only and ignored for "en". */
+  lang?: 'vi' | 'en';
   /** "nghìn" (northern, default) or "ngàn" (southern). */
   thousand?: 'nghìn' | 'ngàn';
   /** Word for the tens gap in e.g. 105 -> "một trăm lẻ năm" / "một trăm linh năm". Default "lẻ". */
   odd?: 'lẻ' | 'linh';
-  /** Unit appended at the end. Default "đồng"; pass '' for a bare number. */
+  /** Unit appended at the end. Default "đồng" ("dong" for lang "en"); pass '' for a bare number. */
   unit?: string;
   /** Use "tư" for 4 in 24, 34, ... (common in invoices). Default true. */
   useTu?: boolean;
@@ -61,6 +63,68 @@ function scaleWord(i: number, thousand: string): string {
   return [base[rem], ...Array<string>(tyCount).fill('tỷ')].filter(Boolean).join(' ');
 }
 
+const EN_ONES = [
+  'zero',
+  'one',
+  'two',
+  'three',
+  'four',
+  'five',
+  'six',
+  'seven',
+  'eight',
+  'nine',
+  'ten',
+  'eleven',
+  'twelve',
+  'thirteen',
+  'fourteen',
+  'fifteen',
+  'sixteen',
+  'seventeen',
+  'eighteen',
+  'nineteen',
+];
+const EN_TENS = [
+  '',
+  '',
+  'twenty',
+  'thirty',
+  'forty',
+  'fifty',
+  'sixty',
+  'seventy',
+  'eighty',
+  'ninety',
+];
+const EN_SCALES = ['', 'thousand', 'million', 'billion', 'trillion', 'quadrillion', 'quintillion'];
+
+function readGroupEn(n: number): string {
+  const parts: string[] = [];
+  const h = Math.floor(n / 100);
+  const r = n % 100;
+  if (h > 0) parts.push(`${EN_ONES[h]} hundred`);
+  if (r > 0) {
+    if (r < 20) parts.push(EN_ONES[r]!);
+    else parts.push(EN_TENS[Math.floor(r / 10)]! + (r % 10 ? `-${EN_ONES[r % 10]}` : ''));
+  }
+  return parts.join(' ');
+}
+
+function bigToWordsEn(big: bigint): string {
+  if (big === 0n) return EN_ONES[0]!;
+  const groups: number[] = [];
+  for (let n = big; n > 0n; n /= 1000n) groups.push(Number(n % 1000n));
+  const parts: string[] = [];
+  for (let i = groups.length - 1; i >= 0; i--) {
+    if (groups[i] === 0) continue;
+    parts.push(
+      EN_SCALES[i] ? `${readGroupEn(groups[i]!)} ${EN_SCALES[i]}` : readGroupEn(groups[i]!),
+    );
+  }
+  return parts.join(' ');
+}
+
 /** Maximum number of digits accepted by moneyToWords (output grows quadratically with length). */
 export const MAX_MONEY_DIGITS = 1000;
 
@@ -82,7 +146,8 @@ export function moneyToWords(
   const opts: Required<MoneyToWordsOptions> = {
     thousand: options.thousand ?? 'nghìn',
     odd: options.odd ?? 'lẻ',
-    unit: options.unit ?? 'đồng',
+    lang: options.lang ?? 'vi',
+    unit: options.unit ?? (options.lang === 'en' ? 'dong' : 'đồng'),
     useTu: options.useTu ?? true,
     capitalize: options.capitalize ?? false,
     chan: options.chan ?? false,
@@ -131,6 +196,19 @@ export function moneyToWords(
   if (negative) big = -big;
 
   let words: string;
+  if (opts.lang === 'en') {
+    if (big >= 10n ** 21n)
+      return fail(
+        'OUT_OF_RANGE',
+        'Amount is too large to read in English',
+        'English reading supports absolute values below 10^21 (up to quintillions).',
+      );
+    words = bigToWordsEn(big);
+    if (opts.unit) words += ` ${opts.unit}`;
+    if (negative) words = `minus ${words}`;
+    if (opts.capitalize) words = words.charAt(0).toUpperCase() + words.slice(1);
+    return { ok: true, words, amount: (negative ? '-' : '') + big.toString(), negative };
+  }
   if (big === 0n) {
     words = DIGITS[0]!;
   } else {

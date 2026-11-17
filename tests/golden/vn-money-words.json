@@ -131,6 +131,31 @@
       { "input": 105, "expected": "một trăm lẻ năm" },
       { "input": 1000000, "expected": "một triệu" },
       { "input": -5, "expected": "âm năm" }
+    ],
+    "moneyToWordsEn": [
+      { "input": 0, "expected": "zero dong" },
+      { "input": 1, "expected": "one dong" },
+      { "input": 10, "expected": "ten dong" },
+      { "input": 15, "expected": "fifteen dong" },
+      { "input": 21, "expected": "twenty-one dong" },
+      { "input": 99, "expected": "ninety-nine dong" },
+      { "input": 100, "expected": "one hundred dong" },
+      { "input": 105, "expected": "one hundred five dong" },
+      { "input": 1000, "expected": "one thousand dong" },
+      { "input": 1000005, "expected": "one million five dong" },
+      { "input": 1200000, "expected": "one million two hundred thousand dong" },
+      { "input": -5, "expected": "minus five dong" },
+      { "input": 1000000000, "expected": "one billion dong" },
+      { "input": 1000000000000, "expected": "one trillion dong" },
+      { "input": 1000000000000000, "expected": "one quadrillion dong" },
+      { "input": "1000000000000000000", "expected": "one quintillion dong" },
+      { "input": 1200000, "options": { "capitalize": true }, "expected": "One million two hundred thousand dong" },
+      { "input": 1200000, "options": { "unit": "VND" }, "expected": "one million two hundred thousand VND" },
+      { "input": 1200000, "options": { "unit": "" }, "expected": "one million two hundred thousand" },
+      { "input": 1500, "options": { "thousand": "ngàn", "odd": "linh", "useTu": false }, "expected": "one thousand five hundred dong" }
+    ],
+    "numberToWordsEn": [
+      { "input": 1200000, "expected": "one million two hundred thousand" }
     ]
   }
 }

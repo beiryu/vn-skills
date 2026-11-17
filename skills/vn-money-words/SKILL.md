@@ -1,6 +1,6 @@
 ---
 name: vn-money-words
-description: Convert VND amounts to Vietnamese words ("1.200.000 đồng" -> "một triệu hai trăm nghìn đồng") with correct rules for mốt/lăm/tư, lẻ/linh, nghìn/ngàn, zero groups and very large numbers (tỷ tỷ). Use for invoices, contracts, receipts, bank transfer forms, "số tiền bằng chữ", "đọc số tiền thành chữ", "viết bằng chữ", "đọc số", "số bằng chữ", "viết số thành chữ", "đọc văn bản", "chuyển số thành chữ trong câu", "chuẩn hóa văn bản cho TTS", "text to speech", or any time an amount must be spelled out in Vietnamese.
+description: Convert VND amounts to Vietnamese words ("1.200.000 đồng" -> "một triệu hai trăm nghìn đồng") with correct rules for mốt/lăm/tư, lẻ/linh, nghìn/ngàn, zero groups and very large numbers (tỷ tỷ). Use for invoices, contracts, receipts, bank transfer forms, "số tiền bằng chữ", "đọc số tiền thành chữ", "viết bằng chữ", "đọc số", "số bằng chữ", "viết số thành chữ", "đọc văn bản", "chuyển số thành chữ trong câu", "chuẩn hóa văn bản cho TTS", "text to speech", "bằng chữ tiếng Anh", "in words", "bilingual contract", or any time an amount must be spelled out in Vietnamese.
 license: MIT
 compatibility: Requires Node.js 22+ (runs npx -y @vn-skills/cli).
 metadata:
@@ -31,6 +31,10 @@ npx -y @vn-skills/cli money words 1.200.000 --capitalize --chan
 npx -y @vn-skills/cli money words 2500000 --thousand ngàn --odd linh
 # hai triệu năm trăm ngàn đồng
 ```
+
+English ("bằng chữ tiếng Anh", "in words" on bilingual contracts): `money words 1200000 --en` → `one million two hundred thousand dong`
+(short scale, no "and", hyphenated 21–99, default unit `dong`, below 10^21; combines with `--plain`, `--unit`, `--capitalize`;
+`--thousand`, `--odd`, `--no-tu`, `--chan` are ignored). Core: `lang: 'en'`; MCP: `lang: 'en'`.
 
 Plain numbers (not money, e.g. "ba mươi (30) ngày"): `money words 30 --plain` → `ba mươi`. `--plain` cannot be combined
 with `--unit` or `--chan`. MCP: `vn_money_to_words` with `plain: true`.
