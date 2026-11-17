@@ -224,6 +224,58 @@
         "expected": { "ward": { "fullName": "Phường Sài Gòn" } }
       }
     ],
+    "toPostalAddress": [
+      {
+        "name": "full address with ward postal code (README example, Phường Sài Gòn)",
+        "input": {
+          "street": "12 Nguyễn Huệ",
+          "wardCode": "26740",
+          "province": "Thành phố Hồ Chí Minh"
+        },
+        "expected": {
+          "@type": "PostalAddress",
+          "streetAddress": "12 Nguyễn Huệ",
+          "addressLocality": "Phường Sài Gòn",
+          "addressRegion": "Thành phố Hồ Chí Minh",
+          "postalCode": "71016",
+          "addressCountry": "VN"
+        }
+      },
+      {
+        "name": "no street",
+        "input": {
+          "wardCode": "26740",
+          "province": "Thành phố Hồ Chí Minh"
+        },
+        "expected": {
+          "@type": "PostalAddress",
+          "addressLocality": "Phường Sài Gòn",
+          "addressRegion": "Thành phố Hồ Chí Minh",
+          "postalCode": "71016",
+          "addressCountry": "VN"
+        }
+      },
+      {
+        "name": "ward without postal code (plain-string ward; every bundled ward has one, so none can be used)",
+        "input": { "street": "12 Nguyễn Huệ", "ward": "Phường Sài Gòn", "province": "Thành phố Hồ Chí Minh" },
+        "expected": {
+          "@type": "PostalAddress",
+          "streetAddress": "12 Nguyễn Huệ",
+          "addressLocality": "Phường Sài Gòn",
+          "addressRegion": "Thành phố Hồ Chí Minh",
+          "addressCountry": "VN"
+        }
+      },
+      {
+        "name": "province only",
+        "input": { "province": "Thành phố Hồ Chí Minh" },
+        "expected": {
+          "@type": "PostalAddress",
+          "addressRegion": "Thành phố Hồ Chí Minh",
+          "addressCountry": "VN"
+        }
+      }
+    ],
     "formatAddress": [
       {
         "name": "joins parts",

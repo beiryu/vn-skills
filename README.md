@@ -29,7 +29,7 @@ pre-2025 provinces and districts, misread amounts in words, or confuse the Chine
 | [`vn-id`](skills/vn-id/SKILL.md)                       | Validate/decode 12-digit CCCD (province, sex, birth year) and check 9-digit CMND format offline                        | `vn-skills id parse 048090123456`                                                                         |
 | [`vn-phone`](skills/vn-phone/SKILL.md)                 | Normalise phone numbers (+84, old 11-digit prefixes), carrier by prefix, landline area codes                           | `vn-skills phone 0912345678`                                                                              |
 | [`vn-holidays`](skills/vn-holidays/SKILL.md)           | Official days off per year (announced notices, nghỉ bù, swaps), working-day check and add N working days               | `vn-skills holidays add 2026-02-12 3`                                                                     |
-| [`vn-money-words`](skills/vn-money-words/SKILL.md)     | Amount → Vietnamese words (nghìn/ngàn, lẻ/linh, mốt/lăm/tư, tỷ tỷ; text → spoken TTS)                                  | `vn-skills money words 1200000` → `một triệu hai trăm nghìn đồng`                                         |
+| [`vn-money-words`](skills/vn-money-words/SKILL.md)     | Amount → Vietnamese words (or English with `--en`) (nghìn/ngàn, lẻ/linh, mốt/lăm/tư, tỷ tỷ; text → spoken TTS)         | `vn-skills money words 1200000` → `một triệu hai trăm nghìn đồng`                                         |
 | [`vn-lunar`](skills/vn-lunar/SKILL.md)                 | Solar ↔ lunar, leap months, can chi, Tết, holidays (Meeus astronomical algorithms, UTC+7)                              | `vn-skills lunar tet 2027` → `2027-02-06 Đinh Mùi`                                                        |
 | [`vn-einvoice`](skills/vn-einvoice/SKILL.md)           | E-invoice schema validation, VAT/totals, amount in words, mock provider; MISA/Viettel/VNPT adapter skeletons           | `vn-skills einvoice example > invoice.json && vn-skills einvoice totals invoice.json`                     |
 | [`vn-name`](skills/vn-name/SKILL.md)                   | Split họ / tên đệm / tên, compound surnames, Vietnamese collation sort, unaccented slugs and initials                  | `vn-skills name split "Tôn Thất Tùng"`                                                                    |
@@ -38,6 +38,7 @@ pre-2025 provinces and districts, misread amounts in words, or confuse the Chine
 Bulk-convert stored addresses (one per line → NDJSON, or a CSV column; exit code 2 if some rows fail):
 
 ```bash
+vn-skills address convert --schema "12 Nguyễn Huệ, P. Bến Nghé, Q.1, TP.HCM"   # schema.org PostalAddress JSON-LD
 vn-skills address convert-file addresses.txt
 vn-skills address convert-file customers.csv --csv --column address > converted.csv
 vn-skills address convert-file customers.csv --csv --province-column province --district-column district --ward-column ward > converted.csv
@@ -45,6 +46,8 @@ vn-skills address convert-file addresses.txt --encoding windows-1258
 ```
 
 UTF-8/UTF-16 byte-order marks are detected automatically; use `--encoding <label>` (e.g. `windows-1258`, `utf-16le`) for files saved by Vietnamese Windows/Excel. `einvoice` file commands and `money speak -` accept it too.
+
+Export the bundled catalogue for seeding a database or dropdown: `vn-skills address export <provinces|wards|mapping|legacy-provinces|legacy-districts|legacy-wards> [--format json|csv|sql] [--out <file>]`. CSV and SQL start with a comment naming the dataset version, the decree and `SOURCES.md`.
 
 Bulk-check tax IDs, CCCD numbers or phones (one per line → NDJSON, or a CSV column with `valid` and result columns appended; exit code 2 if some rows are invalid; `--encoding <label>` works as above):
 
@@ -101,6 +104,8 @@ Upload the zips in claude.ai under Customize > Skills, or through the Claude API
 ```bash
 claude mcp add vn-skills -- npx -y @vn-skills/mcp
 ```
+
+The server sends usage instructions to the client when it connects (the `initialize` result), so installs without the `skills/` folders still get the key rules.
 
 Setup for other clients is in [MCP client setup](#mcp-client-setup). Or in any MCP client config:
 

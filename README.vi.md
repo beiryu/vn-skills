@@ -29,7 +29,7 @@ trên cùng một lõi chạy offline:
 | [`vn-id`](skills/vn-id/SKILL.md)                       | Kiểm tra/giải mã CCCD 12 số (tỉnh, giới tính, năm sinh) và định dạng CMND 9 số offline                             | `vn-skills id parse 048090123456`                                                                         |
 | [`vn-phone`](skills/vn-phone/SKILL.md)                 | Chuẩn hóa số điện thoại (+84, đầu số 11 số cũ), nhà mạng theo đầu số, mã vùng cố định                              | `vn-skills phone 0912345678`                                                                              |
 | [`vn-holidays`](skills/vn-holidays/SKILL.md)           | Lịch nghỉ lễ, Tết chính thức từng năm (thông báo, nghỉ bù, hoán đổi), kiểm tra ngày làm việc, cộng N ngày làm việc | `vn-skills holidays add 2026-02-12 3`                                                                     |
-| [`vn-money-words`](skills/vn-money-words/SKILL.md)     | Đọc số tiền bằng chữ (nghìn/ngàn, lẻ/linh, mốt/lăm/tư, tỷ tỷ; văn bản → TTS)                                       | `vn-skills money words 1200000` → `một triệu hai trăm nghìn đồng`                                         |
+| [`vn-money-words`](skills/vn-money-words/SKILL.md)     | Đọc số tiền bằng chữ (tiếng Anh với `--en`) (nghìn/ngàn, lẻ/linh, mốt/lăm/tư, tỷ tỷ; văn bản → TTS)                | `vn-skills money words 1200000` → `một triệu hai trăm nghìn đồng`                                         |
 | [`vn-lunar`](skills/vn-lunar/SKILL.md)                 | Dương ↔ âm lịch, tháng nhuận, can chi, Tết, ngày lễ (thuật toán thiên văn Meeus, UTC+7)                            | `vn-skills lunar tet 2027` → `2027-02-06 Đinh Mùi`                                                        |
 | [`vn-einvoice`](skills/vn-einvoice/SKILL.md)           | Schema hóa đơn điện tử, tính thuế/tổng, số tiền bằng chữ, provider mock; khung adapter MISA/Viettel/VNPT           | `vn-skills einvoice example > invoice.json && vn-skills einvoice totals invoice.json`                     |
 | [`vn-name`](skills/vn-name/SKILL.md)                   | Tách họ / tên đệm / tên, họ kép, sắp xếp theo tên (collation tiếng Việt), slug không dấu và chữ cái đầu            | `vn-skills name split "Tôn Thất Tùng"`                                                                    |
@@ -38,6 +38,7 @@ trên cùng một lõi chạy offline:
 Chuyển hàng loạt địa chỉ đã lưu (mỗi dòng một địa chỉ → NDJSON, hoặc một cột trong file CSV; thoát với mã 2 nếu có dòng lỗi):
 
 ```bash
+vn-skills address convert --schema "12 Nguyễn Huệ, P. Bến Nghé, Q.1, TP.HCM"   # schema.org PostalAddress (JSON-LD cho website)
 vn-skills address convert-file addresses.txt
 vn-skills address convert-file customers.csv --csv --column address > converted.csv
 vn-skills address convert-file customers.csv --csv --province-column province --district-column district --ward-column ward > converted.csv
@@ -45,6 +46,8 @@ vn-skills address convert-file addresses.txt --encoding windows-1258
 ```
 
 BOM của UTF-8/UTF-16 được nhận diện tự động; dùng `--encoding <label>` (ví dụ `windows-1258`, `utf-16le`) cho file lưu từ Windows/Excel tiếng Việt. Các lệnh file của `einvoice` và `money speak -` cũng hỗ trợ.
+
+Xuất danh mục dữ liệu đi kèm để nạp CSDL hoặc dropdown: `vn-skills address export <provinces|wards|mapping|legacy-provinces|legacy-districts|legacy-wards> [--format json|csv|sql] [--out <file>]`. CSV và SQL mở đầu bằng dòng chú thích nêu phiên bản dữ liệu, nghị quyết và `SOURCES.md`.
 
 Kiểm tra hàng loạt mã số thuế, CCCD hoặc số điện thoại (mỗi dòng một giá trị → NDJSON, hoặc một cột CSV kèm cột `valid` và các cột kết quả; thoát với mã 2 nếu có dòng không hợp lệ; hỗ trợ `--encoding <label>` như trên):
 
@@ -99,6 +102,8 @@ Tải các file zip lên claude.ai tại Customize > Skills, hoặc qua endpoint
 ```bash
 claude mcp add vn-skills -- npx -y @vn-skills/mcp
 ```
+
+Server gửi hướng dẫn sử dụng cho client khi kết nối (trong kết quả `initialize`), nên cài chỉ MCP mà không có thư mục `skills/` vẫn có các quy tắc chính.
 
 Hoặc trong cấu hình MCP bất kỳ:
 

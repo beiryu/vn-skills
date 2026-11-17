@@ -12,6 +12,13 @@ export {
   type LegacyWard,
 } from './data.js';
 export {
+  exportAddressCatalogue,
+  ADDRESS_TABLES,
+  type AddressCatalogue,
+  type AddressTable,
+  type CatalogueRow,
+} from './export.js';
+export {
   parseAddress,
   parseAddress2025,
   parseAddressLegacy,
@@ -110,4 +117,5 @@ export function formatAddress(parts: {
   const p = typeof parts.province === 'string' ? parts.province : parts.province.fullName;
   return [parts.street, w, p].filter(Boolean).join(', ');
 }
+export { toPostalAddress, type PostalAddress } from './postal.js';
 export { formerUnits, type FormerUnit, type FormerUnitsResult } from './history.js';

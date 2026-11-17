@@ -1,3 +1,4 @@
+import { SERVER_INSTRUCTIONS } from './instructions.js';
 import { McpServer, ResourceTemplate } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
 import { registerPrompts } from './prompts.js';
@@ -15,6 +16,7 @@ import {
   initials,
   sortNames,
   convertAddress,
+  toPostalAddress,
   convertAddresses,
   searchWards,
   parsePhone,
@@ -105,7 +107,10 @@ const OFFLINE_READ_ONLY = {
 };
 
 export function createServer(): McpServer {
-  const server = new McpServer({ name: 'vn-skills', version: VERSION });
+  const server = new McpServer(
+    { name: 'vn-skills', version: VERSION },
+    { instructions: SERVER_INSTRUCTIONS },
+  );
 
   server.registerTool(
     'vietqr_build',
@@ -390,6 +395,7 @@ export function createServer(): McpServer {
           },
           street: r.new.street,
           formatted: r.new.formatted,
+          postalAddress: r.new.postalAddress,
         },
         candidates: r.candidates.map((c) => ({
           code: c.ward.code,
@@ -445,6 +451,11 @@ export function createServer(): McpServer {
           formatted: [r.new.street, pick.ward.fullName, pick.province.fullName]
             .filter(Boolean)
             .join(', '),
+          postalAddress: toPostalAddress({
+            street: r.new.street,
+            ward: pick.ward,
+            province: pick.province,
+          }),
         },
         candidates: out.candidates.map((c) => ({ ...c, isDefault: c.code === pick.ward.code })),
         chosenBy: 'user',
@@ -614,9 +625,13 @@ export function createServer(): McpServer {
       title: 'Amount in Vietnamese words',
       annotations: OFFLINE_READ_ONLY,
       description:
-        'Read an integer VND amount in Vietnamese words, e.g. 1200000 -> "một triệu hai trăm nghìn đồng". Also reads plain numbers without a unit with plain: true, e.g. 30 -> "ba mươi". Options: thousand "nghìn"/"ngàn", odd "lẻ"/"linh", capitalize, unit.',
+        'Read an integer VND amount in Vietnamese words, e.g. 1200000 -> "một triệu hai trăm nghìn đồng". Also reads plain numbers without a unit with plain: true, e.g. 30 -> "ba mươi". Options: thousand "nghìn"/"ngàn", odd "lẻ"/"linh", capitalize, unit, lang "en" for English words (e.g. "one million two hundred thousand dong").',
       inputSchema: {
         amount: z.union([z.number(), z.string()]),
+        lang: z
+          .enum(['vi', 'en'])
+          .optional()
+          .describe('"vi" (default) or "en" (English words, default unit "dong")'),
         thousand: z.enum(['nghìn', 'ngàn']).optional(),
         odd: z.enum(['lẻ', 'linh']).optional(),
         unit: z.string().optional().describe('Default "đồng"; "" for none'),

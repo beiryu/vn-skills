@@ -24,6 +24,8 @@ const golden = loadGolden<{
     repeat?: number;
   }>;
   numberToWords: WordsCase[];
+  moneyToWordsEn: WordsCase[];
+  numberToWordsEn: WordsCase[];
 }>('vn-money-words');
 
 const value = (c: WordsCase) => (c.inputType === 'bigint' ? BigInt(c.input) : c.input);
@@ -83,4 +85,37 @@ describe('moneyToWords — digit limit', () => {
   });
   it('numberToWords has the same limit', () =>
     expectTooLong(numberToWords('9'.repeat(MAX_MONEY_DIGITS + 1))));
+});
+
+describe('moneyToWords / numberToWords — lang en', () => {
+  it.each(golden.moneyToWordsEn.map((c) => [title(c), c] as const))('%s', (_, c) => {
+    const r = moneyToWords(value(c), { ...c.options, lang: 'en' });
+    if (!r.ok) throw new Error(r.error.message);
+    expect(r.words).toBe(c.expected);
+  });
+  it.each(golden.numberToWordsEn.map((c) => [title(c), c] as const))('%s', (_, c) => {
+    const r = numberToWords(value(c), { ...c.options, lang: 'en' });
+    expect(r.ok && r.words).toBe(c.expected);
+  });
+  it('999999999999999999999 is in range', () => {
+    const r = moneyToWords('999999999999999999999', { lang: 'en' });
+    expect(r.ok).toBe(true);
+    if (r.ok) expect(r.words).toMatch(/^nine hundred ninety-nine quintillion .* ninety-nine dong$/);
+  });
+  it('10^21 is out of range with a hint', () => {
+    const r = moneyToWords(10n ** 21n, { lang: 'en' });
+    expect(r.ok).toBe(false);
+    if (!r.ok) {
+      expect(r.error.code).toBe('OUT_OF_RANGE');
+      expect(r.error.hint).toBeTruthy();
+    }
+  });
+  it('-10^21 is out of range', () => {
+    const r = moneyToWords(-(10n ** 21n), { lang: 'en' });
+    expect(!r.ok && r.error.code).toBe('OUT_OF_RANGE');
+  });
+  it('default language stays Vietnamese', () => {
+    const r = moneyToWords(1200000, { lang: 'vi' });
+    expect(r.ok && r.words).toBe('một triệu hai trăm nghìn đồng');
+  });
 });

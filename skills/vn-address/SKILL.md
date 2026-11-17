@@ -1,6 +1,6 @@
 ---
 name: vn-address
-description: Parse, normalise and convert Vietnamese addresses using the post-01/07/2025 administrative structure (34 provinces, 3,321 wards, no districts) with fuzzy matching for missing diacritics and abbreviations (TP.HCM, Q.1, P. Bến Nghé). Converts old addresses (63 tỉnh, quận/huyện) to the new 2-level structure via the official old→new ward mapping. Use for "địa chỉ mới sau sáp nhập", "chuyển đổi địa chỉ", "đổi địa chỉ cũ sang mới", "chuyển hàng loạt địa chỉ", "file CSV địa chỉ", "tỉnh nào sau sáp nhập", address validation, shipping/e-commerce forms, or when the user mentions phường/xã/tỉnh.
+description: Parse, normalise and convert Vietnamese addresses using the post-01/07/2025 administrative structure (34 provinces, 3,321 wards, no districts) with fuzzy matching for missing diacritics and abbreviations (TP.HCM, Q.1, P. Bến Nghé). Converts old addresses (63 tỉnh, quận/huyện) to the new 2-level structure via the official old→new ward mapping. Use for "địa chỉ mới sau sáp nhập", "schema.org", "JSON-LD", "địa chỉ website", "chuyển đổi địa chỉ", "đổi địa chỉ cũ sang mới", "chuyển hàng loạt địa chỉ", "file CSV địa chỉ", "tỉnh nào sau sáp nhập", address validation, shipping/e-commerce forms, or when the user mentions phường/xã/tỉnh.
 license: MIT
 compatibility: Requires Node.js 22+ (runs npx -y @vn-skills/cli). Data is bundled; no network.
 metadata:
@@ -81,7 +81,13 @@ MCP: when the client supports elicitation, `vn_address_convert` asks the user to
 
 MCP: `vn_address_convert_batch` converts up to 1000 addresses in one call (`{ addresses: string[] }`) and returns per-row results plus `summary: { total, converted, failed }`; null, empty or non-string entries come back as failed rows (`ok: false` with an error code) instead of failing the whole call; use `address convert-file` for larger inputs.
 
-Library: `parseAddress`, `convertAddress`, `convertAddresses`, `findProvince`, `searchWards`, `formerUnits`, `PROVINCES` from `@vn-skills/core`.
+### Website structured data / JSON-LD
+
+For "schema.org", "JSON-LD" or "địa chỉ website" requests, `address convert --schema "<old address>"` prints the new address as a schema.org `PostalAddress` (the same object is `new.postalAddress` in `--json` and in the `vn_address_convert` result). `postalCode` is included only when the bundled ward has one. The ward → `addressLocality` / province → `addressRegion` mapping is this project's choice for the 2-level layout, not a rule from schema.org or Google. Check the result with Google's Rich Results Test.
+
+Library: `parseAddress`, `convertAddress`, `toPostalAddress`, `convertAddresses`, `findProvince`, `searchWards`, `formerUnits`, `PROVINCES` from `@vn-skills/core`.
+
+4. **Export the catalogue** (seed a DB/dropdown): `address export <provinces|wards|mapping|legacy-provinces|legacy-districts|legacy-wards> [--format json|csv|sql] [--out <file>]`. CSV/SQL start with a comment naming the dataset version, the decree and `SOURCES.md`; `--out` prints `{ ok, file, rows }`.
 
 ## Rules and gotchas
 
