@@ -216,6 +216,22 @@ export function registerVietqr(program: Command): void {
           hint: 'use .svg with --template',
         });
       const ecl = opts.logo ? 'H' : 'M';
+      /** 512 px QR at level H with the logo composited in; used for the PNG file and --data-url. */
+      const pngWithLogo = async (lg: PNG): Promise<Buffer> => {
+        const n = QRCode.create(r.payload, { errorCorrectionLevel: ecl }).modules.size;
+        const qr = PNG.sync.read(
+          await QRCode.toBuffer(r.payload, {
+            type: 'png',
+            errorCorrectionLevel: ecl,
+            margin: 2,
+            width: 512,
+          }),
+        );
+        const l = layoutLogo(lg, qr.width, n);
+        logoInfo = { width: l.width, height: l.height, scale: l.scale };
+        compositeLogo(qr, lg, l);
+        return PNG.sync.write(qr);
+      };
       let logo: PNG | undefined;
       let logoInfo: { width: number; height: number; scale: number } | undefined;
       if (opts.logo) {
@@ -262,24 +278,15 @@ export function registerVietqr(program: Command): void {
             svg = svg.replace(
               '</svg>',
               `<rect x="${f(256 - l.plate / 2)}" y="${f(256 - l.plate / 2)}" width="${f(l.plate)}" height="${f(l.plate)}" fill="#ffffff"/>` +
-                `<image x="${f(256 - l.width / 2)}" y="${f(256 - l.height / 2)}" width="${f(l.width)}" height="${f(l.height)}" href="${href}"/></svg>`,
+                `<image x="${f(256 - l.width / 2)}" y="${f(256 - l.height / 2)}" width="${f(l.width)}" height="${f(l.height)}" href="${href}" xlink:href="${href}"/></svg>`,
             );
+            // xlink:href as well, for SVG 1.1 renderers (older print and design tools).
+            if (!svg.includes('xmlns:xlink'))
+              svg = svg.replace('<svg ', '<svg xmlns:xlink="http://www.w3.org/1999/xlink" ');
           }
           writeFileSync(file, svg);
         } else if (logo) {
-          const n = QRCode.create(r.payload, { errorCorrectionLevel: ecl }).modules.size;
-          const qr = PNG.sync.read(
-            await QRCode.toBuffer(r.payload, {
-              type: 'png',
-              errorCorrectionLevel: ecl,
-              margin: 2,
-              width: 512,
-            }),
-          );
-          const l = layoutLogo(logo, qr.width, n);
-          logoInfo = { width: l.width, height: l.height, scale: l.scale };
-          compositeLogo(qr, logo, l);
-          writeFileSync(file, PNG.sync.write(qr));
+          writeFileSync(file, await pngWithLogo(logo));
         } else {
           await QRCode.toFile(file, r.payload, {
             type: 'png',
@@ -290,9 +297,11 @@ export function registerVietqr(program: Command): void {
         }
         out = file;
       }
-      const dataUrl = opts.dataUrl
-        ? await QRCode.toDataURL(r.payload, { errorCorrectionLevel: ecl, margin: 2, width: 512 })
-        : undefined;
+      const dataUrl = !opts.dataUrl
+        ? undefined
+        : logo
+          ? `data:image/png;base64,${(await pngWithLogo(logo)).toString('base64')}`
+          : await QRCode.toDataURL(r.payload, { errorCorrectionLevel: ecl, margin: 2, width: 512 });
       const result = {
         ok: true,
         payload: r.payload,

@@ -112,6 +112,39 @@ describe('vietqr build --logo', () => {
     expect(e.code).toBe('LOGO_NEEDS_OUT');
     expect(e.hint).toBeTruthy();
   });
+  it('--data-url carries the same logo image as the PNG file', () => {
+    const out = join(dir, 'du-out.png');
+    const r = run([
+      ...base,
+      '--logo',
+      logoFile('du.png', 200, 200),
+      '-o',
+      out,
+      '--data-url',
+      '--json',
+    ]);
+    expect(r.code).toBe(0);
+    const j = JSON.parse(r.out) as { payload: string; dataUrl: string };
+    const fromUrl = PNG.sync.read(
+      Buffer.from(j.dataUrl.replace(/^data:image\/png;base64,/, ''), 'base64'),
+    );
+    const file = PNG.sync.read(readFileSync(out));
+    expect(fromUrl.width).toBe(file.width);
+    expect(Buffer.compare(fromUrl.data, file.data)).toBe(0);
+    // the centre pixel is the red logo, and the QR still decodes
+    const c = (fromUrl.height / 2) * fromUrl.width * 4 + (fromUrl.width / 2) * 4;
+    expect([...fromUrl.data.subarray(c, c + 3)]).toEqual([255, 0, 0]);
+    expect(jsQR(new Uint8ClampedArray(fromUrl.data), fromUrl.width, fromUrl.height)?.data).toBe(
+      j.payload,
+    );
+  });
+  it('svg logo has xlink:href for SVG 1.1 renderers, with the namespace declared', () => {
+    const out = join(dir, 'xl.svg');
+    expect(run([...base, '--logo', logoFile('xl.png', 100, 100), '-o', out]).code).toBe(0);
+    const svg = readFileSync(out, 'utf8');
+    expect(svg).toMatch(/<svg [^>]*xmlns:xlink="http:\/\/www\.w3\.org\/1999\/xlink"/);
+    expect(/<image\b[^>]*>/.exec(svg)![0]).toContain('xlink:href="data:image/png;base64,');
+  });
   it('missing or non-PNG logo returns LOGO_READ_ERROR', () => {
     const out = join(dir, 'x.png');
     const e1 = errOf(run([...base, '--logo', join(dir, 'nope.png'), '-o', out, '--json']));
