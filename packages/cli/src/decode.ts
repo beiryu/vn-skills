@@ -15,8 +15,35 @@ type DecodeResult =
 /** Largest image (decoded bytes) accepted by `decodeQrBuffer` callers that take untrusted input: 5 MB. */
 export const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
 
+/**
+ * Largest image (width x height) decoded: 20 megapixels, enough for a 12 MP phone photo or a 4K
+ * screenshot. A small PNG can declare a huge size and pngjs allocates it all before decoding
+ * (249 KB at 16000x16000 took 2.8 GB), so the size is read from IHDR and checked first.
+ */
+export const MAX_IMAGE_PIXELS = 20_000_000;
+
+const PNG_SIGNATURE = [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a];
+
+/** Width and height from the IHDR chunk, which the PNG spec requires right after the signature. */
+function pngSize(buf: Uint8Array): { width: number; height: number } | null {
+  if (buf.length < 24 || PNG_SIGNATURE.some((b, i) => buf[i] !== b)) return null;
+  if (String.fromCharCode(buf[12]!, buf[13]!, buf[14]!, buf[15]!) !== 'IHDR') return null;
+  const v = new DataView(buf.buffer, buf.byteOffset, buf.byteLength);
+  return { width: v.getUint32(16), height: v.getUint32(20) };
+}
+
 /** Read the QR payload from PNG bytes. Returns an error message instead of throwing. */
 export function decodeQrBuffer(buf: Uint8Array, label = 'image'): DecodeResult {
+  const size = pngSize(buf);
+  if (size && size.width * size.height > MAX_IMAGE_PIXELS)
+    return {
+      ok: false,
+      error: {
+        code: 'TOO_LARGE',
+        message: `${label} is ${size.width}x${size.height} pixels; the limit is ${MAX_IMAGE_PIXELS / 1_000_000} megapixels`,
+        hint: 'Crop or scale the image down to the QR code before decoding.',
+      },
+    };
   let png: PNG;
   try {
     png = PNG.sync.read(Buffer.from(buf));
