@@ -148,8 +148,11 @@ export function lunarMonthCalendar(
   for (let d = 1; d <= dim; d++) {
     const r = lunarInfo(d, month, year);
     if (!r.ok) return r;
-    const idx = getSolarTermIndex(jdFromDate(d, month, year), VN_TIMEZONE);
-    if (d === 1) prevTerm = getSolarTermIndex(jdFromDate(d, month, year) - 1, VN_TIMEZONE);
+    // A term starts on the day the Sun crosses its boundary, so compare the term at the end of
+    // this day (next midnight) with the one at its start: Kinh trập 2026 begins 05/03 at ~21:59.
+    const jd = jdFromDate(d, month, year);
+    const idx = getSolarTermIndex(jd + 1, VN_TIMEZONE);
+    if (d === 1) prevTerm = getSolarTermIndex(jd, VN_TIMEZONE);
     days.push({
       date: r.solar.date,
       weekday: r.solar.weekday,
