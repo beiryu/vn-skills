@@ -121,6 +121,19 @@
         "expected": { "ok": true, "value": "1000000000001000", "negative": false }
       }
     ],
+    "numberToWordsOrdinal": [
+      {"input": 1, "expected": "thứ nhất"},
+      {"input": 2, "expected": "thứ nhì"},
+      {"input": 3, "expected": "thứ ba"},
+      {"input": 4, "expected": "thứ tư"},
+      {"input": 10, "expected": "thứ mười"},
+      {"input": 14, "expected": "thứ mười bốn"},
+      {"input": 21, "expected": "thứ hai mươi mốt"},
+      {"input": 24, "expected": "thứ hai mươi tư"},
+      {"input": 100, "expected": "thứ một trăm"},
+      {"input": 2, "options": {"second": "hai"}, "expected": "thứ hai"},
+      {"input": 1, "options": {"capitalize": true}, "expected": "Thứ nhất"}
+    ],
     "numberToWords": [
       { "input": 2024, "expected": "hai nghìn không trăm hai mươi tư" },
       { "input": 0, "expected": "không" },
