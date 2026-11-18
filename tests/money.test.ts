@@ -24,6 +24,7 @@ const golden = loadGolden<{
     repeat?: number;
   }>;
   numberToWords: WordsCase[];
+  numberToWordsOrdinal: WordsCase[];
   moneyToWordsEn: WordsCase[];
   numberToWordsEn: WordsCase[];
 }>('vn-money-words');
@@ -48,6 +49,26 @@ describe('numberToWords (golden)', () => {
   it.each(golden.numberToWords.map((c) => [title(c), c] as const))('%s', (_, c) => {
     const r = numberToWords(value(c), c.options);
     expect(r.ok && r.words).toBe(c.expected);
+  });
+});
+
+describe('numberToWords — ordinal', () => {
+  it.each(golden.numberToWordsOrdinal.map((c) => [title(c), c] as const))('%s', (_, c) => {
+    const r = numberToWords(value(c), { ...c.options, ordinal: true });
+    expect(r.ok && r.words).toBe(c.expected);
+  });
+  it.each([0, -1, 1.5])('rejects %s', (n) => {
+    const r = numberToWords(n, { ordinal: true });
+    expect(!r.ok && r.error.code).toBe('INVALID_AMOUNT');
+  });
+  it('rejects an unknown second word', () => {
+    const r = numberToWords(2, { ordinal: true, second: 'ba' as never });
+    expect(r.ok).toBe(false);
+    if (!r.ok) expect(r.error.code).toBe('INVALID_OPTIONS');
+  });
+  it('rejects ordinal with lang en', () => {
+    const r = numberToWords(1, { ordinal: true, lang: 'en' });
+    expect(!r.ok && r.error.code).toBe('INVALID_OPTIONS');
   });
 });
 

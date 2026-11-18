@@ -38,6 +38,19 @@ describe('vn-skills MCP server', () => {
     expect(bad.isError).toBe(true);
   });
 
+  it('vn_number_format date style', async () => {
+    const r = await client.callTool({
+      name: 'vn_number_format',
+      arguments: { mode: 'date', value: '2026-11-18', style: 'long' },
+    });
+    expect(text(r)).toMatchObject({ ok: true, text: '18 tháng 11, 2026' });
+    const d = await client.callTool({
+      name: 'vn_number_format',
+      arguments: { mode: 'date', value: '2026-11-18' },
+    });
+    expect(text(d)).toMatchObject({ text: '18/11/2026' });
+  });
+
   it('vn_holidays_ics', async () => {
     const ok = await client.callTool({ name: 'vn_holidays_ics', arguments: { year: 2026 } });
     expect(ok.isError).toBeFalsy();
@@ -110,6 +123,16 @@ describe('vn-skills MCP server', () => {
       ].sort(),
     );
     for (const t of tools) expect(t.description?.length ?? 0).toBeGreaterThan(30);
+  });
+
+  it('vn_name sortAs text sorts whole strings', async () => {
+    const r = text(
+      await client.callTool({
+        name: 'vn_name',
+        arguments: { names: ['Hạ', 'Đông', 'Hà', 'Dương', 'Ha'], sortAs: 'text' },
+      }),
+    );
+    expect(r.sorted).toEqual(['Dương', 'Đông', 'Ha', 'Hà', 'Hạ']);
   });
 
   it('vietqr_build accepts additionalData and vietqr_parse returns it', async () => {
@@ -286,6 +309,13 @@ describe('vn-skills MCP server', () => {
     );
     expect((await call({ amount: 30, plain: false })).words).toBe('ba mươi đồng');
     expect((await call({ amount: 30, plain: true, unit: 'đồng' })).ok).toBe(false);
+  });
+  it('vn_money_to_words ordinal', async () => {
+    const call = async (args: Record<string, unknown>) =>
+      text(await client.callTool({ name: 'vn_money_to_words', arguments: args }));
+    expect((await call({ amount: 4, ordinal: true })).words).toBe('thứ tư');
+    expect((await call({ amount: 2, ordinal: true, second: 'hai' })).words).toBe('thứ hai');
+    expect((await call({ amount: 0, ordinal: true })).ok).toBe(false);
   });
   it('vn_tax_id_validate', async () => {
     const j = text(
