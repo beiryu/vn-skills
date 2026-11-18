@@ -27,6 +27,18 @@ function run(args: string[], input?: string) {
 }
 
 describe('vn-skills CLI', () => {
+  it('name sort --text sorts whole strings with Vietnamese collation', () => {
+    const r = run(['name', 'sort', '--text', 'Hạ', 'Đông', 'Hà', 'Dương', 'Ha', '--json']);
+    expect(r.code).toBe(0);
+    expect(r.json().names).toEqual(['Dương', 'Đông', 'Ha', 'Hà', 'Hạ']);
+  });
+
+  it('name sort --file - reads one item per line', () => {
+    const r = run(['name', 'sort', '--file', '-'], 'Há\nĐông\n\nHà\nDương\n');
+    expect(r.code).toBe(0);
+    expect(JSON.parse(r.out).names).toEqual(['Dương', 'Đông', 'Hà', 'Há']);
+  });
+
   it('is built', () => expect(existsSync(CLI)).toBe(true));
   it('--version is the released package version', () => {
     const pkg = (name: string) =>

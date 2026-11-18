@@ -17,9 +17,15 @@ npx -y @vn-skills/cli name split "Tôn Thất Minh Khoa"   # Tôn Thất | Minh 
 npx -y @vn-skills/cli name slug "Đặng Thị Ánh"          # dang-thi-anh
 npx -y @vn-skills/cli name initials "Đặng Thị Ánh" --ascii   # DTA
 npx -y @vn-skills/cli name sort "Nguyễn Văn Cường" "Trần Thị An" "Lê Văn Bình"
+npx -y @vn-skills/cli name sort --text "Hạ" "Đông" "Dương"   # whole strings: Dương, Đông, Hạ
+npx -y @vn-skills/cli name sort --file items.txt [--encoding windows-1258]   # one item per line, "-" = stdin
 ```
 
-Library: `import { splitName, slugifyName, initials, sortNames } from '@vn-skills/core'`. MCP tool: `vn_name`.
+Library: `import { splitName, slugifyName, initials, sortNames, sortVietnamese, compareVietnamese } from '@vn-skills/core'`. MCP tool: `vn_name` (`sortAs: 'text'` sorts whole strings).
+
+## Sắp xếp tiếng Việt / thứ tự ABC
+
+For "sắp xếp tiếng Việt" or "thứ tự ABC" on any list (products, wards, customers) use `sortVietnamese` / `name sort --text`. It follows CLDR `collation/vi.xml`: a < ă < â, d < đ, o < ô < ơ, u < ư, tones none < huyền < hỏi < ngã < sắc < nặng.
 
 ## Rules
 

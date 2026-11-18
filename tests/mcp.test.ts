@@ -112,6 +112,16 @@ describe('vn-skills MCP server', () => {
     for (const t of tools) expect(t.description?.length ?? 0).toBeGreaterThan(30);
   });
 
+  it('vn_name sortAs text sorts whole strings', async () => {
+    const r = text(
+      await client.callTool({
+        name: 'vn_name',
+        arguments: { names: ['Hạ', 'Đông', 'Hà', 'Dương', 'Ha'], sortAs: 'text' },
+      }),
+    );
+    expect(r.sorted).toEqual(['Dương', 'Đông', 'Ha', 'Hà', 'Hạ']);
+  });
+
   it('vietqr_build accepts additionalData and vietqr_parse returns it', async () => {
     const b = text(
       await client.callTool({

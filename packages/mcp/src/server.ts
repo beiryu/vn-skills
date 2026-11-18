@@ -15,6 +15,7 @@ import {
   slugifyName,
   initials,
   sortNames,
+  sortVietnamese,
   convertAddress,
   toPostalAddress,
   convertAddresses,
@@ -598,15 +599,24 @@ export function createServer(): McpServer {
       title: 'Vietnamese name tools',
       annotations: OFFLINE_READ_ONLY,
       description:
-        'Split a Vietnamese full name into họ / tên đệm / tên (handles Tôn Thất, Nguyễn Phúc), plus slug and initials; or sort a list of names by tên with Vietnamese collation.',
+        'Split a Vietnamese full name into họ / tên đệm / tên (handles Tôn Thất, Nguyễn Phúc), plus slug and initials; or sort a list of names by tên with Vietnamese collation (sortAs: "text" sorts any strings).',
       inputSchema: {
         name: z.string().optional().describe('Full name to split'),
         names: z.array(z.string()).optional().describe('Names to sort'),
         ascii: z.boolean().optional().describe('Strip diacritics from initials'),
+        sortAs: z
+          .enum(['name', 'text'])
+          .optional()
+          .describe('"name" (default) sorts by tên; "text" sorts whole strings'),
       },
     },
-    async ({ name, names, ascii }) => {
-      if (names) return json({ ok: true, sorted: sortNames(names) });
+    async ({ name, names, ascii, sortAs }) => {
+      if (names) {
+        return json({
+          ok: true,
+          sorted: sortAs === 'text' ? sortVietnamese(names) : sortNames(names),
+        });
+      }
       if (name === undefined) {
         return json(
           { ok: false, error: { code: 'MISSING_INPUT', message: 'Provide name or names' } },
