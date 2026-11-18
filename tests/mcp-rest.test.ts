@@ -155,4 +155,71 @@ describe('vn-skills MCP server --http --rest', () => {
     const doc = (await (await fetch(`${rest.base}/openapi.json`)).json()) as Doc;
     expect(doc.servers[0]!.url).toBe(rest.base);
   });
+
+  describe('/swagger.json', () => {
+    type Swagger = {
+      swagger: string;
+      host: string;
+      schemes: string[];
+      paths: Record<
+        string,
+        Record<string, { operationId: string; parameters: Array<{ in: string }> }>
+      >;
+    };
+    const keys = (v: unknown, out: Set<string> = new Set()): Set<string> => {
+      if (Array.isArray(v)) v.forEach((x) => keys(x, out));
+      else if (v && typeof v === 'object') {
+        for (const [k, x] of Object.entries(v)) {
+          out.add(k);
+          keys(x, out);
+        }
+      }
+      return out;
+    };
+
+    it('serves a Swagger 2.0 document with one operationId per MCP tool', async () => {
+      const res = await fetch(`${rest.base}/swagger.json`);
+      expect(res.status).toBe(200);
+      const text = await res.text();
+      const doc = JSON.parse(text) as Swagger;
+      expect(doc.swagger).toBe('2.0');
+      expect(Buffer.byteLength(text)).toBeLessThan(1024 * 1024);
+
+      const client = new Client({ name: 'test', version: '0.0.0' });
+      await client.connect(new StdioClientTransport({ command: process.execPath, args: [SERVER] }));
+      const names = (await client.listTools()).tools.map((t) => t.name).sort();
+      await client.close();
+      const ops = Object.values(doc.paths).flatMap((p) => Object.values(p));
+      expect(names.length).toBeGreaterThan(0);
+      expect(ops.map((o) => o.operationId).sort()).toEqual(names);
+
+      const k = keys(doc);
+      for (const bad of ['anyOf', 'oneOf', 'const', '$schema']) expect(k.has(bad)).toBe(false);
+      for (const o of ops) {
+        const body = o.parameters.filter((p) => p.in === 'body');
+        expect(body).toHaveLength(1);
+      }
+    });
+
+    it('derives host and schemes from --public-url', async () => {
+      const s = await start(['--rest', '--public-url', 'https://example.com']);
+      try {
+        const doc = (await (await fetch(`${s.base}/swagger.json`)).json()) as Swagger;
+        expect(doc.host).toBe('example.com');
+        expect(doc.schemes).toEqual(['https']);
+      } finally {
+        s.proc.kill();
+      }
+    });
+
+    it('returns 405 for POST', async () => {
+      const res = await post(`${rest.base}/swagger.json`, '{}');
+      expect(res.status).toBe(405);
+    });
+
+    it('returns 404 without --rest', async () => {
+      const res = await fetch(`${plain.base}/swagger.json`);
+      expect(res.status).toBe(404);
+    });
+  });
 });

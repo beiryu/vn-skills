@@ -109,6 +109,60 @@ async function buildOpenApi(serverUrl: string) {
   };
 }
 
+function downgradeSchema(v: unknown): unknown {
+  if (Array.isArray(v)) return v.map(downgradeSchema);
+  if (!v || typeof v !== 'object') return v;
+  const obj = v as Record<string, unknown>;
+  const out: Record<string, unknown> = {};
+  const isUnion = Array.isArray(obj.anyOf) || Array.isArray(obj.oneOf) || Array.isArray(obj.type);
+  for (const [k, x] of Object.entries(obj)) {
+    if (k === '$schema' || k === 'const') continue;
+    if (isUnion && (k === 'anyOf' || k === 'oneOf' || k === 'type')) continue;
+    out[k] =
+      k === 'properties' && x && typeof x === 'object' && !Array.isArray(x)
+        ? Object.fromEntries(Object.entries(x).map(([n, y]) => [n, downgradeSchema(y)]))
+        : downgradeSchema(x);
+  }
+  if (isUnion) {
+    // keep only keys valid without a type
+    for (const k of ['properties', 'required', 'items', 'enum', 'default']) delete out[k];
+  }
+  return out;
+}
+
+async function buildSwagger(serverUrl: string) {
+  const { tools } = await withClient((c) => c.listTools());
+  const url = new URL(serverUrl);
+  const paths: Record<string, unknown> = {};
+  for (const t of tools) {
+    paths[`/tools/${t.name}`] = {
+      post: {
+        operationId: t.name,
+        summary: t.title ?? t.name,
+        description: t.description ?? '',
+        parameters: [
+          { in: 'body', name: 'body', required: true, schema: downgradeSchema(t.inputSchema) },
+        ],
+        responses: {
+          '200': { description: 'Tool result', schema: {} },
+          '400': { description: 'Invalid input or tool error' },
+          '404': { description: 'Unknown tool' },
+        },
+      },
+    };
+  }
+  return {
+    swagger: '2.0',
+    info: { title: 'vn-skills', version: VERSION },
+    schemes: [url.protocol.replace(':', '')],
+    host: url.host,
+    basePath: url.pathname.replace(/\/+$/, '') || '/',
+    consumes: ['application/json'],
+    produces: ['application/json'],
+    paths,
+  };
+}
+
 function readBody(req: IncomingMessage): Promise<string> {
   return new Promise((resolve, reject) => {
     const chunks: Buffer[] = [];
@@ -129,7 +183,10 @@ function startHttp(opts: HttpOptions) {
       return reply(403, 'Forbidden origin');
     }
     const path = (req.url ?? '').split('?')[0] ?? '';
-    if (opts.rest && (path === '/openapi.json' || path.startsWith('/tools/'))) {
+    if (
+      opts.rest &&
+      (path === '/openapi.json' || path === '/swagger.json' || path.startsWith('/tools/'))
+    ) {
       const send = (status: number, body: unknown) => {
         res.writeHead(status, { 'content-type': 'application/json' });
         res.end(JSON.stringify(body));
@@ -137,11 +194,15 @@ function startHttp(opts: HttpOptions) {
       const fail = (status: number, code: string, message: string) =>
         send(status, { ok: false, error: { code, message } });
       const handle = async () => {
-        if (path === '/openapi.json') {
+        if (path === '/openapi.json' || path === '/swagger.json') {
           if (req.method !== 'GET') return fail(405, 'METHOD_NOT_ALLOWED', 'Use GET');
           const port = req.socket.localPort ?? opts.port;
           const host = opts.host.includes(':') ? `[${opts.host}]` : opts.host;
-          return send(200, await buildOpenApi(opts.publicUrl ?? `http://${host}:${port}`));
+          const base = opts.publicUrl ?? `http://${host}:${port}`;
+          return send(
+            200,
+            await (path === '/openapi.json' ? buildOpenApi(base) : buildSwagger(base)),
+          );
         }
         if (req.method !== 'POST') return fail(405, 'METHOD_NOT_ALLOWED', 'Use POST');
         const name = decodeURIComponent(path.slice('/tools/'.length));
