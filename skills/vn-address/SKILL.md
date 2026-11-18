@@ -83,7 +83,7 @@ MCP: `vn_address_convert_batch` converts up to 1000 addresses in one call (`{ ad
 
 ### Website structured data / JSON-LD
 
-For "schema.org", "JSON-LD" or "địa chỉ website" requests, `address convert --schema "<old address>"` prints the new address as a schema.org `PostalAddress` (the same object is `new.postalAddress` in `--json` and in the `vn_address_convert` result). `postalCode` is included only when the bundled ward has one. The ward → `addressLocality` / province → `addressRegion` mapping is this project's choice for the 2-level layout, not a rule from schema.org or Google. Check the result with Google's Rich Results Test.
+For "schema.org", "JSON-LD" or "địa chỉ website" requests, `address convert --schema "<old address>"` prints the new address as a schema.org `PostalAddress` (the same object is `new.postalAddress` in `--json` and in the `vn_address_convert` result). `postalCode` is included only when the bundled ward has one. When the old ward was split, `--schema` uses the default ward and lists the `candidates:` on stderr: show them and ask, as for `divided` above. The ward → `addressLocality` / province → `addressRegion` mapping is this project's choice for the 2-level layout, not a rule from schema.org or Google. Check the result with Google's Rich Results Test.
 
 Library: `parseAddress`, `convertAddress`, `toPostalAddress`, `convertAddresses`, `findProvince`, `searchWards`, `formerUnits`, `PROVINCES` from `@vn-skills/core`.
 

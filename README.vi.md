@@ -35,10 +35,11 @@ trên cùng một lõi chạy offline:
 | [`vn-name`](skills/vn-name/SKILL.md)                   | Tách họ / tên đệm / tên, họ kép, sắp xếp theo tên hoặc danh sách bất kỳ (collation tiếng Việt), slug không dấu và chữ cái đầu | `vn-skills name split "Tôn Thất Tùng"`                                                                    |
 | [`vn-number-format`](skills/vn-number-format/SKILL.md) | Định dạng/đọc số, tiền ₫, ngày dd/MM/yyyy kiểu Việt Nam; đọc "1tr2", "500k", "1,5 tỷ"                                         | `vn-skills numfmt parse "1tr2"` → `1200000`                                                               |
 
+Xuất dạng schema.org `PostalAddress` (JSON-LD cho website): `vn-skills address convert --schema "12 Nguyễn Huệ, P. Bến Nghé, Q.1, TP.HCM"`. stdout chỉ có JSON-LD; nếu phường cũ đã bị tách, danh sách phường ứng viên và cảnh báo được in ra stderr.
+
 Chuyển hàng loạt địa chỉ đã lưu (mỗi dòng một địa chỉ → NDJSON, hoặc một cột trong file CSV; thoát với mã 2 nếu có dòng lỗi):
 
 ```bash
-vn-skills address convert --schema "12 Nguyễn Huệ, P. Bến Nghé, Q.1, TP.HCM"   # schema.org PostalAddress (JSON-LD cho website)
 vn-skills address convert-file addresses.txt
 vn-skills address convert-file customers.csv --csv --column address > converted.csv
 vn-skills address convert-file customers.csv --csv --province-column province --district-column district --ward-column ward > converted.csv
@@ -127,6 +128,13 @@ Server cung cấp 40 tool, nhóm theo skill. Mọi tool đều được khai bá
 | `vn-name`          | `vn_name`                                                                                                                                                            |
 | `vn-number-format` | `vn_number_format`                                                                                                                                                   |
 
+Để tiết kiệm token ngữ cảnh, chỉ nạp một số nhóm: `--toolsets <nhóm>` (tên skill ở trên, hoặc `all`, mặc định) và `--tools <tên>` (thêm từng tool lẻ). Prompt và resource của nhóm không có tool nào được bật sẽ bị ẩn. Biến môi trường thay thế: `VN_SKILLS_TOOLSETS` và `VN_SKILLS_TOOLS` (cờ lệnh ưu tiên hơn). Tên không hợp lệ làm server dừng ngay khi khởi động. Dùng được với stdio, `--http` và `--rest` (`/openapi.json` chỉ liệt kê tool đã bật).
+
+```bash
+npx -y @vn-skills/mcp --toolsets vietqr,vn-address
+npx -y @vn-skills/mcp --toolsets vn-lunar --tools vietqr_parse
+```
+
 Thẻ QR để in (ngân hàng, số tài khoản, số tiền bằng chữ) dạng SVG: `vn-skills vietqr build --bank VCB --account 0011001234567 --amount 500000 --template card -o card.svg`
 
 Chèn logo cửa hàng vào giữa mã QR (PNG, cần `-o`): `vn-skills vietqr build --bank VCB --account 0011001234567 --amount 500000 --logo logo.png -o qr.png`
@@ -203,6 +211,8 @@ Sau đó trỏ client tới image (chạy `docker run -i --rm vn-skills-mcp`):
 }
 ```
 
+Với Docker, truyền biến môi trường: `docker run -i --rm -e VN_SKILLS_TOOLSETS=vietqr,vn-address vn-skills-mcp`.
+
 Client khác: dùng khối `mcpServers` chung ở trên. Agent AI (ví dụ Cline) có thể làm theo [llms-install.md](llms-install.md).
 
 ### Chế độ HTTP
@@ -215,7 +225,7 @@ npx -y @vn-skills/mcp --http --port 3000   # http://127.0.0.1:3000/mcp
 
 Mặc định chỉ lắng nghe trên `127.0.0.1`; dùng `--host 0.0.0.0` để mở ra ngoài (ví dụ `docker run -p 3000:3000 vn-skills-mcp --http --host 0.0.0.0`). Request có header `Origin` không phải localhost sẽ bị từ chối (403) trừ khi thêm `--allow-origin <origin>` (có thể lặp lại). Không có `--http` thì server dùng stdio.
 
-**REST / GPT Actions:** thêm `--rest` (bị bỏ qua nếu không có `--http`) để phục vụ thêm `GET /openapi.json` (tài liệu OpenAPI 3.1.0 sinh từ danh sách tool) và `POST /tools/{name}` (nhận JSON, trả JSON kết quả của tool; trả `400` kèm `{ "ok": false, ... }` khi tool báo lỗi, JSON sai hoặc đầu vào sai, `404` nếu không có tool; lỗi có dạng `{ "ok": false, "error": { "code", "message" } }`). `vietqr_decode` nhận `path` (tệp trên máy chủ) hoặc `data` (PNG dạng base64 hoặc URL `data:image/png;base64,`, tối đa 5 MB sau khi giải mã) để client từ xa gửi trực tiếp ảnh. Nội dung ảnh không được trả về. Dùng `--public-url https://your.host` để `servers[0].url` trỏ tới URL HTTPS công khai. Với custom connector của Power Automate / Power Apps, `GET /swagger.json` phục vụ tài liệu Swagger 2.0; cần URL HTTPS công khai (ví dụ qua `--public-url`). Để dùng làm GPT Action: trong trình soạn GPT chọn Actions → Import from URL và nhập `https://your.host/openapi.json`.
+**REST / GPT Actions:** thêm `--rest` (bị bỏ qua nếu không có `--http`) để phục vụ thêm `GET /openapi.json` (tài liệu OpenAPI 3.1.0 sinh từ danh sách tool) và `POST /tools/{name}` (nhận JSON, trả JSON kết quả của tool; trả `400` kèm `{ "ok": false, ... }` khi tool báo lỗi, JSON sai hoặc đầu vào sai, `404` nếu không có tool; lỗi có dạng `{ "ok": false, "error": { "code", "message" } }`). `vietqr_decode` nhận `path` (tệp trên máy chủ) hoặc `data` (PNG dạng base64 hoặc URL `data:image/png;base64,`, tối đa 5 MB sau khi giải mã và 20 megapixel) để client từ xa gửi trực tiếp ảnh. Nội dung ảnh không được trả về. Dùng `--public-url https://your.host` để `servers[0].url` trỏ tới URL HTTPS công khai. Với custom connector của Power Automate / Power Apps, `GET /swagger.json` phục vụ tài liệu Swagger 2.0; cần URL HTTPS công khai (ví dụ qua `--public-url`). Để dùng làm GPT Action: trong trình soạn GPT chọn Actions → Import from URL và nhập `https://your.host/openapi.json`.
 
 [![Deploy to Cloudflare Workers](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/beiryu/vn-skills/tree/main/examples/cloudflare-worker)
 

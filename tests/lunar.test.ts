@@ -282,10 +282,27 @@ describe('lunarMonthCalendar', () => {
       if (!r.ok) throw new Error('x');
       return r.solarTerm;
     };
-    days.forEach((d, i) => {
-      if (i > 0) expect(!!d.solarTerm).toBe(info(d.date) !== info(days[i - 1]!.date));
-      if (d.solarTerm) expect(d.solarTerm).toBe(info(d.date));
+    // lunarInfo gives the term at the start of a day; a term starts on day d when it differs
+    // between the start of d and the start of d + 1.
+    const next = (s: string) =>
+      new Date(Date.parse(`${s}T00:00:00Z`) + 86_400_000).toISOString().slice(0, 10);
+    days.forEach((d) => {
+      expect(!!d.solarTerm).toBe(info(next(d.date)) !== info(d.date));
+      if (d.solarTerm) expect(d.solarTerm).toBe(info(next(d.date)));
     });
+  });
+  it('marks a solar term on the day the Sun crosses into it (UTC+7), not the day after', () => {
+    // USNO equinox/solstice times: 2025-12-21 15:03Z, 2026-03-20 14:46Z, 2026-06-21 08:24Z,
+    // all before 17:00Z, so the same calendar day in Vietnam.
+    const starts = (m: number, y: number) =>
+      cal(m, y)
+        .filter((d) => d.solarTerm)
+        .map((d) => `${d.date} ${d.solarTerm}`);
+    expect(starts(12, 2025)).toContain('2025-12-21 Đông chí');
+    expect(starts(3, 2026)).toContain('2026-03-20 Xuân phân');
+    expect(starts(6, 2026)).toContain('2026-06-21 Hạ chí');
+    // Kinh trập 2026 (345°) is at ~14:59Z on 5 March: 05/03 in Vietnam.
+    expect(starts(3, 2026)).toContain('2026-03-05 Kinh trập');
   });
   it('lists public days off', () => {
     expect(cal(9, 2025).find((d) => d.date === '2025-09-02')!.holidays.length).toBeGreaterThan(0);

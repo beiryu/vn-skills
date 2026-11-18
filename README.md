@@ -35,10 +35,11 @@ pre-2025 provinces and districts, misread amounts in words, or confuse the Chine
 | [`vn-name`](skills/vn-name/SKILL.md)                   | Split họ / tên đệm / tên, compound surnames, Vietnamese collation sort (names or any list), unaccented slugs and initials | `vn-skills name split "Tôn Thất Tùng"`                                                                    |
 | [`vn-number-format`](skills/vn-number-format/SKILL.md) | Format/parse Vietnamese numbers, ₫ amounts and dd/MM/yyyy dates; parse "1tr2", "500k", "1,5 tỷ"                           | `vn-skills numfmt parse "1tr2"` → `1200000`                                                               |
 
+As a schema.org `PostalAddress` (JSON-LD) for a website: `vn-skills address convert --schema "12 Nguyễn Huệ, P. Bến Nghé, Q.1, TP.HCM"`. stdout is only the JSON-LD; when the old ward was split, the candidates and a warning go to stderr.
+
 Bulk-convert stored addresses (one per line → NDJSON, or a CSV column; exit code 2 if some rows fail):
 
 ```bash
-vn-skills address convert --schema "12 Nguyễn Huệ, P. Bến Nghé, Q.1, TP.HCM"   # schema.org PostalAddress JSON-LD
 vn-skills address convert-file addresses.txt
 vn-skills address convert-file customers.csv --csv --column address > converted.csv
 vn-skills address convert-file customers.csv --csv --province-column province --district-column district --ward-column ward > converted.csv
@@ -129,6 +130,13 @@ The server exposes 40 tools, grouped by skill. All tools are declared read-only 
 | `vn-name`          | `vn_name`                                                                                                                                                            |
 | `vn-number-format` | `vn_number_format`                                                                                                                                                   |
 
+To save context tokens, load only some groups: `--toolsets <groups>` (the skill names above, or `all`, the default) and `--tools <names>` (single tools added on top). Prompts and resources whose group has no enabled tool are hidden. Env fallbacks: `VN_SKILLS_TOOLSETS` and `VN_SKILLS_TOOLS` (the flag wins). Unknown names stop the server at startup. Works with stdio, `--http` and `--rest` (`/openapi.json` lists only enabled tools).
+
+```bash
+npx -y @vn-skills/mcp --toolsets vietqr,vn-address
+npx -y @vn-skills/mcp --toolsets vn-lunar --tools vietqr_parse
+```
+
 Printable card (bank, account, amount in words) as SVG: `vn-skills vietqr build --bank VCB --account 0011001234567 --amount 500000 --template card -o card.svg`
 
 Shop logo in the middle of the QR (PNG, needs `-o`): `vn-skills vietqr build --bank VCB --account 0011001234567 --amount 500000 --logo logo.png -o qr.png`
@@ -205,6 +213,8 @@ Then point your client at it (it runs `docker run -i --rm vn-skills-mcp`):
 }
 ```
 
+With Docker, pass the env vars: `docker run -i --rm -e VN_SKILLS_TOOLSETS=vietqr,vn-address vn-skills-mcp`.
+
 Other clients: use the generic `mcpServers` block above. AI agents (e.g. Cline) can follow [llms-install.md](llms-install.md).
 
 ### HTTP mode
@@ -217,7 +227,7 @@ npx -y @vn-skills/mcp --http --port 3000   # http://127.0.0.1:3000/mcp
 
 It binds to `127.0.0.1` by default; use `--host 0.0.0.0` to expose it (e.g. `docker run -p 3000:3000 vn-skills-mcp --http --host 0.0.0.0`). Requests with a non-localhost `Origin` header get 403 unless you pass `--allow-origin <origin>` (repeatable). Without `--http` the server uses stdio.
 
-**REST / GPT Actions:** add `--rest` (ignored without `--http`) to also serve `GET /openapi.json` (an OpenAPI 3.1.0 document built from the tool list) and `POST /tools/{name}` (JSON body in, the tool's JSON result out; `400` with `{ "ok": false, ... }` on tool errors, invalid JSON or invalid input, `404` for an unknown tool, errors use `{ "ok": false, "error": { "code", "message" } }`). `vietqr_decode` takes either `path` (a file on the server) or `data` (base64 PNG or a `data:image/png;base64,` URL, max 5 MB decoded), so remote clients can send the image itself. Image content is not returned. Use `--public-url https://your.host` so `servers[0].url` points at your public HTTPS URL. For Power Automate / Power Apps custom connectors, `GET /swagger.json` serves a Swagger 2.0 document; they need a public HTTPS URL (e.g. via `--public-url`). To use it as a GPT Action, in the GPT editor choose Actions → Import from URL and enter `https://your.host/openapi.json`.
+**REST / GPT Actions:** add `--rest` (ignored without `--http`) to also serve `GET /openapi.json` (an OpenAPI 3.1.0 document built from the tool list) and `POST /tools/{name}` (JSON body in, the tool's JSON result out; `400` with `{ "ok": false, ... }` on tool errors, invalid JSON or invalid input, `404` for an unknown tool, errors use `{ "ok": false, "error": { "code", "message" } }`). `vietqr_decode` takes either `path` (a file on the server) or `data` (base64 PNG or a `data:image/png;base64,` URL, max 5 MB decoded and 20 megapixels), so remote clients can send the image itself. Image content is not returned. Use `--public-url https://your.host` so `servers[0].url` points at your public HTTPS URL. For Power Automate / Power Apps custom connectors, `GET /swagger.json` serves a Swagger 2.0 document; they need a public HTTPS URL (e.g. via `--public-url`). To use it as a GPT Action, in the GPT editor choose Actions → Import from URL and enter `https://your.host/openapi.json`.
 
 [![Deploy to Cloudflare Workers](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/beiryu/vn-skills/tree/main/examples/cloudflare-worker)
 
