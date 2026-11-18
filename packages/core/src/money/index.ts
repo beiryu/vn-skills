@@ -238,12 +238,38 @@ export function moneyToWords(
   return { ok: true, words, amount: (negative ? '-' : '') + big.toString(), negative };
 }
 
+export interface NumberToWordsOptions extends Omit<MoneyToWordsOptions, 'unit' | 'chan'> {
+  /** Read as an ordinal ("thứ nhất", "thứ tư"); integers >= 1, Vietnamese only. */
+  ordinal?: boolean;
+  /** Word for the ordinal 2: "nhì" (CLDR, default) or "hai". */
+  second?: 'nhì' | 'hai';
+}
+
 /** Read a plain integer (no currency unit). */
 export function numberToWords(
   n: number | bigint | string,
-  options: Omit<MoneyToWordsOptions, 'unit' | 'chan'> = {},
+  options: NumberToWordsOptions = {},
 ): Result<MoneyWords> {
-  return moneyToWords(n, { ...options, unit: '', chan: false });
+  const { ordinal, second, ...rest } = options;
+  if (!ordinal) return moneyToWords(n, { ...rest, unit: '', chan: false });
+  if (rest.lang === 'en')
+    return fail('INVALID_OPTIONS', 'ordinal cannot be combined with lang "en"');
+  if (second !== undefined && second !== 'nhì' && second !== 'hai')
+    return fail('INVALID_OPTIONS', 'second must be "nhì" or "hai"');
+  // Unicode CLDR common/rbnf/vi.xml (Unicode licence), %spellout-ordinal:
+  // 1 -> "thứ nhất", 2 -> "thứ nhì", 4 -> "thứ tư", otherwise "thứ " + cardinal.
+  const r = moneyToWords(n, { ...rest, capitalize: false, unit: '', chan: false });
+  if (!r.ok) return r;
+  if (r.negative || r.amount === '0')
+    return fail(
+      'INVALID_AMOUNT',
+      `Ordinal ${r.amount} must be at least 1`,
+      'Ordinals are integers >= 1.',
+    );
+  const special: Record<string, string> = { '1': 'nhất', '2': second ?? 'nhì', '4': 'tư' };
+  let words = `thứ ${special[r.amount] ?? r.words}`;
+  if (rest.capitalize) words = words.charAt(0).toUpperCase() + words.slice(1);
+  return { ok: true, words, amount: r.amount, negative: false };
 }
 
 export interface ParsedWords {

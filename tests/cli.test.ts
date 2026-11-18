@@ -368,6 +368,16 @@ describe('vn-skills CLI', () => {
       expect(r.out + r.err).toContain('--plain');
     }
   });
+  it('money words --ordinal reads an ordinal', () => {
+    expect(run(['money', 'words', '4', '--ordinal', '--pretty']).out.trim()).toBe('thứ tư');
+    expect(run(['money', 'words', '2', '--ordinal', '--second', 'hai']).json().words).toBe(
+      'thứ hai',
+    );
+    expect(run(['money', 'words', '2', '--ordinal', '--second', 'ba']).code).not.toBe(0);
+    for (const extra of ['--chan', '--en']) {
+      expect(run(['money', 'words', '4', '--ordinal', extra]).code).not.toBe(0);
+    }
+  });
   it('money words --pretty prints plain text', () => {
     expect(run(['money', 'words', '15', '--pretty']).out.trim()).toBe('mười lăm đồng');
   });

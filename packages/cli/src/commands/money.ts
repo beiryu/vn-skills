@@ -1,4 +1,4 @@
-import { Command } from 'commander';
+import { Command, Option } from 'commander';
 import { readTextInput } from '../input.js';
 import { moneyToWords, numberToWords, toSpokenText, wordsToNumber } from '@vn-skills/core';
 import { failExit, printJson, wantsJson } from '../output.js';
@@ -21,11 +21,22 @@ export function registerMoney(program: Command): void {
       'read in English words, e.g. 1200000 -> "one million two hundred thousand dong"',
     )
     .option('--plain', 'read a plain number without a unit, e.g. 30 -> "ba mươi"')
+    .option('--ordinal', 'read an ordinal, e.g. 4 -> "thứ tư" (implies --plain)')
+    .addOption(
+      new Option('--second <word>', 'ordinal 2 as "nhì" (default) or "hai"').choices([
+        'nhì',
+        'hai',
+      ]),
+    )
     .addHelpText(
       'after',
       '\nNegative amounts: vn-skills money words -5 (or, explicitly, vn-skills money words -- -5)',
     )
     .action((amount: string, opts, c: Command) => {
+      if (opts.ordinal && (opts.unit !== undefined || opts.chan || opts.en)) {
+        c.error('error: --ordinal cannot be combined with --unit, --chan or --en');
+      }
+      if (opts.ordinal) opts.plain = true;
       if (opts.plain && (opts.unit !== undefined || opts.chan)) {
         c.error('error: --plain cannot be combined with --unit or --chan');
       }
@@ -34,6 +45,8 @@ export function registerMoney(program: Command): void {
         odd: opts.odd,
         useTu: opts.tu,
         capitalize: opts.capitalize,
+        ordinal: opts.ordinal,
+        second: opts.second,
         lang: opts.en ? ('en' as const) : undefined,
       };
       const r = opts.plain

@@ -635,7 +635,7 @@ export function createServer(): McpServer {
       title: 'Amount in Vietnamese words',
       annotations: OFFLINE_READ_ONLY,
       description:
-        'Read an integer VND amount in Vietnamese words, e.g. 1200000 -> "một triệu hai trăm nghìn đồng". Also reads plain numbers without a unit with plain: true, e.g. 30 -> "ba mươi". Options: thousand "nghìn"/"ngàn", odd "lẻ"/"linh", capitalize, unit, lang "en" for English words (e.g. "one million two hundred thousand dong").',
+        'Read an integer VND amount in Vietnamese words, e.g. 1200000 -> "một triệu hai trăm nghìn đồng". Also reads plain numbers without a unit with plain: true, e.g. 30 -> "ba mươi". Reads ordinals with ordinal: true, e.g. 4 -> "thứ tư" (second "nhì"/"hai" for 2). Options: thousand "nghìn"/"ngàn", odd "lẻ"/"linh", capitalize, unit, lang "en" for English words (e.g. "one million two hundred thousand dong").',
       inputSchema: {
         amount: z.union([z.number(), z.string()]),
         lang: z
@@ -651,9 +651,15 @@ export function createServer(): McpServer {
           .boolean()
           .optional()
           .describe('Read a plain number without a unit (default false); not with unit/chan'),
+        ordinal: z
+          .boolean()
+          .optional()
+          .describe('Read an ordinal ("thứ nhất", "thứ tư"); integers >= 1, implies plain'),
+        second: z.enum(['nhì', 'hai']).optional().describe('Ordinal 2 as "nhì" (default) or "hai"'),
       },
     },
-    async ({ amount, plain, ...opts }) => {
+    async ({ amount, plain: plainOpt, ordinal, second, ...opts }) => {
+      const plain = plainOpt || ordinal;
       if (plain && (opts.unit !== undefined || opts.chan)) {
         return json(
           {
@@ -667,7 +673,9 @@ export function createServer(): McpServer {
         );
       }
       const { unit: _u, chan: _c, ...rest } = opts;
-      const r = plain ? numberToWords(amount, rest) : moneyToWords(amount, opts);
+      const r = plain
+        ? numberToWords(amount, { ...rest, ordinal, second })
+        : moneyToWords(amount, opts);
       return r.ok
         ? json({ ok: true, amount: r.amount, words: r.words })
         : json({ ok: false, error: r.error }, true);
