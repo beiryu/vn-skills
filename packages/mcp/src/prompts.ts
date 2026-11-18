@@ -1,24 +1,31 @@
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
+import type { ToolFilter } from './toolsets.js';
 
 type Args = Record<string, string | undefined>;
 
 function define(
   server: McpServer,
+  filter: ToolFilter,
+  group: string,
   name: string,
   title: string,
   description: string,
   argsSchema: Record<string, z.ZodType<string | undefined>>,
   text: (a: Args) => string,
 ): void {
-  server.registerPrompt(name, { title, description, argsSchema }, (args) => ({
+  const registered = server.registerPrompt(name, { title, description, argsSchema }, (args) => ({
     messages: [{ role: 'user' as const, content: { type: 'text' as const, text: text(args) } }],
   }));
+  // Disabled rather than skipped so the prompts capability is still advertised.
+  if (!filter.groupEnabled(group)) registered.disable();
 }
 
-export function registerPrompts(server: McpServer): void {
+export function registerPrompts(server: McpServer, filter: ToolFilter): void {
   define(
     server,
+    filter,
+    'vietqr',
     'tao-vietqr',
     'Tạo mã QR VietQR',
     'Tạo mã QR chuyển khoản VietQR (NAPAS 247) cho một tài khoản ngân hàng.',
@@ -40,6 +47,8 @@ export function registerPrompts(server: McpServer): void {
 
   define(
     server,
+    filter,
+    'vn-address',
     'doi-dia-chi-moi',
     'Đổi địa chỉ cũ sang địa chỉ mới',
     'Chuyển địa chỉ cũ (63 tỉnh, quận/huyện) sang cấu trúc 2 cấp sau 01/07/2025.',
@@ -51,6 +60,8 @@ export function registerPrompts(server: McpServer): void {
 
   define(
     server,
+    filter,
+    'vn-tax-id',
     'kiem-tra-mst',
     'Kiểm tra mã số thuế',
     'Kiểm tra cấu trúc và chữ số kiểm tra của mã số thuế (offline).',
@@ -62,6 +73,8 @@ export function registerPrompts(server: McpServer): void {
 
   define(
     server,
+    filter,
+    'vn-id',
     'doc-cccd',
     'Đọc số CCCD',
     'Kiểm tra và giải mã số CCCD 12 số hoặc CMND 9 số (offline).',
@@ -73,6 +86,8 @@ export function registerPrompts(server: McpServer): void {
 
   define(
     server,
+    filter,
+    'vn-money-words',
     'so-tien-bang-chu',
     'Số tiền bằng chữ',
     'Đọc số tiền VND bằng chữ tiếng Việt.',
@@ -84,6 +99,8 @@ export function registerPrompts(server: McpServer): void {
 
   define(
     server,
+    filter,
+    'vn-holidays',
     'ngay-lam-viec',
     'Cộng ngày làm việc',
     'Tính ngày sau khi cộng (hoặc trừ) số ngày làm việc, bỏ qua cuối tuần, nghỉ lễ và nghỉ bù.',
@@ -98,6 +115,8 @@ export function registerPrompts(server: McpServer): void {
 
   define(
     server,
+    filter,
+    'vn-lunar',
     'doi-am-duong',
     'Đổi ngày dương sang âm',
     'Đổi ngày dương lịch sang âm lịch kèm can chi.',
@@ -109,6 +128,8 @@ export function registerPrompts(server: McpServer): void {
 
   define(
     server,
+    filter,
+    'vn-einvoice',
     'kiem-tra-hoa-don',
     'Kiểm tra hóa đơn điện tử',
     'Kiểm tra dữ liệu hóa đơn điện tử theo Nghị định 123/2020.',

@@ -6,6 +6,33 @@ import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { InMemoryTransport } from '@modelcontextprotocol/sdk/inMemory.js';
 import { registerBanks, VERSION, type Bank } from '@vn-skills/core';
 import { createServer } from './server.js';
+import { validateToolOptions, type ToolOptions } from './toolsets.js';
+
+const list = (v: string | undefined): string[] | undefined =>
+  v === undefined
+    ? undefined
+    : v
+        .split(',')
+        .map((x) => x.trim())
+        .filter(Boolean);
+
+function parseToolOptions(argv: string[], env: NodeJS.ProcessEnv): ToolOptions {
+  const flag = (name: string) => {
+    const i = argv.indexOf(name);
+    if (i < 0) return undefined;
+    const v = argv[i + 1];
+    if (v === undefined) throw new Error(`${name} requires a comma-separated list`);
+    return v;
+  };
+  const options = {
+    toolsets: list(flag('--toolsets') ?? env.VN_SKILLS_TOOLSETS),
+    tools: list(flag('--tools') ?? env.VN_SKILLS_TOOLS),
+  };
+  validateToolOptions(options);
+  return options;
+}
+
+let toolOptions: ToolOptions = {};
 
 function loadBanksArg(argv: string[]): void {
   const i = argv.indexOf('--banks');
@@ -56,7 +83,7 @@ function isLocalOrigin(origin: string): boolean {
 }
 
 async function withClient<T>(fn: (client: Client) => Promise<T>): Promise<T> {
-  const server = createServer();
+  const server = createServer(toolOptions);
   const client = new Client({ name: 'vn-skills-rest', version: VERSION });
   const [a, b] = InMemoryTransport.createLinkedPair();
   await Promise.all([server.connect(a), client.connect(b)]);
@@ -183,7 +210,7 @@ function startHttp(opts: HttpOptions) {
     }
     if (path !== '/mcp') return reply(404, 'Not found');
 
-    const server = createServer();
+    const server = createServer(toolOptions);
     const transport = new StreamableHTTPServerTransport({ sessionIdGenerator: undefined });
     res.on('close', () => {
       void transport.close();
@@ -205,9 +232,10 @@ function startHttp(opts: HttpOptions) {
 
 async function main() {
   loadBanksArg(process.argv.slice(2));
+  toolOptions = parseToolOptions(process.argv.slice(2), process.env);
   const http = parseHttpArgs(process.argv.slice(2));
   if (http) return startHttp(http);
-  const server = createServer();
+  const server = createServer(toolOptions);
   const transport = new StdioServerTransport();
   await server.connect(transport);
   process.stderr.write('vn-skills MCP server running on stdio\n');
