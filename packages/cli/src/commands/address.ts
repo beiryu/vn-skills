@@ -113,7 +113,20 @@ export function registerAddress(program: Command): void {
     .action((words: string[], o: { schema?: boolean }, c: Command) => {
       const r = convertAddress(words.join(' '));
       if (!r.ok) failExit(c, r.error);
-      if (o.schema && c.optsWithGlobals().json !== true) return printJson(r.new.postalAddress);
+      if (o.schema && c.optsWithGlobals().json !== true) {
+        // stdout stays pure JSON-LD; a split ward (default picked) and other warnings go to stderr.
+        printJson(r.new.postalAddress);
+        if (r.candidates.length > 1)
+          process.stderr.write(
+            'candidates: ' +
+              r.candidates
+                .map((x) => `${x.ward.fullName}${x.isDefault ? ' (default, used above)' : ''}`)
+                .join(' | ') +
+              '\n',
+          );
+        for (const w of r.warnings) process.stderr.write(`warning: ${w}\n`);
+        return;
+      }
       const result = {
         ok: true,
         input: r.input,

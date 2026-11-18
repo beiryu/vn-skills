@@ -35,10 +35,11 @@ pre-2025 provinces and districts, misread amounts in words, or confuse the Chine
 | [`vn-name`](skills/vn-name/SKILL.md)                   | Split họ / tên đệm / tên, compound surnames, Vietnamese collation sort (names or any list), unaccented slugs and initials | `vn-skills name split "Tôn Thất Tùng"`                                                                    |
 | [`vn-number-format`](skills/vn-number-format/SKILL.md) | Format/parse Vietnamese numbers, ₫ amounts and dd/MM/yyyy dates; parse "1tr2", "500k", "1,5 tỷ"                           | `vn-skills numfmt parse "1tr2"` → `1200000`                                                               |
 
+As a schema.org `PostalAddress` (JSON-LD) for a website: `vn-skills address convert --schema "12 Nguyễn Huệ, P. Bến Nghé, Q.1, TP.HCM"`. stdout is only the JSON-LD; when the old ward was split, the candidates and a warning go to stderr.
+
 Bulk-convert stored addresses (one per line → NDJSON, or a CSV column; exit code 2 if some rows fail):
 
 ```bash
-vn-skills address convert --schema "12 Nguyễn Huệ, P. Bến Nghé, Q.1, TP.HCM"   # schema.org PostalAddress JSON-LD
 vn-skills address convert-file addresses.txt
 vn-skills address convert-file customers.csv --csv --column address > converted.csv
 vn-skills address convert-file customers.csv --csv --province-column province --district-column district --ward-column ward > converted.csv
