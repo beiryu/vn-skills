@@ -487,6 +487,17 @@ describe('vn-skills CLI', () => {
       addressCountry: 'VN',
     });
   });
+  it('address convert --schema keeps a split ward visible on stderr', () => {
+    const plain = run(['address', 'convert', '--json', 'Xã Tân Thạnh, huyện Thới Lai, Cần Thơ']);
+    expect(plain.json().mappingType).toBe('divided');
+    const candidates = plain.json().candidates as Array<{ fullName: string }>;
+    const r = run(['address', 'convert', '--schema', 'Xã Tân Thạnh, huyện Thới Lai, Cần Thơ']);
+    expect(r.code).toBe(0);
+    expect(r.json()).toMatchObject({ '@type': 'PostalAddress' });
+    expect(r.err).toMatch(/^candidates: .*\(default, used above\)/m);
+    for (const c of candidates) expect(r.err).toContain(c.fullName);
+    expect(r.err).toMatch(/^warning: .*split into/m);
+  });
   it('address parse', () => {
     const r = run(['address', 'parse', 'Phường Hoàn Kiếm, Hà Nội']);
     expect((r.json().ward as { fullName: string }).fullName).toBe('Phường Hoàn Kiếm');

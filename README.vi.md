@@ -35,10 +35,11 @@ trên cùng một lõi chạy offline:
 | [`vn-name`](skills/vn-name/SKILL.md)                   | Tách họ / tên đệm / tên, họ kép, sắp xếp theo tên hoặc danh sách bất kỳ (collation tiếng Việt), slug không dấu và chữ cái đầu | `vn-skills name split "Tôn Thất Tùng"`                                                                    |
 | [`vn-number-format`](skills/vn-number-format/SKILL.md) | Định dạng/đọc số, tiền ₫, ngày dd/MM/yyyy kiểu Việt Nam; đọc "1tr2", "500k", "1,5 tỷ"                                         | `vn-skills numfmt parse "1tr2"` → `1200000`                                                               |
 
+Xuất dạng schema.org `PostalAddress` (JSON-LD cho website): `vn-skills address convert --schema "12 Nguyễn Huệ, P. Bến Nghé, Q.1, TP.HCM"`. stdout chỉ có JSON-LD; nếu phường cũ đã bị tách, danh sách phường ứng viên và cảnh báo được in ra stderr.
+
 Chuyển hàng loạt địa chỉ đã lưu (mỗi dòng một địa chỉ → NDJSON, hoặc một cột trong file CSV; thoát với mã 2 nếu có dòng lỗi):
 
 ```bash
-vn-skills address convert --schema "12 Nguyễn Huệ, P. Bến Nghé, Q.1, TP.HCM"   # schema.org PostalAddress (JSON-LD cho website)
 vn-skills address convert-file addresses.txt
 vn-skills address convert-file customers.csv --csv --column address > converted.csv
 vn-skills address convert-file customers.csv --csv --province-column province --district-column district --ward-column ward > converted.csv
