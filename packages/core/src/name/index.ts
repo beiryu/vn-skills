@@ -77,7 +77,7 @@ function letterKey(s: string): number[] {
   return out;
 }
 
-function cmp(a: string, b: string): number {
+function fallbackCompare(a: string, b: string): number {
   const ka = letterKey(a);
   const kb = letterKey(b);
   for (let i = 0; i < Math.min(ka.length, kb.length); i++) {
@@ -85,6 +85,29 @@ function cmp(a: string, b: string): number {
   }
   if (ka.length !== kb.length) return ka.length - kb.length;
   return a < b ? -1 : a > b ? 1 : 0;
+}
+
+// CLDR Vietnamese collation (common/collation/vi.xml): tones order none < huyền < hỏi < ngã < sắc < nặng.
+// Node's ICU implements it; runtimes without Vietnamese data fall back to letterKey.
+let collator: Intl.Collator | null | undefined;
+
+function getCollator(): Intl.Collator | null {
+  if (collator === undefined) {
+    const c = new Intl.Collator('vi');
+    collator = c.resolvedOptions().locale.toLowerCase().startsWith('vi') ? c : null;
+  }
+  return collator;
+}
+
+/** Compare two strings with Vietnamese collation (CLDR vi; d < đ, tones none < huyền < hỏi < ngã < sắc < nặng). */
+export function compareVietnamese(a: string, b: string): number {
+  const c = getCollator();
+  return c ? c.compare(a, b) : fallbackCompare(a, b);
+}
+
+/** Sort any list of strings with Vietnamese collation. Returns a new array; non-string entries are dropped. */
+export function sortVietnamese(list: readonly string[]): string[] {
+  return list.filter((s) => typeof s === 'string').sort(compareVietnamese);
 }
 
 /** Sort full names the Vietnamese way: by tên, then tên đệm, then họ. Returns a new array; non-string entries are dropped. */
@@ -95,6 +118,9 @@ export function sortNames(names: readonly string[]): string[] {
       const r = splitName(n);
       return { n, f: r.ok ? r.family : '', m: r.ok ? r.middle : '', g: r.ok ? r.given : n };
     });
-  keyed.sort((a, b) => cmp(a.g, b.g) || cmp(a.m, b.m) || cmp(a.f, b.f));
+  keyed.sort(
+    (a, b) =>
+      compareVietnamese(a.g, b.g) || compareVietnamese(a.m, b.m) || compareVietnamese(a.f, b.f),
+  );
   return keyed.map((k) => k.n);
 }
