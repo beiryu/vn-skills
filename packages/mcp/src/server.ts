@@ -221,7 +221,7 @@ export function createServer(options?: ToolOptions): McpServer {
       title: 'Decode VietQR image',
       annotations: OFFLINE_READ_ONLY,
       description:
-        'Read the QR code in a PNG image and decode it like vietqr_parse: bank, account, amount, note, CRC validity. Give exactly one of `path` (a file on the server) or `data` (base64 of the PNG, or a data:image/png;base64, URL; max 5 MB decoded). Returns INVALID_INPUT unless exactly one is given, TOO_LARGE over the cap, READ_ERROR for bad base64 or an unreadable/non-PNG image and NO_QR when no QR code is found.',
+        'Read the QR code in a PNG image and decode it like vietqr_parse: bank, account, amount, note, CRC validity. Give exactly one of `path` (a file on the server) or `data` (base64 of the PNG, or a data:image/png;base64, URL; max 5 MB decoded, at most 20 megapixels). Returns INVALID_INPUT unless exactly one is given, TOO_LARGE over either cap, READ_ERROR for bad base64 or an unreadable/non-PNG image and NO_QR when no QR code is found.',
       inputSchema: {
         path: z.string().optional().describe('Path to a PNG image on the server'),
         data: z

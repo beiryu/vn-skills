@@ -2,6 +2,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { mkdtempSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
+import { crc32, deflateSync } from 'node:zlib';
 import { PNG } from 'pngjs';
 import { PROVINCES, numberToWords } from '@vn-skills/core';
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
@@ -254,6 +255,31 @@ describe('vn-skills MCP server', () => {
       const r = await decode({ data: Buffer.alloc(6 * 1024 * 1024).toString('base64') });
       expect(r.isError).toBe(true);
       expect((r.j.error as { code: string }).code).toBe('TOO_LARGE');
+    });
+    it('returns TOO_LARGE for a small PNG that declares a huge size, before decoding it', async () => {
+      // 16000x16000 RGBA in the header but only a few bytes of data: pngjs would allocate ~1 GB.
+      const chunk = (type: string, data: Buffer) => {
+        const body = Buffer.concat([Buffer.from(type, 'ascii'), data]);
+        const len = Buffer.alloc(4);
+        len.writeUInt32BE(data.length);
+        const crc = Buffer.alloc(4);
+        crc.writeUInt32BE(crc32(body));
+        return Buffer.concat([len, body, crc]);
+      };
+      const ihdr = Buffer.alloc(13);
+      ihdr.writeUInt32BE(16000, 0);
+      ihdr.writeUInt32BE(16000, 4);
+      ihdr.set([8, 6, 0, 0, 0], 8);
+      const png = Buffer.concat([
+        Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]),
+        chunk('IHDR', ihdr),
+        chunk('IDAT', deflateSync(Buffer.alloc(16))),
+        chunk('IEND', Buffer.alloc(0)),
+      ]);
+      const r = await decode({ data: png.toString('base64') });
+      expect(r.isError).toBe(true);
+      expect(r.j.error).toMatchObject({ code: 'TOO_LARGE' });
+      expect((r.j.error as { message: string }).message).toContain('16000x16000');
     });
   });
   it('vietqr_decode returns NO_QR for a PNG without a QR code', async () => {
