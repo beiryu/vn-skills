@@ -109,6 +109,43 @@ async function buildOpenApi(serverUrl: string) {
   };
 }
 
+/** Schema Object fields Swagger 2.0 allows; any other JSON Schema keyword makes the document invalid. */
+const SWAGGER2_SCHEMA_KEYS = new Set([
+  '$ref',
+  'format',
+  'title',
+  'description',
+  'default',
+  'multipleOf',
+  'maximum',
+  'exclusiveMaximum',
+  'minimum',
+  'exclusiveMinimum',
+  'maxLength',
+  'minLength',
+  'pattern',
+  'maxItems',
+  'minItems',
+  'uniqueItems',
+  'maxProperties',
+  'minProperties',
+  'required',
+  'enum',
+  'type',
+  'items',
+  'allOf',
+  'properties',
+  'additionalProperties',
+  'discriminator',
+  'readOnly',
+  'example',
+]);
+
+/**
+ * Turns a JSON Schema (draft 2020-12, as zod emits it) into a Swagger 2.0 Schema Object: keeps only
+ * the keywords 2.0 knows, maps `const` to `enum` and numeric `exclusiveMinimum`/`exclusiveMaximum`
+ * to `minimum`/`maximum` plus `true`, and drops `type`/`properties`/... from unions 2.0 cannot express.
+ */
 function downgradeSchema(v: unknown): unknown {
   if (Array.isArray(v)) return v.map(downgradeSchema);
   if (!v || typeof v !== 'object') return v;
@@ -116,16 +153,35 @@ function downgradeSchema(v: unknown): unknown {
   const out: Record<string, unknown> = {};
   const isUnion = Array.isArray(obj.anyOf) || Array.isArray(obj.oneOf) || Array.isArray(obj.type);
   for (const [k, x] of Object.entries(obj)) {
-    if (k === '$schema' || k === 'const') continue;
-    if (isUnion && (k === 'anyOf' || k === 'oneOf' || k === 'type')) continue;
-    out[k] =
-      k === 'properties' && x && typeof x === 'object' && !Array.isArray(x)
-        ? Object.fromEntries(Object.entries(x).map(([n, y]) => [n, downgradeSchema(y)]))
-        : downgradeSchema(x);
+    if (k === 'const') {
+      if (!('enum' in obj)) out.enum = [x];
+      continue;
+    }
+    if (k.startsWith('x-')) {
+      out[k] = x;
+      continue;
+    }
+    if (!SWAGGER2_SCHEMA_KEYS.has(k)) continue;
+    if (k === 'exclusiveMinimum' || k === 'exclusiveMaximum') {
+      if (typeof x === 'number') {
+        out[k === 'exclusiveMinimum' ? 'minimum' : 'maximum'] = x;
+        out[k] = true;
+      } else if (typeof x === 'boolean') out[k] = x;
+      continue;
+    }
+    if (k === 'properties' && x && typeof x === 'object' && !Array.isArray(x)) {
+      out[k] = Object.fromEntries(Object.entries(x).map(([n, y]) => [n, downgradeSchema(y)]));
+    } else if (k === 'items' && Array.isArray(x)) {
+      out[k] = {}; // tuple items have no 2.0 form
+    } else if (k === 'additionalProperties' && typeof x === 'boolean') {
+      out[k] = x;
+    } else {
+      out[k] = downgradeSchema(x);
+    }
   }
   if (isUnion) {
     // keep only keys valid without a type
-    for (const k of ['properties', 'required', 'items', 'enum', 'default']) delete out[k];
+    for (const k of ['type', 'properties', 'required', 'items', 'enum', 'default']) delete out[k];
   }
   return out;
 }

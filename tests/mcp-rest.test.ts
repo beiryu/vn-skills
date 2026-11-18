@@ -201,6 +201,67 @@ describe('vn-skills MCP server --http --rest', () => {
       }
     });
 
+    it('uses only Swagger 2.0 Schema Object fields in every body schema', async () => {
+      // Swagger 2.0 spec, Schema Object: JSON Schema draft 4 subset plus these extensions.
+      const allowed = new Set([
+        '$ref',
+        'format',
+        'title',
+        'description',
+        'default',
+        'multipleOf',
+        'maximum',
+        'exclusiveMaximum',
+        'minimum',
+        'exclusiveMinimum',
+        'maxLength',
+        'minLength',
+        'pattern',
+        'maxItems',
+        'minItems',
+        'uniqueItems',
+        'maxProperties',
+        'minProperties',
+        'required',
+        'enum',
+        'type',
+        'items',
+        'allOf',
+        'properties',
+        'additionalProperties',
+        'discriminator',
+        'readOnly',
+        'xml',
+        'externalDocs',
+        'example',
+      ]);
+      const problems: string[] = [];
+      const walk = (s: unknown, at: string) => {
+        if (!s || typeof s !== 'object' || Array.isArray(s)) {
+          problems.push(`${at}: not a schema object`);
+          return;
+        }
+        const o = s as Record<string, unknown>;
+        for (const k of Object.keys(o))
+          if (!allowed.has(k) && !k.startsWith('x-')) problems.push(`${at}: ${k}`);
+        if ('type' in o && typeof o.type !== 'string')
+          problems.push(`${at}: type ${JSON.stringify(o.type)}`);
+        for (const k of ['exclusiveMinimum', 'exclusiveMaximum'])
+          if (k in o && typeof o[k] !== 'boolean') problems.push(`${at}: ${k} not boolean`);
+        if (o.properties) for (const [n, y] of Object.entries(o.properties)) walk(y, `${at}.${n}`);
+        if ('items' in o) walk(o.items, `${at}[]`);
+        if (o.additionalProperties && typeof o.additionalProperties === 'object')
+          walk(o.additionalProperties, `${at}{}`);
+        if (Array.isArray(o.allOf)) o.allOf.forEach((y, i) => walk(y, `${at}&${i}`));
+      };
+      const doc = (await (await fetch(`${rest.base}/swagger.json`)).json()) as {
+        paths: Record<string, { post: { parameters: Array<{ in: string; schema: unknown }> } }>;
+      };
+      for (const [path, item] of Object.entries(doc.paths))
+        for (const p of item.post.parameters) if (p.in === 'body') walk(p.schema, path);
+      expect(problems).toEqual([]);
+    });
+
     it('derives host and schemes from --public-url', async () => {
       const s = await start(['--rest', '--public-url', 'https://example.com']);
       try {
