@@ -1,5 +1,6 @@
 import { Command } from 'commander';
-import { initials, slugifyName, sortNames, splitName } from '@vn-skills/core';
+import { initials, slugifyName, sortNames, sortVietnamese, splitName } from '@vn-skills/core';
+import { readTextInput } from '../input.js';
 import { failExit, kv, printJson, wantsJson } from '../output.js';
 
 export function registerName(program: Command): void {
@@ -41,11 +42,26 @@ export function registerName(program: Command): void {
       else process.stdout.write(`${value}\n`);
     });
   cmd
-    .command('sort <names...>')
-    .description('Sort full names by tên with Vietnamese collation')
-    .action((names: string[], _o, c: Command) => {
-      const sorted = sortNames(names);
-      if (wantsJson(c)) printJson({ ok: true, names: sorted });
-      else process.stdout.write(sorted.join('\n') + '\n');
-    });
+    .command('sort [items...]')
+    .description(
+      'Sort full names by tên (default) or whole strings (--text) with Vietnamese collation',
+    )
+    .option('--text', 'sort whole strings instead of by tên')
+    .option('--file <path>', 'read one item per line from a file ("-" = stdin); implies --text')
+    .option('--encoding <label>', 'input encoding (utf-8, windows-1258, utf-16le, utf-16be)')
+    .action(
+      (items: string[], o: { text?: boolean; file?: string; encoding?: string }, c: Command) => {
+        let list = items;
+        if (o.file !== undefined) {
+          list = readTextInput(o.file, o.encoding, c)
+            .split(/\r\n|\r|\n/)
+            .filter((l) => l.trim() !== '');
+        }
+        if (list.length === 0)
+          failExit(c, { code: 'MISSING_INPUT', message: 'Provide items or --file' });
+        const sorted = o.text || o.file !== undefined ? sortVietnamese(list) : sortNames(list);
+        if (wantsJson(c)) printJson({ ok: true, names: sorted });
+        else process.stdout.write(sorted.join('\n') + '\n');
+      },
+    );
 }

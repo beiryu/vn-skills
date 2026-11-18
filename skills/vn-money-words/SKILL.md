@@ -1,6 +1,6 @@
 ---
 name: vn-money-words
-description: Convert VND amounts to Vietnamese words ("1.200.000 đồng" -> "một triệu hai trăm nghìn đồng") with correct rules for mốt/lăm/tư, lẻ/linh, nghìn/ngàn, zero groups and very large numbers (tỷ tỷ). Use for invoices, contracts, receipts, bank transfer forms, "số tiền bằng chữ", "đọc số tiền thành chữ", "viết bằng chữ", "đọc số", "số bằng chữ", "viết số thành chữ", "đọc văn bản", "chuyển số thành chữ trong câu", "chuẩn hóa văn bản cho TTS", "text to speech", "bằng chữ tiếng Anh", "in words", "bilingual contract", or any time an amount must be spelled out in Vietnamese.
+description: Convert VND amounts to Vietnamese words ("1.200.000 đồng" -> "một triệu hai trăm nghìn đồng") with correct rules for mốt/lăm/tư, lẻ/linh, nghìn/ngàn, zero groups and very large numbers (tỷ tỷ). Use for invoices, contracts, receipts, bank transfer forms, "số tiền bằng chữ", "đọc số tiền thành chữ", "viết bằng chữ", "đọc số", "số thứ tự", "thứ nhất", "số bằng chữ", "viết số thành chữ", "đọc văn bản", "chuyển số thành chữ trong câu", "chuẩn hóa văn bản cho TTS", "text to speech", "bằng chữ tiếng Anh", "in words", "bilingual contract", or any time an amount must be spelled out in Vietnamese.
 license: MIT
 compatibility: Requires Node.js 22+ (runs npx -y @vn-skills/cli).
 metadata:
@@ -38,6 +38,13 @@ English ("bằng chữ tiếng Anh", "in words" on bilingual contracts): `money 
 
 Plain numbers (not money, e.g. "ba mươi (30) ngày"): `money words 30 --plain` → `ba mươi`. `--plain` cannot be combined
 with `--unit` or `--chan`. MCP: `vn_money_to_words` with `plain: true`.
+
+### Ordinals (số thứ tự)
+
+`money words 4 --ordinal` → `thứ tư`; 1 → `thứ nhất`, 2 → `thứ nhì` (`--second hai` → `thứ hai`), other n → `thứ ` + cardinal
+(`24` → `thứ hai mươi tư`). Integers ≥ 1 only; `--ordinal` implies `--plain` and cannot be combined with `--unit`, `--chan` or `--en`.
+Core: `numberToWords(4, { ordinal: true })`; MCP: `vn_money_to_words` with `ordinal: true`.
+Source: Unicode CLDR `common/rbnf/vi.xml`, rule set `%spellout-ordinal` (Unicode licence).
 
 JSON output: `{ "ok": true, "amount": "1200000", "words": "một triệu hai trăm nghìn đồng" }`.
 

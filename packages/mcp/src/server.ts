@@ -15,6 +15,7 @@ import {
   slugifyName,
   initials,
   sortNames,
+  sortVietnamese,
   convertAddress,
   toPostalAddress,
   convertAddresses,
@@ -598,15 +599,24 @@ export function createServer(): McpServer {
       title: 'Vietnamese name tools',
       annotations: OFFLINE_READ_ONLY,
       description:
-        'Split a Vietnamese full name into họ / tên đệm / tên (handles Tôn Thất, Nguyễn Phúc), plus slug and initials; or sort a list of names by tên with Vietnamese collation.',
+        'Split a Vietnamese full name into họ / tên đệm / tên (handles Tôn Thất, Nguyễn Phúc), plus slug and initials; or sort a list of names by tên with Vietnamese collation (sortAs: "text" sorts any strings).',
       inputSchema: {
         name: z.string().optional().describe('Full name to split'),
         names: z.array(z.string()).optional().describe('Names to sort'),
         ascii: z.boolean().optional().describe('Strip diacritics from initials'),
+        sortAs: z
+          .enum(['name', 'text'])
+          .optional()
+          .describe('"name" (default) sorts by tên; "text" sorts whole strings'),
       },
     },
-    async ({ name, names, ascii }) => {
-      if (names) return json({ ok: true, sorted: sortNames(names) });
+    async ({ name, names, ascii, sortAs }) => {
+      if (names) {
+        return json({
+          ok: true,
+          sorted: sortAs === 'text' ? sortVietnamese(names) : sortNames(names),
+        });
+      }
       if (name === undefined) {
         return json(
           { ok: false, error: { code: 'MISSING_INPUT', message: 'Provide name or names' } },
@@ -625,7 +635,7 @@ export function createServer(): McpServer {
       title: 'Amount in Vietnamese words',
       annotations: OFFLINE_READ_ONLY,
       description:
-        'Read an integer VND amount in Vietnamese words, e.g. 1200000 -> "một triệu hai trăm nghìn đồng". Also reads plain numbers without a unit with plain: true, e.g. 30 -> "ba mươi". Options: thousand "nghìn"/"ngàn", odd "lẻ"/"linh", capitalize, unit, lang "en" for English words (e.g. "one million two hundred thousand dong").',
+        'Read an integer VND amount in Vietnamese words, e.g. 1200000 -> "một triệu hai trăm nghìn đồng". Also reads plain numbers without a unit with plain: true, e.g. 30 -> "ba mươi". Reads ordinals with ordinal: true, e.g. 4 -> "thứ tư" (second "nhì"/"hai" for 2). Options: thousand "nghìn"/"ngàn", odd "lẻ"/"linh", capitalize, unit, lang "en" for English words (e.g. "one million two hundred thousand dong").',
       inputSchema: {
         amount: z.union([z.number(), z.string()]),
         lang: z
@@ -641,9 +651,15 @@ export function createServer(): McpServer {
           .boolean()
           .optional()
           .describe('Read a plain number without a unit (default false); not with unit/chan'),
+        ordinal: z
+          .boolean()
+          .optional()
+          .describe('Read an ordinal ("thứ nhất", "thứ tư"); integers >= 1, implies plain'),
+        second: z.enum(['nhì', 'hai']).optional().describe('Ordinal 2 as "nhì" (default) or "hai"'),
       },
     },
-    async ({ amount, plain, ...opts }) => {
+    async ({ amount, plain: plainOpt, ordinal, second, ...opts }) => {
+      const plain = plainOpt || ordinal;
       if (plain && (opts.unit !== undefined || opts.chan)) {
         return json(
           {
@@ -657,7 +673,9 @@ export function createServer(): McpServer {
         );
       }
       const { unit: _u, chan: _c, ...rest } = opts;
-      const r = plain ? numberToWords(amount, rest) : moneyToWords(amount, opts);
+      const r = plain
+        ? numberToWords(amount, { ...rest, ordinal, second })
+        : moneyToWords(amount, opts);
       return r.ok
         ? json({ ok: true, amount: r.amount, words: r.words })
         : json({ ok: false, error: r.error }, true);

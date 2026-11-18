@@ -125,6 +125,16 @@ describe('vn-skills MCP server', () => {
     for (const t of tools) expect(t.description?.length ?? 0).toBeGreaterThan(30);
   });
 
+  it('vn_name sortAs text sorts whole strings', async () => {
+    const r = text(
+      await client.callTool({
+        name: 'vn_name',
+        arguments: { names: ['Hạ', 'Đông', 'Hà', 'Dương', 'Ha'], sortAs: 'text' },
+      }),
+    );
+    expect(r.sorted).toEqual(['Dương', 'Đông', 'Ha', 'Hà', 'Hạ']);
+  });
+
   it('vietqr_build accepts additionalData and vietqr_parse returns it', async () => {
     const b = text(
       await client.callTool({
@@ -299,6 +309,13 @@ describe('vn-skills MCP server', () => {
     );
     expect((await call({ amount: 30, plain: false })).words).toBe('ba mươi đồng');
     expect((await call({ amount: 30, plain: true, unit: 'đồng' })).ok).toBe(false);
+  });
+  it('vn_money_to_words ordinal', async () => {
+    const call = async (args: Record<string, unknown>) =>
+      text(await client.callTool({ name: 'vn_money_to_words', arguments: args }));
+    expect((await call({ amount: 4, ordinal: true })).words).toBe('thứ tư');
+    expect((await call({ amount: 2, ordinal: true, second: 'hai' })).words).toBe('thứ hai');
+    expect((await call({ amount: 0, ordinal: true })).ok).toBe(false);
   });
   it('vn_tax_id_validate', async () => {
     const j = text(

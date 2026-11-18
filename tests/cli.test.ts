@@ -27,6 +27,18 @@ function run(args: string[], input?: string) {
 }
 
 describe('vn-skills CLI', () => {
+  it('name sort --text sorts whole strings with Vietnamese collation', () => {
+    const r = run(['name', 'sort', '--text', 'Hạ', 'Đông', 'Hà', 'Dương', 'Ha', '--json']);
+    expect(r.code).toBe(0);
+    expect(r.json().names).toEqual(['Dương', 'Đông', 'Ha', 'Hà', 'Hạ']);
+  });
+
+  it('name sort --file - reads one item per line', () => {
+    const r = run(['name', 'sort', '--file', '-'], 'Há\nĐông\n\nHà\nDương\n');
+    expect(r.code).toBe(0);
+    expect(JSON.parse(r.out).names).toEqual(['Dương', 'Đông', 'Hà', 'Há']);
+  });
+
   it('is built', () => expect(existsSync(CLI)).toBe(true));
   it('--version is the released package version', () => {
     const pkg = (name: string) =>
@@ -362,6 +374,16 @@ describe('vn-skills CLI', () => {
       const r = run(['money', 'words', '1000', '--plain', ...extra]);
       expect(r.code).not.toBe(0);
       expect(r.out + r.err).toContain('--plain');
+    }
+  });
+  it('money words --ordinal reads an ordinal', () => {
+    expect(run(['money', 'words', '4', '--ordinal', '--pretty']).out.trim()).toBe('thứ tư');
+    expect(run(['money', 'words', '2', '--ordinal', '--second', 'hai']).json().words).toBe(
+      'thứ hai',
+    );
+    expect(run(['money', 'words', '2', '--ordinal', '--second', 'ba']).code).not.toBe(0);
+    for (const extra of ['--chan', '--en']) {
+      expect(run(['money', 'words', '4', '--ordinal', extra]).code).not.toBe(0);
     }
   });
   it('money words --pretty prints plain text', () => {

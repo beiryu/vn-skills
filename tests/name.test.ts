@@ -1,5 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import { initials, slugifyName, sortNames, splitName } from '@vn-skills/core';
+import {
+  compareVietnamese,
+  initials,
+  slugifyName,
+  sortNames,
+  sortVietnamese,
+  splitName,
+} from '@vn-skills/core';
 import { loadGolden, title } from './golden.js';
 
 function split(input: string) {
@@ -187,5 +194,82 @@ describe('non-string input does not throw', () => {
     expect(out).toHaveLength(2);
     expect(out).toContain('Nguyễn Văn An');
     expect(out).toContain('Trần Thị Bích Ngọc');
+  });
+});
+
+describe('sortVietnamese (CLDR vi)', () => {
+  it('orders tones none < huyền < hỏi < ngã < sắc < nặng', () => {
+    expect(sortVietnamese(['Hạ', 'Há', 'Hã', 'Hả', 'Hà', 'Ha'])).toEqual([
+      'Ha',
+      'Hà',
+      'Hả',
+      'Hã',
+      'Há',
+      'Hạ',
+    ]);
+  });
+
+  it.each([
+    ['d', 'đ'],
+    ['Dương', 'Đông'],
+    ['a', 'ă'],
+    ['ă', 'â'],
+    ['â', 'b'],
+    ['o', 'ô'],
+    ['ô', 'ơ'],
+    ['u', 'ư'],
+    ['e', 'ê'],
+  ])('%s sorts before %s', (a, b) => {
+    expect(compareVietnamese(a, b)).toBeLessThan(0);
+    expect(compareVietnamese(b, a)).toBeGreaterThan(0);
+  });
+
+  it('puts Đông after Dương and before Ha', () => {
+    expect(sortVietnamese(['Ha', 'Đông', 'Dương'])).toEqual(['Dương', 'Đông', 'Ha']);
+  });
+
+  it('groups case-insensitively', () => {
+    expect(sortVietnamese(['b', 'A', 'a', 'B']).map((x) => x.toLowerCase())).toEqual([
+      'a',
+      'a',
+      'b',
+      'b',
+    ]);
+  });
+
+  it('sorts digits before letters', () => {
+    expect(sortVietnamese(['b2', 'a10', '2', 'a2', '10'])).toEqual(['10', '2', 'a10', 'a2', 'b2']);
+  });
+
+  it('handles empty input and drops non-strings', () => {
+    expect(sortVietnamese([])).toEqual([]);
+    expect(sortVietnamese(['b', null, 1, undefined, 'a'] as unknown as string[])).toEqual([
+      'a',
+      'b',
+    ]);
+  });
+
+  it('returns a new array', () => {
+    const input = ['b', 'a'];
+    expect(sortVietnamese(input)).not.toBe(input);
+    expect(input).toEqual(['b', 'a']);
+  });
+
+  it('compares equal strings as 0', () => {
+    expect(compareVietnamese('Hà', 'Hà')).toBe(0);
+  });
+
+  it('sortNames orders tone-only given-name ties by CLDR', () => {
+    expect(sortNames(['Nguyễn Văn Hạ', 'Nguyễn Văn Há', 'Nguyễn Văn Hà', 'Nguyễn Văn Hả'])).toEqual(
+      ['Nguyễn Văn Hà', 'Nguyễn Văn Hả', 'Nguyễn Văn Há', 'Nguyễn Văn Hạ'],
+    );
+  });
+
+  it('sortNames tone tie: Hà before Hạ', () => {
+    expect(sortNames(['Lê Hạ', 'Lê Hà'])).toEqual(['Lê Hà', 'Lê Hạ']);
+  });
+
+  it('sortNames puts Dương before Đông', () => {
+    expect(sortNames(['Trần Đông', 'Trần Dương'])).toEqual(['Trần Dương', 'Trần Đông']);
   });
 });
