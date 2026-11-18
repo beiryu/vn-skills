@@ -21,6 +21,38 @@ export interface VietQRCardData {
 const QUIET = 4;
 const FONT = 'sans-serif';
 
+/**
+ * Average advance of a sans-serif glyph in em, kept on the wide side (capitals, bold, Vietnamese
+ * diacritics) so a wrapped line stays inside the card in common fonts. SVG cannot measure text.
+ */
+const EM_PER_CHAR = 0.6;
+const EM_PER_CHAR_BOLD = 0.66;
+
+/** Splits `text` into lines of at most `max` characters, at spaces, or inside a word longer than a line. */
+function wrap(text: string, max: number): string[] {
+  const out: string[] = [];
+  let cur = '';
+  for (let word of text.split(/\s+/).filter(Boolean)) {
+    while ([...word].length > max) {
+      if (cur) {
+        out.push(cur);
+        cur = '';
+      }
+      const chars = [...word];
+      out.push(chars.slice(0, max).join(''));
+      word = chars.slice(max).join('');
+    }
+    if (!cur) cur = word;
+    else if ([...cur].length + 1 + [...word].length <= max) cur += ` ${word}`;
+    else {
+      out.push(cur);
+      cur = word;
+    }
+  }
+  if (cur || out.length === 0) out.push(cur);
+  return out;
+}
+
 function esc(s: string): string {
   return s
     .replace(/&/g, '&amp;')
@@ -62,7 +94,13 @@ export function renderVietQRCard(
   }
   if (data.note) lines.push({ text: data.note });
 
-  const height = pad + qrSize + lines.length * lineH + pad;
+  const rows = lines.flatMap((l) =>
+    wrap(
+      l.text,
+      Math.max(1, Math.floor((width - pad * 2) / (fs * (l.bold ? EM_PER_CHAR_BOLD : EM_PER_CHAR)))),
+    ).map((text) => ({ text, bold: l.bold })),
+  );
+  const height = pad + qrSize + rows.length * lineH + pad;
   const parts: string[] = [
     `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" font-family="${FONT}">`,
     `<rect width="${width}" height="${height}" fill="#ffffff"/>`,
@@ -77,7 +115,7 @@ export function renderVietQRCard(
         );
     }),
   );
-  lines.forEach((l, i) => {
+  rows.forEach((l, i) => {
     const y = pad + qrSize + i * lineH + fs + Math.round((lineH - fs) / 2);
     parts.push(
       `<text x="${width / 2}" y="${y}" font-size="${fs}" text-anchor="middle" fill="#000000"${l.bold ? ' font-weight="bold"' : ''}>${esc(l.text)}</text>`,
