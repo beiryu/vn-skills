@@ -1,5 +1,32 @@
 # Changelog
 
+## [0.10.0](https://github.com/beiryu/vn-skills/compare/v0.9.0...v0.10.0) (2026-11-18)
+
+
+### Features
+
+* **mcp:** accept base64 image data in vietqr_decode ([#337](https://github.com/beiryu/vn-skills/issues/337)) ([ba379c7](https://github.com/beiryu/vn-skills/commit/ba379c7e9f75f31be21b7f57def34d67ccfb5538)), closes [#334](https://github.com/beiryu/vn-skills/issues/334)
+* **mcp:** add --toolsets and --tools to load only some tool groups ([#362](https://github.com/beiryu/vn-skills/issues/362)) ([951c25a](https://github.com/beiryu/vn-skills/commit/951c25af051e61046a9f9c4e662e94d556f98f3c)), closes [#361](https://github.com/beiryu/vn-skills/issues/361)
+* **mcp:** send usage instructions in the initialize result ([#341](https://github.com/beiryu/vn-skills/issues/341)) ([afbfb4c](https://github.com/beiryu/vn-skills/commit/afbfb4ce62f0341b7bf6bb0241c9d61caa51114f)), closes [#340](https://github.com/beiryu/vn-skills/issues/340)
+* **mcp:** serve Swagger 2.0 at /swagger.json in --rest mode ([#360](https://github.com/beiryu/vn-skills/issues/360)) ([a0c37fd](https://github.com/beiryu/vn-skills/commit/a0c37fdd46c0b8c4a822487b9b76d9d3eb181c22))
+* **vietqr:** add --logo option to vietqr build ([#350](https://github.com/beiryu/vn-skills/issues/350)) ([ebaec73](https://github.com/beiryu/vn-skills/commit/ebaec7312249665d6b09c004539b7bb7f6cf1da9)), closes [#349](https://github.com/beiryu/vn-skills/issues/349)
+* **vietqr:** render printable VietQR card as SVG ([#348](https://github.com/beiryu/vn-skills/issues/348)) ([f8939d6](https://github.com/beiryu/vn-skills/commit/f8939d62edf03a5cdf7ce65198c3176e21d04e3a)), closes [#344](https://github.com/beiryu/vn-skills/issues/344)
+* **vn-address:** export province, ward and mapping catalogue ([#346](https://github.com/beiryu/vn-skills/issues/346)) ([f42e3ee](https://github.com/beiryu/vn-skills/commit/f42e3eec847969fa2544c467f5b13b7191693116)), closes [#342](https://github.com/beiryu/vn-skills/issues/342)
+* **vn-address:** return converted address as schema.org PostalAddress ([#338](https://github.com/beiryu/vn-skills/issues/338)) ([710e968](https://github.com/beiryu/vn-skills/commit/710e968bf22e47db8f281ff2bb3a251548809edd)), closes [#335](https://github.com/beiryu/vn-skills/issues/335)
+* **vn-money-words:** read amounts in English words with lang 'en' ([#347](https://github.com/beiryu/vn-skills/issues/347)) ([af61467](https://github.com/beiryu/vn-skills/commit/af614672517b47d2b1cab34bfadfbb044bb84d61)), closes [#343](https://github.com/beiryu/vn-skills/issues/343)
+* **vn-money-words:** read ordinal numbers with ordinal option ([#357](https://github.com/beiryu/vn-skills/issues/357)) ([59d8cc5](https://github.com/beiryu/vn-skills/commit/59d8cc53766cc5cd42017c2c398811fbfbc11edf)), closes [#353](https://github.com/beiryu/vn-skills/issues/353)
+* **vn-name:** add sortVietnamese with CLDR collation ([#358](https://github.com/beiryu/vn-skills/issues/358)) ([d1c9689](https://github.com/beiryu/vn-skills/commit/d1c9689a37cd6e446b5bcb56e08c9d1a0352ef26)), closes [#354](https://github.com/beiryu/vn-skills/issues/354)
+* **vn-number-format:** add short, long and full date styles ([#359](https://github.com/beiryu/vn-skills/issues/359)) ([777e830](https://github.com/beiryu/vn-skills/commit/777e830d07d19cd9a029a5b248cba9f7e323b4f8)), closes [#355](https://github.com/beiryu/vn-skills/issues/355)
+
+
+### Bug Fixes
+
+* **vietqr:** put the logo in --data-url too, add xlink:href to SVG ([#367](https://github.com/beiryu/vn-skills/issues/367)) ([88e6e73](https://github.com/beiryu/vn-skills/commit/88e6e73b14efddbdf966f5b6ebc76ae279b5621e))
+* **vietqr:** refuse images over 20 megapixels before decoding them ([#364](https://github.com/beiryu/vn-skills/issues/364)) ([5690202](https://github.com/beiryu/vn-skills/commit/5690202cc9933e7db62de6ef156bca4648ca57ef))
+* **vietqr:** wrap long lines on the printable card ([#366](https://github.com/beiryu/vn-skills/issues/366)) ([79d3e04](https://github.com/beiryu/vn-skills/commit/79d3e047c3f706b4ed9151ee20495749e3437f6b))
+* **vn-address:** show split-ward candidates and warnings with --schema ([#365](https://github.com/beiryu/vn-skills/issues/365)) ([d0f4eba](https://github.com/beiryu/vn-skills/commit/d0f4ebabe6f758da191c0739132c07eb5a8cb3a2))
+* **vn-lunar:** mark a solar term on the day it starts, not the day after ([#363](https://github.com/beiryu/vn-skills/issues/363)) ([7f3e930](https://github.com/beiryu/vn-skills/commit/7f3e93034e6c053570361fe873c0d8c6b7209173))
+
 ## [0.9.0](https://github.com/beiryu/vn-skills/compare/v0.8.0...v0.9.0) (2026-11-14)
 
 
