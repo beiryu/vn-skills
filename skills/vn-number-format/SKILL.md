@@ -17,10 +17,15 @@ npx -y @vn-skills/cli numfmt format 1234567.89   # 1.234.567,89
 npx -y @vn-skills/cli numfmt format 1200000 --vnd      # 1.200.000 ₫
 npx -y @vn-skills/cli numfmt format 1200000 --compact  # 1,2 triệu
 npx -y @vn-skills/cli numfmt date 2025-01-29     # 29/01/2025
+npx -y @vn-skills/cli numfmt date 2026-11-18 --style short  # 18/11/26
+npx -y @vn-skills/cli numfmt date 2026-11-18 --style long   # 18 tháng 11, 2026
+npx -y @vn-skills/cli numfmt date 2026-11-18 --style full   # Thứ Tư, 18 tháng 11, 2026
 npx -y @vn-skills/cli numfmt parse 1tr2          # 1200000
 ```
 
-MCP tool: `vn_number_format` (`mode`: number, vnd, compact, date, parse).
+MCP tool: `vn_number_format` (`mode`: number, vnd, compact, date, parse; optional `style` for `date`).
+
+Date styles `short`, `long`, `full` are locale display formats from CLDR Vietnamese Gregorian data (`d/M/yy`, `d MMMM, y`, `EEEE, d MMMM, y`), rendered offline by `Intl`. The administrative-document style ("ngày 05 tháng 3 năm 2026") is not covered. Unknown style returns `INVALID_OPTIONS`.
 
 ## Parsing rules
 

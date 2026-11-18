@@ -71,8 +71,23 @@ export function formatCompactVnd(n: number): TextResult {
   return r.ok ? { ok: true, text: r.text + unit } : r;
 }
 
-/** yyyy-mm-dd or dd/mm/yyyy -> dd/MM/yyyy */
-export function formatDate(input: string): TextResult {
+export type DateStyle = 'numeric' | 'short' | 'long' | 'full';
+const DATE_STYLES = ['numeric', 'short', 'long', 'full'];
+
+/**
+ * yyyy-mm-dd or dd/mm/yyyy -> dd/MM/yyyy (style "numeric", default).
+ * "short" (d/M/yy), "long" (d MMMM, y) and "full" (EEEE, d MMMM, y) are CLDR `vi` locale display
+ * formats via Intl; they are not the administrative-document style ("ngày 05 tháng 3 năm 2026").
+ */
+export function formatDate(input: string, opts: { style?: DateStyle } = {}): TextResult {
+  const style = opts?.style ?? 'numeric';
+  if (!DATE_STYLES.includes(style)) {
+    return fail(
+      'INVALID_OPTIONS',
+      `Unknown date style "${String(style)}"`,
+      'Use numeric, short, long or full',
+    );
+  }
   const raw = String(input ?? '');
   const s = raw.trim();
   const iso = /^(\d{4})-(\d{1,2})-(\d{1,2})$/.exec(s);
@@ -87,6 +102,17 @@ export function formatDate(input: string): TextResult {
   dt.setUTCFullYear(m.y, m.mo - 1, m.d);
   if (dt.getUTCFullYear() !== m.y || dt.getUTCMonth() !== m.mo - 1 || dt.getUTCDate() !== m.d) {
     return fail('INVALID_DATE', `"${raw}" is not a real calendar date`);
+  }
+  if (style !== 'numeric') {
+    const f = new Intl.DateTimeFormat('vi', { dateStyle: style, timeZone: 'UTC' });
+    if (!f.resolvedOptions().locale.startsWith('vi')) {
+      return fail(
+        'UNSUPPORTED_LOCALE',
+        'This runtime has no Vietnamese locale data',
+        'Use a Node.js build with full ICU or style "numeric"',
+      );
+    }
+    return { ok: true, text: f.format(dt) };
   }
   const p = (x: number, w: number) => String(x).padStart(w, '0');
   return { ok: true, text: `${p(m.d, 2)}/${p(m.mo, 2)}/${p(m.y, 4)}` };

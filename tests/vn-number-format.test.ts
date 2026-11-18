@@ -87,6 +87,31 @@ describe('formatDate', () => {
   it('rejects impossible dates', () => {
     expect(formatDate('2025-02-30').ok).toBe(false);
   });
+  it('numeric style is the default', () => {
+    expect(formatDate('2026-11-18', { style: 'numeric' })).toEqual(formatDate('2026-11-18'));
+    expect(formatDate('2026-11-18')).toEqual({ ok: true, text: '18/11/2026' });
+  });
+  it.each([
+    ['full', 'Thứ Tư, 18 tháng 11, 2026'],
+    ['long', '18 tháng 11, 2026'],
+    ['short', '18/11/26'],
+  ] as const)('%s style', (style, text) => {
+    expect(formatDate('2026-11-18', { style })).toEqual({ ok: true, text });
+  });
+  it('styles accept dd/mm/yyyy input', () => {
+    expect(formatDate('18/11/2026', { style: 'full' })).toEqual({
+      ok: true,
+      text: 'Thứ Tư, 18 tháng 11, 2026',
+    });
+  });
+  it('styles reject invalid dates', () => {
+    const r = formatDate('2026-02-30', { style: 'long' });
+    expect(r.ok || r.error.code).toBe('INVALID_DATE');
+  });
+  it('rejects an unknown style', () => {
+    const r = formatDate('2026-11-18', { style: 'medium' as never });
+    expect(r.ok || r.error.code).toBe('INVALID_OPTIONS');
+  });
 });
 
 describe('parseAmount', () => {
