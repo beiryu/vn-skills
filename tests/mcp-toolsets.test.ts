@@ -143,7 +143,7 @@ describe('vn-skills MCP --toolsets / --tools', () => {
     expect(b.stderr).toContain('vietqr_parse');
   });
 
-  it('--http --rest --toolsets vietqr limits /openapi.json and POST /tools', async () => {
+  it('--http --rest --toolsets vietqr limits /openapi.json, /swagger.json and POST /tools', async () => {
     const port = await freePort();
     let stderr = '';
     const proc = spawn(
@@ -166,6 +166,16 @@ describe('vn-skills MCP --toolsets / --tools', () => {
         .flatMap((p) => Object.values(p).map((o) => o.operationId))
         .sort();
       expect(ops).toEqual(['vietqr_banks', 'vietqr_build', 'vietqr_decode', 'vietqr_parse']);
+      const swagger = (await (await fetch(`${base}/swagger.json`)).json()) as {
+        swagger: string;
+        paths: Record<string, Record<string, { operationId: string }>>;
+      };
+      expect(swagger.swagger).toBe('2.0');
+      expect(
+        Object.values(swagger.paths)
+          .flatMap((p) => Object.values(p).map((o) => o.operationId))
+          .sort(),
+      ).toEqual(ops);
       const r = await fetch(`${base}/tools/vn_lunar_tet`, {
         method: 'POST',
         headers: { 'content-type': 'application/json' },

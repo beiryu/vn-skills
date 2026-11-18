@@ -155,4 +155,132 @@ describe('vn-skills MCP server --http --rest', () => {
     const doc = (await (await fetch(`${rest.base}/openapi.json`)).json()) as Doc;
     expect(doc.servers[0]!.url).toBe(rest.base);
   });
+
+  describe('/swagger.json', () => {
+    type Swagger = {
+      swagger: string;
+      host: string;
+      schemes: string[];
+      paths: Record<
+        string,
+        Record<string, { operationId: string; parameters: Array<{ in: string }> }>
+      >;
+    };
+    const keys = (v: unknown, out: Set<string> = new Set()): Set<string> => {
+      if (Array.isArray(v)) v.forEach((x) => keys(x, out));
+      else if (v && typeof v === 'object') {
+        for (const [k, x] of Object.entries(v)) {
+          out.add(k);
+          keys(x, out);
+        }
+      }
+      return out;
+    };
+
+    it('serves a Swagger 2.0 document with one operationId per MCP tool', async () => {
+      const res = await fetch(`${rest.base}/swagger.json`);
+      expect(res.status).toBe(200);
+      const text = await res.text();
+      const doc = JSON.parse(text) as Swagger;
+      expect(doc.swagger).toBe('2.0');
+      expect(Buffer.byteLength(text)).toBeLessThan(1024 * 1024);
+
+      const client = new Client({ name: 'test', version: '0.0.0' });
+      await client.connect(new StdioClientTransport({ command: process.execPath, args: [SERVER] }));
+      const names = (await client.listTools()).tools.map((t) => t.name).sort();
+      await client.close();
+      const ops = Object.values(doc.paths).flatMap((p) => Object.values(p));
+      expect(names.length).toBeGreaterThan(0);
+      expect(ops.map((o) => o.operationId).sort()).toEqual(names);
+
+      const k = keys(doc);
+      for (const bad of ['anyOf', 'oneOf', 'const', '$schema']) expect(k.has(bad)).toBe(false);
+      for (const o of ops) {
+        const body = o.parameters.filter((p) => p.in === 'body');
+        expect(body).toHaveLength(1);
+      }
+    });
+
+    it('uses only Swagger 2.0 Schema Object fields in every body schema', async () => {
+      // Swagger 2.0 spec, Schema Object: JSON Schema draft 4 subset plus these extensions.
+      const allowed = new Set([
+        '$ref',
+        'format',
+        'title',
+        'description',
+        'default',
+        'multipleOf',
+        'maximum',
+        'exclusiveMaximum',
+        'minimum',
+        'exclusiveMinimum',
+        'maxLength',
+        'minLength',
+        'pattern',
+        'maxItems',
+        'minItems',
+        'uniqueItems',
+        'maxProperties',
+        'minProperties',
+        'required',
+        'enum',
+        'type',
+        'items',
+        'allOf',
+        'properties',
+        'additionalProperties',
+        'discriminator',
+        'readOnly',
+        'xml',
+        'externalDocs',
+        'example',
+      ]);
+      const problems: string[] = [];
+      const walk = (s: unknown, at: string) => {
+        if (!s || typeof s !== 'object' || Array.isArray(s)) {
+          problems.push(`${at}: not a schema object`);
+          return;
+        }
+        const o = s as Record<string, unknown>;
+        for (const k of Object.keys(o))
+          if (!allowed.has(k) && !k.startsWith('x-')) problems.push(`${at}: ${k}`);
+        if ('type' in o && typeof o.type !== 'string')
+          problems.push(`${at}: type ${JSON.stringify(o.type)}`);
+        for (const k of ['exclusiveMinimum', 'exclusiveMaximum'])
+          if (k in o && typeof o[k] !== 'boolean') problems.push(`${at}: ${k} not boolean`);
+        if (o.properties) for (const [n, y] of Object.entries(o.properties)) walk(y, `${at}.${n}`);
+        if ('items' in o) walk(o.items, `${at}[]`);
+        if (o.additionalProperties && typeof o.additionalProperties === 'object')
+          walk(o.additionalProperties, `${at}{}`);
+        if (Array.isArray(o.allOf)) o.allOf.forEach((y, i) => walk(y, `${at}&${i}`));
+      };
+      const doc = (await (await fetch(`${rest.base}/swagger.json`)).json()) as {
+        paths: Record<string, { post: { parameters: Array<{ in: string; schema: unknown }> } }>;
+      };
+      for (const [path, item] of Object.entries(doc.paths))
+        for (const p of item.post.parameters) if (p.in === 'body') walk(p.schema, path);
+      expect(problems).toEqual([]);
+    });
+
+    it('derives host and schemes from --public-url', async () => {
+      const s = await start(['--rest', '--public-url', 'https://example.com']);
+      try {
+        const doc = (await (await fetch(`${s.base}/swagger.json`)).json()) as Swagger;
+        expect(doc.host).toBe('example.com');
+        expect(doc.schemes).toEqual(['https']);
+      } finally {
+        s.proc.kill();
+      }
+    });
+
+    it('returns 405 for POST', async () => {
+      const res = await post(`${rest.base}/swagger.json`, '{}');
+      expect(res.status).toBe(405);
+    });
+
+    it('returns 404 without --rest', async () => {
+      const res = await fetch(`${plain.base}/swagger.json`);
+      expect(res.status).toBe(404);
+    });
+  });
 });

@@ -136,6 +136,116 @@ async function buildOpenApi(serverUrl: string) {
   };
 }
 
+/** Schema Object fields Swagger 2.0 allows; any other JSON Schema keyword makes the document invalid. */
+const SWAGGER2_SCHEMA_KEYS = new Set([
+  '$ref',
+  'format',
+  'title',
+  'description',
+  'default',
+  'multipleOf',
+  'maximum',
+  'exclusiveMaximum',
+  'minimum',
+  'exclusiveMinimum',
+  'maxLength',
+  'minLength',
+  'pattern',
+  'maxItems',
+  'minItems',
+  'uniqueItems',
+  'maxProperties',
+  'minProperties',
+  'required',
+  'enum',
+  'type',
+  'items',
+  'allOf',
+  'properties',
+  'additionalProperties',
+  'discriminator',
+  'readOnly',
+  'example',
+]);
+
+/**
+ * Turns a JSON Schema (draft 2020-12, as zod emits it) into a Swagger 2.0 Schema Object: keeps only
+ * the keywords 2.0 knows, maps `const` to `enum` and numeric `exclusiveMinimum`/`exclusiveMaximum`
+ * to `minimum`/`maximum` plus `true`, and drops `type`/`properties`/... from unions 2.0 cannot express.
+ */
+function downgradeSchema(v: unknown): unknown {
+  if (Array.isArray(v)) return v.map(downgradeSchema);
+  if (!v || typeof v !== 'object') return v;
+  const obj = v as Record<string, unknown>;
+  const out: Record<string, unknown> = {};
+  const isUnion = Array.isArray(obj.anyOf) || Array.isArray(obj.oneOf) || Array.isArray(obj.type);
+  for (const [k, x] of Object.entries(obj)) {
+    if (k === 'const') {
+      if (!('enum' in obj)) out.enum = [x];
+      continue;
+    }
+    if (k.startsWith('x-')) {
+      out[k] = x;
+      continue;
+    }
+    if (!SWAGGER2_SCHEMA_KEYS.has(k)) continue;
+    if (k === 'exclusiveMinimum' || k === 'exclusiveMaximum') {
+      if (typeof x === 'number') {
+        out[k === 'exclusiveMinimum' ? 'minimum' : 'maximum'] = x;
+        out[k] = true;
+      } else if (typeof x === 'boolean') out[k] = x;
+      continue;
+    }
+    if (k === 'properties' && x && typeof x === 'object' && !Array.isArray(x)) {
+      out[k] = Object.fromEntries(Object.entries(x).map(([n, y]) => [n, downgradeSchema(y)]));
+    } else if (k === 'items' && Array.isArray(x)) {
+      out[k] = {}; // tuple items have no 2.0 form
+    } else if (k === 'additionalProperties' && typeof x === 'boolean') {
+      out[k] = x;
+    } else {
+      out[k] = downgradeSchema(x);
+    }
+  }
+  if (isUnion) {
+    // keep only keys valid without a type
+    for (const k of ['type', 'properties', 'required', 'items', 'enum', 'default']) delete out[k];
+  }
+  return out;
+}
+
+async function buildSwagger(serverUrl: string) {
+  const { tools } = await withClient((c) => c.listTools());
+  const url = new URL(serverUrl);
+  const paths: Record<string, unknown> = {};
+  for (const t of tools) {
+    paths[`/tools/${t.name}`] = {
+      post: {
+        operationId: t.name,
+        summary: t.title ?? t.name,
+        description: t.description ?? '',
+        parameters: [
+          { in: 'body', name: 'body', required: true, schema: downgradeSchema(t.inputSchema) },
+        ],
+        responses: {
+          '200': { description: 'Tool result', schema: {} },
+          '400': { description: 'Invalid input or tool error' },
+          '404': { description: 'Unknown tool' },
+        },
+      },
+    };
+  }
+  return {
+    swagger: '2.0',
+    info: { title: 'vn-skills', version: VERSION },
+    schemes: [url.protocol.replace(':', '')],
+    host: url.host,
+    basePath: url.pathname.replace(/\/+$/, '') || '/',
+    consumes: ['application/json'],
+    produces: ['application/json'],
+    paths,
+  };
+}
+
 function readBody(req: IncomingMessage): Promise<string> {
   return new Promise((resolve, reject) => {
     const chunks: Buffer[] = [];
@@ -156,7 +266,10 @@ function startHttp(opts: HttpOptions) {
       return reply(403, 'Forbidden origin');
     }
     const path = (req.url ?? '').split('?')[0] ?? '';
-    if (opts.rest && (path === '/openapi.json' || path.startsWith('/tools/'))) {
+    if (
+      opts.rest &&
+      (path === '/openapi.json' || path === '/swagger.json' || path.startsWith('/tools/'))
+    ) {
       const send = (status: number, body: unknown) => {
         res.writeHead(status, { 'content-type': 'application/json' });
         res.end(JSON.stringify(body));
@@ -164,11 +277,15 @@ function startHttp(opts: HttpOptions) {
       const fail = (status: number, code: string, message: string) =>
         send(status, { ok: false, error: { code, message } });
       const handle = async () => {
-        if (path === '/openapi.json') {
+        if (path === '/openapi.json' || path === '/swagger.json') {
           if (req.method !== 'GET') return fail(405, 'METHOD_NOT_ALLOWED', 'Use GET');
           const port = req.socket.localPort ?? opts.port;
           const host = opts.host.includes(':') ? `[${opts.host}]` : opts.host;
-          return send(200, await buildOpenApi(opts.publicUrl ?? `http://${host}:${port}`));
+          const base = opts.publicUrl ?? `http://${host}:${port}`;
+          return send(
+            200,
+            await (path === '/openapi.json' ? buildOpenApi(base) : buildSwagger(base)),
+          );
         }
         if (req.method !== 'POST') return fail(405, 'METHOD_NOT_ALLOWED', 'Use POST');
         const name = decodeURIComponent(path.slice('/tools/'.length));
