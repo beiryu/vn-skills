@@ -129,6 +129,13 @@ The server exposes 40 tools, grouped by skill. All tools are declared read-only 
 | `vn-name`          | `vn_name`                                                                                                                                                            |
 | `vn-number-format` | `vn_number_format`                                                                                                                                                   |
 
+To save context tokens, load only some groups: `--toolsets <groups>` (the skill names above, or `all`, the default) and `--tools <names>` (single tools added on top). Prompts and resources whose group has no enabled tool are hidden. Env fallbacks: `VN_SKILLS_TOOLSETS` and `VN_SKILLS_TOOLS` (the flag wins). Unknown names stop the server at startup. Works with stdio, `--http` and `--rest` (`/openapi.json` lists only enabled tools).
+
+```bash
+npx -y @vn-skills/mcp --toolsets vietqr,vn-address
+npx -y @vn-skills/mcp --toolsets vn-lunar --tools vietqr_parse
+```
+
 Printable card (bank, account, amount in words) as SVG: `vn-skills vietqr build --bank VCB --account 0011001234567 --amount 500000 --template card -o card.svg`
 
 Shop logo in the middle of the QR (PNG, needs `-o`): `vn-skills vietqr build --bank VCB --account 0011001234567 --amount 500000 --logo logo.png -o qr.png`
@@ -204,6 +211,8 @@ Then point your client at it (it runs `docker run -i --rm vn-skills-mcp`):
   }
 }
 ```
+
+With Docker, pass the env vars: `docker run -i --rm -e VN_SKILLS_TOOLSETS=vietqr,vn-address vn-skills-mcp`.
 
 Other clients: use the generic `mcpServers` block above. AI agents (e.g. Cline) can follow [llms-install.md](llms-install.md).
 

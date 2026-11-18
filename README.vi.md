@@ -127,6 +127,13 @@ Server cung cấp 40 tool, nhóm theo skill. Mọi tool đều được khai bá
 | `vn-name`          | `vn_name`                                                                                                                                                            |
 | `vn-number-format` | `vn_number_format`                                                                                                                                                   |
 
+Để tiết kiệm token ngữ cảnh, chỉ nạp một số nhóm: `--toolsets <nhóm>` (tên skill ở trên, hoặc `all`, mặc định) và `--tools <tên>` (thêm từng tool lẻ). Prompt và resource của nhóm không có tool nào được bật sẽ bị ẩn. Biến môi trường thay thế: `VN_SKILLS_TOOLSETS` và `VN_SKILLS_TOOLS` (cờ lệnh ưu tiên hơn). Tên không hợp lệ làm server dừng ngay khi khởi động. Dùng được với stdio, `--http` và `--rest` (`/openapi.json` chỉ liệt kê tool đã bật).
+
+```bash
+npx -y @vn-skills/mcp --toolsets vietqr,vn-address
+npx -y @vn-skills/mcp --toolsets vn-lunar --tools vietqr_parse
+```
+
 Thẻ QR để in (ngân hàng, số tài khoản, số tiền bằng chữ) dạng SVG: `vn-skills vietqr build --bank VCB --account 0011001234567 --amount 500000 --template card -o card.svg`
 
 Chèn logo cửa hàng vào giữa mã QR (PNG, cần `-o`): `vn-skills vietqr build --bank VCB --account 0011001234567 --amount 500000 --logo logo.png -o qr.png`
@@ -202,6 +209,8 @@ Sau đó trỏ client tới image (chạy `docker run -i --rm vn-skills-mcp`):
   }
 }
 ```
+
+Với Docker, truyền biến môi trường: `docker run -i --rm -e VN_SKILLS_TOOLSETS=vietqr,vn-address vn-skills-mcp`.
 
 Client khác: dùng khối `mcpServers` chung ở trên. Agent AI (ví dụ Cline) có thể làm theo [llms-install.md](llms-install.md).
 
