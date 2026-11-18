@@ -38,6 +38,14 @@ describe('vn-skills CLI', () => {
     expect(run(['--version']).out.trim()).toBe(pkg('cli'));
     expect(VERSION).toBe(pkg('core'));
   });
+  it('numfmt date --style full', () => {
+    expect(run(['--json', 'numfmt', 'date', '2026-11-18', '--style', 'full']).json()).toEqual({
+      ok: true,
+      text: 'Thứ Tư, 18 tháng 11, 2026',
+    });
+    expect(run(['--json', 'numfmt', 'date', '2026-11-18']).json().text).toBe('18/11/2026');
+    expect(run(['numfmt', 'date', '2026-11-18', '--style', 'x']).code).not.toBe(0);
+  });
   it('numfmt parse "" reports EMPTY', () => {
     const r = run(['--json', 'numfmt', 'parse', '']);
     expect(r.json()).toMatchObject({ ok: false, error: { code: 'EMPTY' } });

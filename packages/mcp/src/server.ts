@@ -708,9 +708,13 @@ export function createServer(): McpServer {
       inputSchema: {
         mode: z.enum(['number', 'vnd', 'compact', 'date', 'parse']),
         value: z.union([z.number(), z.string()]),
+        style: z
+          .enum(['numeric', 'short', 'long', 'full'])
+          .optional()
+          .describe('Date style, only for mode "date" (default numeric dd/MM/yyyy)'),
       },
     },
-    async ({ mode, value }) => {
+    async ({ mode, value, style }) => {
       const s = String(value);
       if (mode === 'parse') {
         const r = parseAmount(s);
@@ -720,7 +724,7 @@ export function createServer(): McpServer {
       }
       const r =
         mode === 'date'
-          ? formatDate(s)
+          ? formatDate(s, { style })
           : mode === 'vnd'
             ? formatVnd(Number(s))
             : mode === 'compact'

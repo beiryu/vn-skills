@@ -35,9 +35,10 @@ export function registerNumfmt(program: Command): void {
     });
   cmd
     .command('date <date>')
-    .description('Format yyyy-mm-dd as dd/MM/yyyy')
-    .action((date: string, _opts, c: Command) => {
-      const r = formatDate(date);
+    .description('Format yyyy-mm-dd as dd/MM/yyyy, or a locale style (short, long, full)')
+    .option('--style <style>', 'numeric (default), short, long or full')
+    .action((date: string, opts, c: Command) => {
+      const r = formatDate(date, { style: opts.style });
       if (!r.ok) failExit(c, r.error);
       if (wantsJson(c)) printJson({ ok: true, text: r.text });
       else process.stdout.write(r.text + '\n');
