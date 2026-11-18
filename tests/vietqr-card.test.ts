@@ -102,6 +102,46 @@ describe('renderVietQRCard', () => {
     }
   });
 
+  describe('long lines wrap inside the card', () => {
+    const texts = (svg: string) =>
+      [...svg.matchAll(/<text\b[^>]*>([\s\S]*?)<\/text>/g)].map((m) => m[1]!);
+    const long = {
+      bank: 'VietinBank',
+      account: '0011001234567',
+      amount: 987654321987,
+      note: 'thanhtoanhoadondiennuocthang11nam2026khachhang0123456789',
+    };
+    for (const template of ['card', 'print'] as const) {
+      it(`${template}: no line wider than the card, nothing lost`, () => {
+        const r = card(long, {
+          template,
+          accountName: 'CONG TY TNHH THUONG MAI DICH VU XUAT NHAP KHAU NGUYEN VAN A',
+        });
+        if (!r.ok) throw new Error('render failed');
+        const fs = Number(/font-size="(\d+)"/.exec(r.svg)![1]);
+        const pad = template === 'print' ? 32 : 20;
+        const rows = texts(r.svg);
+        for (const t of rows)
+          expect([...t].length * fs * 0.6).toBeLessThanOrEqual(r.width - pad * 2);
+        const all = rows.join(' ');
+        const words = moneyToWords(long.amount, { thousand: 'nghìn' });
+        if (!words.ok) throw new Error('words');
+        for (const w of words.words.split(' ').slice(1)) expect(all).toContain(w);
+        const b = buildVietQR(long);
+        if (!b.ok || !b.note) throw new Error('build');
+        expect(rows.join('')).toContain(b.note); // a word longer than a row is cut, not dropped
+        expect(all).toContain('VietinBank');
+        // Each wrapped row adds one line of height.
+        const short = card({ bank: 'VCB', account: '1' }, { template });
+        expect(short.ok && r.height > short.height).toBe(true);
+      });
+    }
+    it('keeps a line that fits on one row', () => {
+      expect(texts(svgOf(card(withAmount)))).toContain('0011001234567');
+      expect(texts(svgOf(card(withAmount)))).toContain('500.000 ₫');
+    });
+  });
+
   it('print template is taller than card', () => {
     const c = card(withAmount, { template: 'card' });
     const p = card(withAmount, { template: 'print' });
