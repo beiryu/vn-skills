@@ -1,7 +1,15 @@
 import { SERVER_INSTRUCTIONS } from './instructions.js';
-import { McpServer, ResourceTemplate } from '@modelcontextprotocol/sdk/server/mcp.js';
+import {
+  McpServer,
+  ResourceTemplate,
+  type RegisteredResource,
+  type ResourceMetadata,
+  type ReadResourceCallback,
+  type ReadResourceTemplateCallback,
+} from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
 import { registerPrompts } from './prompts.js';
+import { createToolFilter, type ToolOptions } from './toolsets.js';
 import { MCP_APP_MIME, VIETQR_APP_HTML, VIETQR_APP_URI } from './apps/vietqr.js';
 import QRCode from 'qrcode';
 import { decodeQrBuffer, decodeQrPng, MAX_IMAGE_BYTES } from '@vn-skills/cli/decode';
@@ -107,13 +115,19 @@ const OFFLINE_READ_ONLY = {
   openWorldHint: false,
 };
 
-export function createServer(): McpServer {
+export function createServer(options?: ToolOptions): McpServer {
+  const filter = createToolFilter(options);
   const server = new McpServer(
     { name: 'vn-skills', version: VERSION },
     { instructions: SERVER_INSTRUCTIONS },
   );
+  const registerTool: McpServer['registerTool'] = (name, config, cb) => {
+    const registered = server['registerTool'](name, config, cb);
+    if (!filter.toolEnabled(name)) registered.remove();
+    return registered;
+  };
 
-  server.registerTool(
+  registerTool(
     'vietqr_build',
     {
       title: 'Build VietQR',
@@ -186,7 +200,7 @@ export function createServer(): McpServer {
     },
   );
 
-  server.registerTool(
+  registerTool(
     'vietqr_parse',
     {
       title: 'Parse VietQR',
@@ -201,13 +215,13 @@ export function createServer(): McpServer {
     },
   );
 
-  server.registerTool(
+  registerTool(
     'vietqr_decode',
     {
       title: 'Decode VietQR image',
       annotations: OFFLINE_READ_ONLY,
       description:
-        'Read the QR code in a PNG image and decode it like vietqr_parse: bank, account, amount, note, CRC validity. Give exactly one of `path` (a file on the server) or `data` (base64 of the PNG, or a data:image/png;base64, URL; max 5 MB decoded). Returns INVALID_INPUT unless exactly one is given, TOO_LARGE over the cap, READ_ERROR for bad base64 or an unreadable/non-PNG image and NO_QR when no QR code is found.',
+        'Read the QR code in a PNG image and decode it like vietqr_parse: bank, account, amount, note, CRC validity. Give exactly one of `path` (a file on the server) or `data` (base64 of the PNG, or a data:image/png;base64, URL; max 5 MB decoded, at most 20 megapixels). Returns INVALID_INPUT unless exactly one is given, TOO_LARGE over either cap, READ_ERROR for bad base64 or an unreadable/non-PNG image and NO_QR when no QR code is found.',
       inputSchema: {
         path: z.string().optional().describe('Path to a PNG image on the server'),
         data: z
@@ -270,7 +284,7 @@ export function createServer(): McpServer {
     },
   );
 
-  server.registerTool(
+  registerTool(
     'vietqr_banks',
     {
       title: 'Search banks',
@@ -287,7 +301,7 @@ export function createServer(): McpServer {
     async ({ query }) => json({ ok: true, banks: searchBanks(query ?? '') }),
   );
 
-  server.registerTool(
+  registerTool(
     'vn_address_parse',
     {
       title: 'Parse Vietnamese address',
@@ -333,7 +347,7 @@ export function createServer(): McpServer {
     },
   );
 
-  server.registerTool(
+  registerTool(
     'vn_address_convert_batch',
     {
       title: 'Convert many old addresses to new (2025)',
@@ -353,7 +367,7 @@ export function createServer(): McpServer {
     },
   );
 
-  server.registerTool(
+  registerTool(
     'vn_address_convert',
     {
       title: 'Convert old address to new (2025)',
@@ -464,7 +478,7 @@ export function createServer(): McpServer {
     },
   );
 
-  server.registerTool(
+  registerTool(
     'vn_address_search_wards',
     {
       title: 'Search wards',
@@ -489,7 +503,7 @@ export function createServer(): McpServer {
       }),
   );
 
-  server.registerTool(
+  registerTool(
     'vn_tax_id_validate_batch',
     {
       title: 'Validate many tax IDs',
@@ -512,7 +526,7 @@ export function createServer(): McpServer {
       ),
   );
 
-  server.registerTool(
+  registerTool(
     'vn_tax_id_validate',
     {
       title: 'Validate tax ID',
@@ -529,7 +543,7 @@ export function createServer(): McpServer {
     },
   );
 
-  server.registerTool(
+  registerTool(
     'vn_id_parse_batch',
     {
       title: 'Parse many citizen IDs',
@@ -546,7 +560,7 @@ export function createServer(): McpServer {
     async ({ ids }) => json(batchRows(ids, (x) => parseCitizenId(x))),
   );
 
-  server.registerTool(
+  registerTool(
     'vn_id_parse',
     {
       title: 'Parse citizen ID',
@@ -561,7 +575,7 @@ export function createServer(): McpServer {
     },
   );
 
-  server.registerTool(
+  registerTool(
     'vn_phone_parse_batch',
     {
       title: 'Parse many phone numbers',
@@ -578,7 +592,7 @@ export function createServer(): McpServer {
     async ({ phones }) => json(batchRows(phones, parsePhone)),
   );
 
-  server.registerTool(
+  registerTool(
     'vn_phone',
     {
       title: 'Vietnamese phone number',
@@ -593,7 +607,7 @@ export function createServer(): McpServer {
     },
   );
 
-  server.registerTool(
+  registerTool(
     'vn_name',
     {
       title: 'Vietnamese name tools',
@@ -629,7 +643,7 @@ export function createServer(): McpServer {
     },
   );
 
-  server.registerTool(
+  registerTool(
     'vn_money_to_words',
     {
       title: 'Amount in Vietnamese words',
@@ -682,7 +696,7 @@ export function createServer(): McpServer {
     },
   );
 
-  server.registerTool(
+  registerTool(
     'vn_text_speech_normalize',
     {
       title: 'Rewrite text as spoken Vietnamese for TTS',
@@ -699,7 +713,7 @@ export function createServer(): McpServer {
     },
   );
 
-  server.registerTool(
+  registerTool(
     'vn_money_parse',
     {
       title: 'Vietnamese number words to digits',
@@ -716,7 +730,7 @@ export function createServer(): McpServer {
     },
   );
 
-  server.registerTool(
+  registerTool(
     'vn_number_format',
     {
       title: 'Vietnamese number formatting and parsing',
@@ -752,7 +766,7 @@ export function createServer(): McpServer {
     },
   );
 
-  server.registerTool(
+  registerTool(
     'vn_lunar_from_solar',
     {
       title: 'Solar to lunar date',
@@ -773,7 +787,7 @@ export function createServer(): McpServer {
     },
   );
 
-  server.registerTool(
+  registerTool(
     'vn_lunar_to_solar',
     {
       title: 'Lunar to solar date',
@@ -801,7 +815,7 @@ export function createServer(): McpServer {
     },
   );
 
-  server.registerTool(
+  registerTool(
     'vn_lunar_parse_date',
     {
       title: 'Parse Vietnamese date phrase',
@@ -816,7 +830,7 @@ export function createServer(): McpServer {
     },
   );
 
-  server.registerTool(
+  registerTool(
     'vn_lunar_month',
     {
       title: 'Lunar month calendar',
@@ -831,7 +845,7 @@ export function createServer(): McpServer {
     },
   );
 
-  server.registerTool(
+  registerTool(
     'vn_lunar_holidays',
     {
       title: 'Vietnamese holidays',
@@ -844,7 +858,7 @@ export function createServer(): McpServer {
       json({ ok: true, year, holidays: holidays(year, { publicOnly }) }),
   );
 
-  server.registerTool(
+  registerTool(
     'vn_holidays_year',
     {
       title: 'Vietnam official days off for a year',
@@ -859,7 +873,7 @@ export function createServer(): McpServer {
     },
   );
 
-  server.registerTool(
+  registerTool(
     'vn_holidays_ics',
     {
       title: 'Export Vietnam days off as an iCalendar file',
@@ -874,7 +888,7 @@ export function createServer(): McpServer {
     },
   );
 
-  server.registerTool(
+  registerTool(
     'vn_holidays_is_working_day',
     {
       title: 'Is it a working day in Vietnam?',
@@ -889,7 +903,7 @@ export function createServer(): McpServer {
     },
   );
 
-  server.registerTool(
+  registerTool(
     'vn_holidays_add_working_days',
     {
       title: 'Add Vietnamese working days',
@@ -909,7 +923,7 @@ export function createServer(): McpServer {
     },
   );
 
-  server.registerTool(
+  registerTool(
     'vn_holidays_count_working_days',
     {
       title: 'Count Vietnamese working days',
@@ -934,7 +948,7 @@ export function createServer(): McpServer {
       'Invoice object: {series, issueDate, seller{name,taxId,address}, buyer{...}, lines[{name,quantity,unitPrice,vatRate}]}',
     );
 
-  server.registerTool(
+  registerTool(
     'vn_einvoice_validate',
     {
       title: 'Validate e-invoice',
@@ -949,7 +963,7 @@ export function createServer(): McpServer {
     },
   );
 
-  server.registerTool(
+  registerTool(
     'vn_einvoice_totals',
     {
       title: 'Compute e-invoice totals',
@@ -967,7 +981,7 @@ export function createServer(): McpServer {
     },
   );
 
-  server.registerTool(
+  registerTool(
     'vn_einvoice_vat',
     {
       title: 'Apply or split VAT',
@@ -988,7 +1002,7 @@ export function createServer(): McpServer {
     },
   );
 
-  server.registerTool(
+  registerTool(
     'vn_einvoice_mock_issue',
     {
       title: 'Issue invoice (mock)',
@@ -1011,7 +1025,7 @@ export function createServer(): McpServer {
     },
   );
 
-  server.registerTool(
+  registerTool(
     'vn_lunar_tet',
     {
       title: 'Date of Tết',
@@ -1025,7 +1039,7 @@ export function createServer(): McpServer {
     },
   );
 
-  server.registerTool(
+  registerTool(
     'vn_lunar_canchi',
     {
       title: 'Can chi of a year',
@@ -1039,7 +1053,7 @@ export function createServer(): McpServer {
     },
   );
 
-  server.registerTool(
+  registerTool(
     'vn_tax_id_check_digit',
     {
       title: 'Tax ID check digit',
@@ -1053,7 +1067,7 @@ export function createServer(): McpServer {
     },
   );
 
-  server.registerTool(
+  registerTool(
     'vn_address_provinces',
     {
       title: 'List provinces',
@@ -1064,7 +1078,7 @@ export function createServer(): McpServer {
     async () => json(provincesList()),
   );
 
-  server.registerTool(
+  registerTool(
     'vn_address_history',
     {
       title: 'Former wards of a current ward',
@@ -1082,7 +1096,7 @@ export function createServer(): McpServer {
     },
   );
 
-  server.registerTool(
+  registerTool(
     'vn_address_province',
     {
       title: 'Look up a province',
@@ -1096,7 +1110,7 @@ export function createServer(): McpServer {
     },
   );
 
-  server.registerTool(
+  registerTool(
     'vn_einvoice_example',
     {
       title: 'Example e-invoice',
@@ -1107,8 +1121,29 @@ export function createServer(): McpServer {
     async () => json(exampleInvoice()),
   );
 
-  registerPrompts(server);
+  registerPrompts(server, filter);
 
+  // Registered then removed so the resources capability stays advertised when all are hidden.
+  function resource(
+    group: string,
+    name: string,
+    uri: string,
+    config: ResourceMetadata,
+    cb: ReadResourceCallback,
+  ): void;
+  function resource(
+    group: string,
+    name: string,
+    template: ResourceTemplate,
+    config: ResourceMetadata,
+    cb: ReadResourceTemplateCallback,
+  ): void;
+  function resource(group: string, ...args: unknown[]): void {
+    const registered = (server.registerResource as (...a: unknown[]) => RegisteredResource)(
+      ...args,
+    );
+    if (!filter.groupEnabled(group)) registered.remove();
+  }
   const asResource = (uri: URL, data: unknown) => ({
     contents: [
       {
@@ -1123,7 +1158,8 @@ export function createServer(): McpServer {
   };
   const one = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v) ?? '';
 
-  server.registerResource(
+  resource(
+    'vietqr',
     'vietqr-app',
     VIETQR_APP_URI,
     {
@@ -1143,7 +1179,8 @@ export function createServer(): McpServer {
     }),
   );
 
-  server.registerResource(
+  resource(
+    'vn-address',
     'provinces',
     'vn-skills://provinces',
     {
@@ -1154,7 +1191,8 @@ export function createServer(): McpServer {
     (uri) => asResource(uri, provincesList()),
   );
 
-  server.registerResource(
+  resource(
+    'vietqr',
     'banks',
     'vn-skills://banks',
     {
@@ -1165,7 +1203,8 @@ export function createServer(): McpServer {
     (uri) => asResource(uri, { ok: true, banks: searchBanks('') }),
   );
 
-  server.registerResource(
+  resource(
+    'vn-address',
     'province-wards',
     new ResourceTemplate('vn-skills://province/{code}/wards', {
       list: () => ({
@@ -1194,7 +1233,8 @@ export function createServer(): McpServer {
     },
   );
 
-  server.registerResource(
+  resource(
+    'vn-holidays',
     'holidays-year',
     new ResourceTemplate('vn-skills://holidays/{year}', { list: undefined }),
     {

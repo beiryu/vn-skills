@@ -61,7 +61,7 @@ All commands print JSON when piped (or with `--json`). Inside this repo use `pnp
    **From an image** (PNG only): `npx -y @vn-skills/cli vietqr decode qr.png` reads the QR and prints the same fields
    plus `payload`. It fails with `no QR code found` when the image has no readable QR; ask the user for a sharper,
    uncropped PNG (convert screenshots or JPEGs to PNG first). The MCP tool `vietqr_decode` accepts `path` (server file)
-   or `data` (base64 PNG or `data:image/png;base64,` URL, max 5 MB; exactly one of the two) for remote servers.
+   or `data` (base64 PNG or `data:image/png;base64,` URL, max 5 MB and 20 megapixels; exactly one of the two) for remote servers.
 
 3. **Find a bank**: `npx -y @vn-skills/cli vietqr banks techcom` (empty query lists all 58 banks with BIN/code/name).
 
