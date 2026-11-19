@@ -293,6 +293,20 @@ describe('vn-skills CLI', () => {
     expect(r.json().crcValid).toBe(true);
     expect(r.json().bin).toBe('970423');
   });
+  it('vietqr parse shows merchant fields and kind', () => {
+    const p =
+      '00020101021138570010A00000072701270006970436011300110012345670208QRIBFTTA5204581253037045802VN5910CUA HANG A6006HA NOI63047523';
+    const j = run(['vietqr', 'parse', p]).json();
+    expect(j).toMatchObject({
+      kind: 'account',
+      merchantName: 'CUA HANG A',
+      merchantCity: 'HA NOI',
+      merchantCategoryCode: '5812',
+    });
+    const t = run(['vietqr', 'parse', p, '--pretty']).out;
+    expect(t).toContain('CUA HANG A');
+    expect(t).toContain('account');
+  });
   it('vietqr banks text shows SWIFT and finds by SWIFT', () => {
     const r = run(['vietqr', 'banks', 'bftvvnvx', '--pretty']);
     expect(r.out).toContain('BFTVVNVX');
