@@ -1,3 +1,4 @@
+import { writeFileSync } from 'node:fs';
 import { Command } from 'commander';
 import {
   lunarInfo,
@@ -9,6 +10,7 @@ import {
   holidays,
   tetInfo,
   canChiOfYear,
+  lunarObservancesToICS,
 } from '@vn-skills/core';
 import { failExit, kv, printJson, wantsJson } from '../output.js';
 
@@ -143,5 +145,29 @@ export function registerLunar(program: Command): void {
       if (!r.ok) failExit(c, r.error);
       if (wantsJson(c)) printJson(r);
       else process.stdout.write(`${r.canChi}\n`);
+    });
+
+  cmd
+    .command('ics')
+    .description('Export mùng 1 and rằm (or other lunar days) of coming months as an .ics calendar')
+    .option('--from <date>', 'start date dd/mm/yyyy or yyyy-mm-dd (default: today, UTC+7)')
+    .option('--months <n>', 'lunar months, 1-36', '12')
+    .option('--days <list>', 'lunar days, comma separated', '1,15')
+    .option('-o, --out <file>', 'write the ICS to a file')
+    .action((o: { from?: string; months: string; days: string; out?: string }, c: Command) => {
+      const r = lunarObservancesToICS({
+        from: o.from,
+        months: Number(o.months),
+        days: o.days.split(',').map((x) => Number(x.trim())),
+      });
+      if (!r.ok) failExit(c, r.error);
+      if (o.out) writeFileSync(o.out, r.ics);
+      if (o.out ? wantsJson(c) : c.optsWithGlobals<{ json?: boolean }>().json === true) {
+        const { ics: _ics, ...rest } = r;
+        return printJson(o.out ? { ...rest, path: o.out } : rest);
+      }
+      if (!o.out) return void process.stdout.write(r.ics);
+      process.stdout.write(`${r.events} events written to ${o.out}\n`);
+      for (const w of r.warnings) process.stdout.write(`warning: ${w}\n`);
     });
 }

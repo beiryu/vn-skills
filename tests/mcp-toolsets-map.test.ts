@@ -17,7 +17,7 @@ async function tools(options?: Parameters<typeof createServer>[0]) {
 describe('toolsets map', () => {
   it('every registered tool has a group and every mapped tool is registered', async () => {
     const names = await tools();
-    expect(names).toHaveLength(40);
+    expect(names).toHaveLength(41);
     expect(names).toEqual(Object.keys(TOOL_GROUPS).sort());
   });
 

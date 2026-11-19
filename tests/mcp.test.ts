@@ -63,6 +63,19 @@ describe('vn-skills MCP server', () => {
     expect(bad.isError).toBe(true);
   });
 
+  it('vn_lunar_ics', async () => {
+    const ok = await client.callTool({
+      name: 'vn_lunar_ics',
+      arguments: { from: '2026-03-10', months: 3 },
+    });
+    expect(ok.isError).toBeFalsy();
+    const j = text(ok);
+    expect(String(j.ics)).toContain('BEGIN:VCALENDAR');
+    expect((j.rows as unknown[]).length).toBeGreaterThan(0);
+    const bad = await client.callTool({ name: 'vn_lunar_ics', arguments: { days: [31] } });
+    expect(bad.isError).toBe(true);
+  });
+
   it('declares a title and read-only, closed-world annotations on every tool', async () => {
     const { tools } = await client.listTools();
     expect(tools.length).toBeGreaterThan(0);
@@ -102,6 +115,7 @@ describe('vn-skills MCP server', () => {
         'vn_lunar_from_solar',
         'vn_lunar_to_solar',
         'vn_lunar_month',
+        'vn_lunar_ics',
         'vn_lunar_parse_date',
         'vn_lunar_holidays',
         'vn_einvoice_validate',
