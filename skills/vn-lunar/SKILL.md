@@ -31,6 +31,8 @@ npx -y @vn-skills/cli lunar from-solar 29/01/2025
 
 Add `--hour <0-23>` for the birth hour ("giờ sinh", "can chi giờ"): the output gains `hourCanChi`, `hourBranch` and `hourRange` (e.g. `Giáp Tý`, `Tý`, `23:00-01:00`). An hour outside 0-23 or a non-integer returns `INVALID_HOUR`. At 23:00 the can of the calendar date you pass is used (the late Tý hour is not moved to the next day). The MCP tool `vn_lunar_from_solar` takes the same optional `hour`.
 
+Add `--tz <hours>` (UTC offset, -12..14, default 7) on `from-solar` and `to-solar` to choose the time zone explicitly; the output then includes `timeZone`. For old dates (birthdays, ngày giỗ, genealogy before 1968) try `--tz 8`, since calendars then were computed at UTC+8 and a month can start one day later. See `references/algorithm.md`. A non-numeric or out-of-range value returns `INVALID_TIMEZONE`. The MCP tools `vn_lunar_from_solar` and `vn_lunar_to_solar` take an optional `timeZone` number.
+
 ```json
 {
   "ok": true,

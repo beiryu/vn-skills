@@ -4,7 +4,7 @@ import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { crc32, deflateSync } from 'node:zlib';
 import { PNG } from 'pngjs';
-import { PROVINCES, numberToWords } from '@vn-skills/core';
+import { PROVINCES, numberToWords, solarToLunar, lunarToSolar } from '@vn-skills/core';
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js';
 
@@ -369,6 +369,44 @@ describe('vn-skills MCP server', () => {
       }),
     );
     expect(j).toMatchObject({ hourCanChi: 'Giáp Tý', hourBranch: 'Tý', hourRange: '23:00-01:00' });
+  });
+  it('vn_lunar_from_solar / to_solar with timeZone', async () => {
+    let found: { date: string; day: number; month: number } | undefined;
+    for (let y = 1950; y <= 1967 && !found; y++)
+      for (let m = 1; m <= 12 && !found; m++)
+        for (let d = 1; d <= 28 && !found; d++) {
+          const a = solarToLunar(d, m, y, 7);
+          const b = solarToLunar(d, m, y, 8);
+          if (a.ok && b.ok && (a.day !== b.day || a.month !== b.month))
+            found = {
+              date: `${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`,
+              day: b.day,
+              month: b.month,
+            };
+        }
+    expect(found).toBeDefined();
+    const j = text(
+      await client.callTool({
+        name: 'vn_lunar_from_solar',
+        arguments: { date: found!.date, timeZone: 8 },
+      }),
+    );
+    expect(j).toMatchObject({ day: found!.day, month: found!.month });
+    const c = lunarToSolar(1, 7, 1960, false, 8);
+    const t = text(
+      await client.callTool({
+        name: 'vn_lunar_to_solar',
+        arguments: { day: 1, month: 7, year: 1960, timeZone: 8 },
+      }),
+    );
+    if (c.ok) expect(t).toMatchObject({ day: c.day, month: c.month, year: c.year });
+    for (const [name, args] of [
+      ['vn_lunar_from_solar', { date: '1960-01-15', timeZone: 99 }],
+      ['vn_lunar_to_solar', { day: 1, month: 7, year: 1960, timeZone: 99 }],
+    ] as const) {
+      const r = (await client.callTool({ name, arguments: args })) as { isError?: boolean };
+      expect(r.isError).toBe(true);
+    }
   });
   it('vn_lunar_month', async () => {
     const j = text(

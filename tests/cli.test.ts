@@ -6,7 +6,14 @@ import { join, resolve } from 'node:path';
 import { PNG } from 'pngjs';
 import jsqrModule from 'jsqr';
 import { parseCsv } from '../packages/cli/src/csv.js';
-import { convertAddress, numberToWords, parseVietQR, VERSION } from '@vn-skills/core';
+import {
+  solarToLunar,
+  lunarToSolar,
+  convertAddress,
+  numberToWords,
+  parseVietQR,
+  VERSION,
+} from '@vn-skills/core';
 
 const CLI = resolve(__dirname, '..', 'packages', 'cli', 'dist', 'index.js');
 
@@ -435,6 +442,45 @@ describe('vn-skills CLI', () => {
       expect(r.json()).toMatchObject({ ok: false, error: { code: 'INVALID_HOUR' } });
       expect((r.json() as { error: { hint?: string } }).error.hint).toBeTruthy();
     }
+  });
+  describe('lunar --tz', () => {
+    function findTzDiff() {
+      for (let y = 1950; y <= 1967; y++)
+        for (let m = 1; m <= 12; m++)
+          for (let d = 1; d <= 28; d++) {
+            const a = solarToLunar(d, m, y, 7);
+            const b = solarToLunar(d, m, y, 8);
+            if (a.ok && b.ok && (a.day !== b.day || a.month !== b.month)) return { d, m, y, a, b };
+          }
+      throw new Error('no difference found');
+    }
+    it('from-solar --tz 8 returns the UTC+8 result; default unchanged', () => {
+      const { d, m, y, a, b } = findTzDiff();
+      const date = `${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+      const j = run(['lunar', 'from-solar', date, '--tz', '8']).json();
+      expect(j).toMatchObject({ day: b.ok && b.day, month: b.ok && b.month, timeZone: 8 });
+      const def = run(['lunar', 'from-solar', date]).json();
+      expect(def).toMatchObject({ day: a.ok && a.day, month: a.ok && a.month });
+      expect(def.timeZone).toBeUndefined();
+    });
+    it('rejects invalid --tz', () => {
+      for (const cmd of ['from-solar', 'to-solar'])
+        for (const tz of ['abc', '20']) {
+          const r = run(['lunar', cmd, '15/01/1960', '--tz', tz]);
+          expect(r.code).not.toBe(0);
+          expect(r.json()).toMatchObject({ ok: false, error: { code: 'INVALID_TIMEZONE' } });
+        }
+    });
+    it('to-solar --tz 8 matches core', () => {
+      const c = lunarToSolar(1, 7, 1960, false, 8);
+      const j = run(['lunar', 'to-solar', '01/07/1960', '--tz', '8']).json() as {
+        solar: { day: number; month: number; year: number };
+        timeZone: number;
+      };
+      expect(c.ok).toBe(true);
+      if (c.ok) expect(j.solar).toMatchObject({ day: c.day, month: c.month, year: c.year });
+      expect(j.timeZone).toBe(8);
+    });
   });
   it('lunar month', () => {
     const j = run(['lunar', 'month', '02/2027']).json() as { days: Array<{ date: string }> };
