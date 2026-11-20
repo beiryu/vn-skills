@@ -1,6 +1,6 @@
 ---
 name: vn-lunar
-description: Vietnamese lunar calendar (âm lịch) - convert solar to lunar dates and back, leap months (tháng nhuận), can chi (Giáp Thìn, Ất Tỵ), zodiac, 24 solar terms, Tết date for any year, and Vietnamese public holidays (Tết, Giỗ Tổ Hùng Vương, 30/4, 1/5, 2/9). Uses astronomical new-moon and solar-term calculations at UTC+7, which differs from the Chinese calendar on some dates. Use for "hôm nay là ngày mấy âm lịch", "Tết năm 2027 ngày nào", "lịch âm tháng", "lịch vạn niên", "rằm tháng này", "ngày lễ", "mùng 1", "rằm", "rằm tháng", "ngày âm", scheduling around holidays, or any lunar/solar conversion.
+description: Vietnamese lunar calendar (âm lịch) - convert solar to lunar dates and back, leap months (tháng nhuận), can chi (Giáp Thìn, Ất Tỵ), zodiac, 24 solar terms, Tết date for any year, and Vietnamese public holidays (Tết, Giỗ Tổ Hùng Vương, 30/4, 1/5, 2/9). Uses astronomical new-moon and solar-term calculations at UTC+7, which differs from the Chinese calendar on some dates. Use for "hôm nay là ngày mấy âm lịch", "Tết năm 2027 ngày nào", "lịch âm tháng", "lịch vạn niên", "rằm tháng này", "ngày lễ", "mùng 1", "rằm", "rằm tháng", "lịch âm vào Google Calendar", "xuất mùng 1 và rằm ra file .ics", "ngày âm", scheduling around holidays, or any lunar/solar conversion.
 license: MIT
 compatibility: Requires Node.js 22+ (runs npx -y @vn-skills/cli).
 metadata:
@@ -55,6 +55,7 @@ npx -y @vn-skills/cli lunar tet 2027                     # 2027-02-06  Đinh Mù
 npx -y @vn-skills/cli lunar holidays 2026 --public       # official days off with solar dates
 npx -y @vn-skills/cli lunar canchi 2024                  # Giáp Thìn
 npx -y @vn-skills/cli lunar month 02/2027                # whole month: lunar dates, can chi, solar terms, holidays (also yyyy-mm)
+npx -y @vn-skills/cli lunar ics --from 10/03/2026 --months 12 --days 1,15 -o am.ics   # mùng 1 + rằm as .ics (stdout without -o; --json for rows)
 ```
 
 ### Date phrases
@@ -73,7 +74,7 @@ Supported (case-insensitive, diacritics optional):
 
 Conventions: a lunar phrase without a year means the next occurrence on or after `ref` (default today, UTC+7). A leap month that does not exist in the target year, or day 30 in a 29-day month, returns `INVALID_DATE` with a hint; nothing is guessed.
 
-Library: `parseVietnameseDate`, `solarToLunar`, `lunarToSolar`, `lunarInfo`, `tetDate`, `holidays`, `yearCanChi`, `dayCanChi`, `leapMonthOf`, `lunarMonthCalendar` from `@vn-skills/core`.
+Library: `parseVietnameseDate`, `solarToLunar`, `lunarToSolar`, `lunarInfo`, `tetDate`, `holidays`, `yearCanChi`, `dayCanChi`, `leapMonthOf`, `lunarMonthCalendar`, `lunarObservanceDates`, `lunarObservancesToICS` from `@vn-skills/core`.
 
 ## Rules and gotchas
 

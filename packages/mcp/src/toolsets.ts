@@ -34,6 +34,7 @@ export const TOOL_GROUPS: Record<string, string> = {
   vn_lunar_holidays: 'vn-lunar',
   vn_lunar_tet: 'vn-lunar',
   vn_lunar_canchi: 'vn-lunar',
+  vn_lunar_ics: 'vn-lunar',
   vn_holidays_year: 'vn-holidays',
   vn_holidays_ics: 'vn-holidays',
   vn_holidays_is_working_day: 'vn-holidays',

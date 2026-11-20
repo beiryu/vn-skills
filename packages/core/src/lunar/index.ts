@@ -1,5 +1,12 @@
 import { jdFromDate, getSolarTermIndex } from './astro.js';
-import { solarToLunar, lunarToSolar, leapMonthOf, VN_TIMEZONE, type LunarDate } from './convert.js';
+import {
+  solarToLunar,
+  lunarToSolar,
+  leapMonthOf,
+  lunarMonthLength,
+  VN_TIMEZONE,
+  type LunarDate,
+} from './convert.js';
 import {
   yearCanChi,
   monthCanChi,
@@ -254,3 +261,92 @@ export function canChiOfYear(
 }
 
 export { CHI as LUNAR_CHI };
+
+export interface LunarObservanceOptions {
+  /** Start solar date (dd/mm/yyyy or yyyy-mm-dd); defaults to today in UTC+7. */
+  from?: string;
+  /** Number of lunar months from the one containing `from`, 1-36 (default 12). */
+  months?: number;
+  /** Lunar days to export, each 1-30 (default [1, 15]). */
+  days?: number[];
+  /** Clock used for the default `from`; for tests. */
+  now?: Date;
+}
+
+export interface LunarObservanceRow {
+  solar: string;
+  lunar: { day: number; month: number; year: number; leap: boolean };
+  text: string;
+}
+
+/** Solar dates of chosen lunar days (default mùng 1 and rằm) over the coming lunar months. */
+export function lunarObservanceDates(
+  options: LunarObservanceOptions = {},
+): Result<{ rows: LunarObservanceRow[]; warnings: string[] }> {
+  const months = options.months ?? 12;
+  if (!Number.isInteger(months) || months < 1 || months > 36)
+    return fail('INVALID_INPUT', `months ${months} is out of range (1-36)`);
+  const days = options.days ?? [1, 15];
+  if (
+    !Array.isArray(days) ||
+    days.length === 0 ||
+    !days.every((d) => Number.isInteger(d) && d >= 1 && d <= 30)
+  )
+    return fail('INVALID_INPUT', 'days must be a non-empty list of integers 1-30');
+  let fromIso: string;
+  if (options.from === undefined) {
+    fromIso = new Date((options.now ?? new Date()).getTime() + 7 * 3600_000)
+      .toISOString()
+      .slice(0, 10);
+  } else {
+    const p = parseDateInput(options.from);
+    if (!p.ok) return p;
+    fromIso = `${String(p.year).padStart(4, '0')}-${String(p.month).padStart(2, '0')}-${String(p.day).padStart(2, '0')}`;
+  }
+  const iso = (t: number) => new Date(t).toISOString().slice(0, 10);
+  const DAY = 86400_000;
+  const ymd = (s: string) => s.split('-').map(Number) as [number, number, number];
+  const at = (s: string) => {
+    const [y, m, d] = ymd(s);
+    return solarToLunar(d, m, y);
+  };
+  const first = at(fromIso);
+  if (!first.ok) return first;
+  const sorted = [...new Set(days)].sort((a, b) => a - b);
+  let start = Date.parse(`${fromIso}T00:00:00Z`) - (first.day - 1) * DAY;
+  let cur = { month: first.month, year: first.year, leap: first.leap };
+  const rows: LunarObservanceRow[] = [];
+  const warnings: string[] = [];
+  // A starting month with nothing left on or after `from` does not count toward `months`.
+  let started = false;
+  for (let i = 0; i < months;) {
+    const before = rows.length;
+    const warned = warnings.length;
+    const len = lunarMonthLength(cur.month, cur.year, cur.leap);
+    if (len === null) return fail('OUT_OF_RANGE', 'Supported years: 1800-2199');
+    const label = `${cur.month}${cur.leap ? ' (nhuận)' : ''}/${cur.year}`;
+    for (const d of sorted) {
+      if (d > len) {
+        warnings.push(`Lunar month ${label} has only ${len} days: day ${d} skipped`);
+        continue;
+      }
+      const solar = iso(start + (d - 1) * DAY);
+      if (solar < fromIso) continue;
+      const [y, m, dd] = ymd(solar);
+      const info = lunarInfo(dd, m, y);
+      if (!info.ok) return info;
+      rows.push({ solar, lunar: { day: d, ...cur }, text: info.text });
+    }
+    start += len * DAY;
+    if (rows.length > before || warnings.length > warned || started) i++;
+    started = true;
+    if (i < months) {
+      const n = at(iso(start));
+      if (!n.ok) return n;
+      cur = { month: n.month, year: n.year, leap: n.leap };
+    }
+  }
+  return { ok: true, rows, warnings };
+}
+
+export { lunarObservancesToICS, type LunarObservancesICSOptions } from './ics.js';

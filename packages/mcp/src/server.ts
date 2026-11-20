@@ -43,6 +43,7 @@ import {
   lunarInfo,
   hourInfo,
   lunarMonthCalendar,
+  lunarObservancesToICS,
   lunarToSolar,
   parseVietnameseDate,
   tetInfo,
@@ -842,6 +843,25 @@ export function createServer(options?: ToolOptions): McpServer {
     async ({ month, year }) => {
       const r = lunarMonthCalendar(month, year);
       return r.ok ? json(r) : json({ ok: false, error: r.error }, true);
+    },
+  );
+
+  registerTool(
+    'vn_lunar_ics',
+    {
+      title: 'Export mùng 1 and rằm as an iCalendar file',
+      annotations: OFFLINE_READ_ONLY,
+      description:
+        'Export mùng 1 and rằm (or other lunar days) of the coming lunar months as iCalendar (RFC 5545) text for Google Calendar, Outlook or Apple Calendar, plus the rows. Leap months included; days missing in a 29-day month are skipped with a warning.',
+      inputSchema: {
+        from: z.string().optional(),
+        months: z.number().int().optional(),
+        days: z.array(z.number().int()).optional(),
+      },
+    },
+    async ({ from, months, days }) => {
+      const r = lunarObservancesToICS({ from, months, days });
+      return r.ok ? json(r) : json(r, true);
     },
   );
 
