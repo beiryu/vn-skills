@@ -23,10 +23,12 @@ export function registerLunar(program: Command): void {
     .command('from-solar <date>')
     .description('Solar (dd/mm/yyyy or yyyy-mm-dd) -> lunar date with can chi')
     .option('--hour <0-23>', 'birth hour: adds hourCanChi, hourBranch, hourRange')
+    .option('--tz <hours>', 'UTC offset in hours, -12..14 (default 7; some pre-1968 dates use 8)')
     .action((date: string, opts, c: Command) => {
       const d = parseDateInput(date);
       if (!d.ok) failExit(c, d.error);
-      const r = lunarInfo(d.day, d.month, d.year);
+      const tz = opts.tz === undefined ? undefined : Number(opts.tz);
+      const r = lunarInfo(d.day, d.month, d.year, tz);
       if (!r.ok) failExit(c, r.error);
       let hour: { hourCanChi: string; hourBranch: string; hourRange: string } | undefined;
       if (opts.hour !== undefined) {
@@ -36,7 +38,7 @@ export function registerLunar(program: Command): void {
         else hour = { hourCanChi: hi.canChi, hourBranch: hi.branch, hourRange: hi.range };
       }
       const { ok: _ok, ...base } = r;
-      const rest = { ...base, ...hour };
+      const rest = { ...base, ...hour, ...(tz === undefined ? {} : { timeZone: tz }) };
       if (wantsJson(c)) printJson({ ok: true, ...rest });
       else
         process.stdout.write(
@@ -48,6 +50,9 @@ export function registerLunar(program: Command): void {
             ['Month', r.monthCanChi],
             ['Day', r.dayCanChi],
             ['Solar term', r.solarTerm],
+            ...(tz === undefined
+              ? []
+              : ([['Time zone', `UTC${tz >= 0 ? '+' : ''}${tz}`]] as [string, string][])),
             ...(hour
               ? ([['Hour', `${hour.hourCanChi} (${hour.hourRange})`]] as [string, string][])
               : []),
@@ -95,10 +100,12 @@ export function registerLunar(program: Command): void {
     .command('to-solar <date>')
     .description('Lunar dd/mm/yyyy -> solar date')
     .option('--leap', 'the month is the leap (nhuận) month')
+    .option('--tz <hours>', 'UTC offset in hours, -12..14 (default 7; some pre-1968 dates use 8)')
     .action((date: string, opts, c: Command) => {
       const d = parseDateInput(date, { lunar: true });
       if (!d.ok) failExit(c, d.error);
-      const r = lunarToSolar(d.day, d.month, d.year, Boolean(opts.leap));
+      const tz = opts.tz === undefined ? undefined : Number(opts.tz);
+      const r = lunarToSolar(d.day, d.month, d.year, Boolean(opts.leap), tz);
       if (!r.ok) failExit(c, r.error);
       const iso = `${r.year}-${String(r.month).padStart(2, '0')}-${String(r.day).padStart(2, '0')}`;
       if (wantsJson(c))
@@ -106,6 +113,7 @@ export function registerLunar(program: Command): void {
           ok: true,
           lunar: { day: d.day, month: d.month, year: d.year, leap: Boolean(opts.leap) },
           solar: { day: r.day, month: r.month, year: r.year, date: iso },
+          ...(tz === undefined ? {} : { timeZone: tz }),
         });
       else process.stdout.write(`${iso}\n`);
     });

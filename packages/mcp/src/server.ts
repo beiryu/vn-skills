@@ -773,13 +773,17 @@ export function createServer(options?: ToolOptions): McpServer {
       title: 'Solar to lunar date',
       annotations: OFFLINE_READ_ONLY,
       description:
-        'Convert a Gregorian date (dd/mm/yyyy or yyyy-mm-dd) to the Vietnamese lunar date with can chi (e.g. Ất Tỵ), zodiac, leap-month flag and solar term. Optional hour (0-23) adds hourCanChi, hourBranch, hourRange (giờ sinh).',
-      inputSchema: { date: z.string(), hour: z.number().int().min(0).max(23).optional() },
+        'Convert a Gregorian date (dd/mm/yyyy or yyyy-mm-dd) to the Vietnamese lunar date with can chi (e.g. Ất Tỵ), zodiac, leap-month flag and solar term. Optional hour (0-23) adds hourCanChi, hourBranch, hourRange (giờ sinh). Optional timeZone (UTC offset, -12..14, default 7): some dates before 1968 were computed at UTC+8, so a month can start one day later; pass 8 for old dates.',
+      inputSchema: {
+        date: z.string(),
+        hour: z.number().int().min(0).max(23).optional(),
+        timeZone: z.number().min(-12).max(14).optional(),
+      },
     },
-    async ({ date, hour }) => {
+    async ({ date, hour, timeZone }) => {
       const d = parseDateInput(date);
       if (!d.ok) return json({ ok: false, error: d.error }, true);
-      const r = lunarInfo(d.day, d.month, d.year);
+      const r = lunarInfo(d.day, d.month, d.year, timeZone);
       if (!r.ok) return json({ ok: false, error: r.error }, true);
       if (hour === undefined) return json(r);
       const hi = hourInfo(d.day, d.month, d.year, hour);
@@ -794,16 +798,17 @@ export function createServer(options?: ToolOptions): McpServer {
       title: 'Lunar to solar date',
       annotations: OFFLINE_READ_ONLY,
       description:
-        'Convert a Vietnamese lunar date to the Gregorian date. Set leap=true for the leap (nhuận) month.',
+        'Convert a Vietnamese lunar date to the Gregorian date. Set leap=true for the leap (nhuận) month. Optional timeZone (UTC offset, -12..14, default 7): some dates before 1968 were computed at UTC+8; pass 8 for old dates.',
       inputSchema: {
         day: z.number().int(),
         month: z.number().int(),
         year: z.number().int(),
         leap: z.boolean().optional(),
+        timeZone: z.number().min(-12).max(14).optional(),
       },
     },
-    async ({ day, month, year, leap }) => {
-      const r = lunarToSolar(day, month, year, leap ?? false);
+    async ({ day, month, year, leap, timeZone }) => {
+      const r = lunarToSolar(day, month, year, leap ?? false, timeZone);
       return r.ok
         ? json({
             ok: true,
