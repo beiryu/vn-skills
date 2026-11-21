@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  capitalizeName,
   compareVietnamese,
   initials,
   slugifyName,
@@ -137,7 +138,32 @@ const golden = loadGolden<{
   splitError: { name: string; input: unknown; expected: string }[];
   slug: { input: string; expected: string }[];
   initials: { input: string; expected: string }[];
+  capitalize: { input: string; expected: { name: string; changed: boolean } }[];
+  capitalizeError: { name: string; input: unknown; expected: string }[];
 }>('vn-name');
+
+describe('capitalizeName (golden)', () => {
+  it.each(golden.capitalize.map((c) => [title(c), c] as const))('%s', (_, c) => {
+    const r = capitalizeName(c.input);
+    expect(r.ok).toBe(true);
+    if (r.ok) {
+      expect(r.name).toBe(c.expected.name);
+      expect(r.changed).toBe(c.expected.changed);
+    }
+  });
+  it.each(golden.capitalizeError.map((c) => [title(c), c] as const))('error: %s', (_, c) => {
+    let r: ReturnType<typeof capitalizeName> | undefined;
+    expect(() => {
+      r = capitalizeName(c.input as string);
+    }).not.toThrow();
+    expect(r?.ok).toBe(false);
+    if (r && !r.ok) expect(r.error.code).toBe(c.expected);
+  });
+  it('lowercases characters after the first in a word', () => {
+    const r = capitalizeName("o'BRIEN-smith");
+    expect(r.ok && r.name).toBe("O'brien-smith");
+  });
+});
 
 describe('vn-name (golden)', () => {
   it.each(golden.split.map((c) => [title(c), c] as const))('split %s', (_, c) => {

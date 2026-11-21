@@ -131,6 +131,34 @@
         "input": "Hồ Chí Minh",
         "expected": "HCM"
       }
+    ],
+    "capitalize": [
+      { "input": "nguyễn văn an", "expected": { "name": "Nguyễn Văn An", "changed": true } },
+      { "input": "NGUYỄN VĂN AN", "expected": { "name": "Nguyễn Văn An", "changed": true } },
+      { "input": "nguyễn VĂN a", "expected": { "name": "Nguyễn Văn A", "changed": true } },
+      { "input": "TRẦN thị  bích", "expected": { "name": "Trần Thị Bích", "changed": true } },
+      { "input": "đặng đình đức", "expected": { "name": "Đặng Đình Đức", "changed": true } },
+      { "input": "ĐẶNG ĐÌNH ĐỨC", "expected": { "name": "Đặng Đình Đức", "changed": true } },
+      { "name": "tone huyền", "input": "àn", "expected": { "name": "Àn", "changed": true } },
+      { "name": "tone sắc", "input": "án", "expected": { "name": "Án", "changed": true } },
+      { "name": "tone hỏi", "input": "ản", "expected": { "name": "Ản", "changed": true } },
+      { "name": "tone ngã", "input": "ãn", "expected": { "name": "Ãn", "changed": true } },
+      { "name": "tone nặng", "input": "ạn", "expected": { "name": "Ạn", "changed": true } },
+      {
+        "name": "NFD input gives NFC",
+        "input": "Nguye\u0302\u0303n Va\u0306n An",
+        "expected": { "name": "Nguyễn Văn An", "changed": true }
+      },
+      { "input": "  nguyễn   văn \t an  ", "expected": { "name": "Nguyễn Văn An", "changed": true } },
+      { "input": "tôn thất tùng", "expected": { "name": "Tôn Thất Tùng", "changed": true } },
+      { "input": "madonna", "expected": { "name": "Madonna", "changed": true } },
+      { "input": "Nguyễn Văn An", "expected": { "name": "Nguyễn Văn An", "changed": false } }
+    ],
+    "capitalizeError": [
+      { "name": "empty string", "input": "", "expected": "EMPTY_NAME" },
+      { "name": "blank string", "input": "   ", "expected": "EMPTY_NAME" },
+      { "name": "null", "input": null, "expected": "EMPTY_NAME" },
+      { "name": "number", "input": 42, "expected": "INVALID_NAME" }
     ]
   }
 }

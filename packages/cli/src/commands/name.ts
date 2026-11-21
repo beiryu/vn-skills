@@ -1,5 +1,12 @@
 import { Command } from 'commander';
-import { initials, slugifyName, sortNames, sortVietnamese, splitName } from '@vn-skills/core';
+import {
+  capitalizeName,
+  initials,
+  slugifyName,
+  sortNames,
+  sortVietnamese,
+  splitName,
+} from '@vn-skills/core';
 import { readTextInput } from '../input.js';
 import { failExit, kv, printJson, wantsJson } from '../output.js';
 
@@ -22,6 +29,15 @@ export function registerName(program: Command): void {
             ['Given', r.given],
           ]) + '\n',
         );
+    });
+  cmd
+    .command('capitalize <fullName...>')
+    .description('Fix capitalization of a full name (quotes optional)')
+    .action((words: string[], _o, c: Command) => {
+      const r = capitalizeName(words.join(' '));
+      if (!r.ok) failExit(c, r.error);
+      if (wantsJson(c)) printJson(r);
+      else process.stdout.write(`${r.name}\n`);
     });
   cmd
     .command('slug <fullName...>')

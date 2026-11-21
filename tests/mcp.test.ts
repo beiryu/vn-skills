@@ -150,6 +150,16 @@ describe('vn-skills MCP server', () => {
     expect(r.sorted).toEqual(['Dương', 'Đông', 'Ha', 'Hà', 'Hạ']);
   });
 
+  it('vn_name capitalize returns the capitalizeName result', async () => {
+    const r = text(
+      await client.callTool({
+        name: 'vn_name',
+        arguments: { name: 'nguyễn VĂN a', capitalize: true },
+      }),
+    );
+    expect(r).toMatchObject({ ok: true, name: 'Nguyễn Văn A', changed: true });
+  });
+
   it('vietqr_build accepts additionalData and vietqr_parse returns it', async () => {
     const b = text(
       await client.callTool({

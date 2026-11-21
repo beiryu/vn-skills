@@ -41,6 +41,28 @@ export function splitName(input: string): Result<SplitName> {
   };
 }
 
+/**
+ * Tidy a name's capitalization: NFC, collapse whitespace, lowercase each word then uppercase its first letter (vi locale).
+ * null, undefined and blank input return `EMPTY_NAME`; other non-strings return `INVALID_NAME`.
+ */
+export function capitalizeName(input: string): Result<{ name: string; changed: boolean }> {
+  if (typeof input !== 'string' && input != null) {
+    return fail('INVALID_NAME', 'Name must be a string', 'Pass the full name as a string');
+  }
+  const parts = words(input ?? '');
+  if (parts.length === 0) {
+    return fail('EMPTY_NAME', 'Name is empty', 'Pass a non-empty full name');
+  }
+  const name = parts
+    .map((w) => {
+      const lower = w.toLocaleLowerCase('vi');
+      const [first = ''] = Array.from(lower);
+      return first.toLocaleUpperCase('vi') + lower.slice(first.length);
+    })
+    .join(' ');
+  return { ok: true, name, changed: name !== input };
+}
+
 /** Unaccented, lowercase, hyphen-separated slug. Returns '' for null, undefined or non-string input. */
 export function slugifyName(input: string): string {
   if (typeof input !== 'string') return '';

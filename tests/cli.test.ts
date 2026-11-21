@@ -520,6 +520,11 @@ describe('vn-skills CLI', () => {
     expect(bare.code).toBe(0);
     expect(bare.json()).toEqual(quoted.json());
   });
+  it('name capitalize accepts unquoted multi-word text', () => {
+    const r = run(['name', 'capitalize', 'nguyễn', 'VĂN', 'a']);
+    expect(r.code).toBe(0);
+    expect(r.json()).toMatchObject({ ok: true, name: 'Nguyễn Văn A', changed: true });
+  });
   it('address convert accepts unquoted multi-word text', () => {
     const quoted = run(['address', 'convert', 'P. Bến Nghé, Q.1, TP.HCM']);
     const bare = run(['address', 'convert', 'P.', 'Bến', 'Nghé,', 'Q.1,', 'TP.HCM']);

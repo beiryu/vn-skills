@@ -24,6 +24,7 @@ import {
   initials,
   sortNames,
   sortVietnamese,
+  capitalizeName,
   convertAddress,
   toPostalAddress,
   convertAddresses,
@@ -614,18 +615,19 @@ export function createServer(options?: ToolOptions): McpServer {
       title: 'Vietnamese name tools',
       annotations: OFFLINE_READ_ONLY,
       description:
-        'Split a Vietnamese full name into họ / tên đệm / tên (handles Tôn Thất, Nguyễn Phúc), plus slug and initials; or sort a list of names by tên with Vietnamese collation (sortAs: "text" sorts any strings).',
+        'Split a Vietnamese full name into họ / tên đệm / tên (handles Tôn Thất, Nguyễn Phúc), plus slug and initials; or sort a list of names by tên with Vietnamese collation (sortAs: "text" sorts any strings); with capitalize: true and name, fix its capitalization (nguyễn VĂN a -> Nguyễn Văn A).',
       inputSchema: {
         name: z.string().optional().describe('Full name to split'),
         names: z.array(z.string()).optional().describe('Names to sort'),
         ascii: z.boolean().optional().describe('Strip diacritics from initials'),
+        capitalize: z.boolean().optional().describe('Return the name with fixed capitalization'),
         sortAs: z
           .enum(['name', 'text'])
           .optional()
           .describe('"name" (default) sorts by tên; "text" sorts whole strings'),
       },
     },
-    async ({ name, names, ascii, sortAs }) => {
+    async ({ name, names, ascii, capitalize, sortAs }) => {
       if (names) {
         return json({
           ok: true,
@@ -637,6 +639,10 @@ export function createServer(options?: ToolOptions): McpServer {
           { ok: false, error: { code: 'MISSING_INPUT', message: 'Provide name or names' } },
           true,
         );
+      }
+      if (capitalize) {
+        const c = capitalizeName(name);
+        return json(c, !c.ok);
       }
       const r = splitName(name);
       if (!r.ok) return json(r, true);
