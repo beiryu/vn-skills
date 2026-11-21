@@ -76,7 +76,7 @@ const freePort = () =>
 describe('vn-skills MCP --toolsets / --tools', () => {
   it('default registers everything; every tool belongs to a group', async () => {
     const all = await listing([]);
-    expect(all.tools).toHaveLength(40);
+    expect(all.tools).toHaveLength(41);
     const grouped = await listing(['--toolsets', GROUPS.join(',')]);
     expect(grouped).toEqual(all);
     expect(grouped.tools.every((t) => /^(vietqr|vn)_/.test(t))).toBe(true);

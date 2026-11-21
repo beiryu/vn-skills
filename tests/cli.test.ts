@@ -29,7 +29,8 @@ function run(args: string[], input?: string) {
     code: r.status,
     out: r.stdout,
     err: r.stderr,
-    json: () => JSON.parse(r.stdout) as Record<string, unknown>,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    json: () => JSON.parse(r.stdout) as Record<string, any>,
   };
 }
 
@@ -278,6 +279,17 @@ describe('vn-skills CLI', () => {
     expect(bad.code).not.toBe(0);
     expect(bad.json()).toMatchObject({ ok: false, error: { code: 'OUT_OF_RANGE' } });
   });
+  it('lunar ics prints raw ICS, writes -o file and --json rows', () => {
+    const r = run(['lunar', 'ics', '--from', '10/03/2026', '--months', '3']);
+    expect(r.code).toBe(0);
+    expect(r.out.startsWith('BEGIN:VCALENDAR\r\n')).toBe(true);
+    const file = join(mkdtempSync(join(tmpdir(), 'vn-skills-')), 'am.ics');
+    expect(run(['lunar', 'ics', '--from', '10/03/2026', '--days', '1', '-o', file]).code).toBe(0);
+    expect(readFileSync(file, 'utf8')).toContain('BEGIN:VEVENT');
+    const j = run(['lunar', 'ics', '--from', '10/03/2026', '--json']).json();
+    expect(j.rows.length).toBeGreaterThan(20);
+    expect(run(['lunar', 'ics', '--days', '31', '--json']).code).not.toBe(0);
+  });
   it('vietqr build writes SVG', () => {
     const dir = mkdtempSync(join(tmpdir(), 'vn-skills-'));
     const file = join(dir, 'qr.svg');
@@ -299,6 +311,20 @@ describe('vn-skills CLI', () => {
     expect(r.code).toBe(0);
     expect(r.json().crcValid).toBe(true);
     expect(r.json().bin).toBe('970423');
+  });
+  it('vietqr parse shows merchant fields and kind', () => {
+    const p =
+      '00020101021138570010A00000072701270006970436011300110012345670208QRIBFTTA5204581253037045802VN5910CUA HANG A6006HA NOI63047523';
+    const j = run(['vietqr', 'parse', p]).json();
+    expect(j).toMatchObject({
+      kind: 'account',
+      merchantName: 'CUA HANG A',
+      merchantCity: 'HA NOI',
+      merchantCategoryCode: '5812',
+    });
+    const t = run(['vietqr', 'parse', p, '--pretty']).out;
+    expect(t).toContain('CUA HANG A');
+    expect(t).toContain('account');
   });
   it('vietqr banks text shows SWIFT and finds by SWIFT', () => {
     const r = run(['vietqr', 'banks', 'bftvvnvx', '--pretty']);

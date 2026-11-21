@@ -67,7 +67,9 @@ describePy('vietqr.py golden cases', () => {
   it.each(buildCases)('build: %s', (_, c) => {
     expect(run(buildArgs(c.input))).toMatchObject(c.expected);
   });
-  it.each(golden.parseVietQR.map((c) => [title(c), c] as const))('parse: %s', (_, c) => {
+  it.each(
+    golden.parseVietQR.filter((c) => !('kind' in c.expected)).map((c) => [title(c), c] as const),
+  )('parse: %s', (_, c) => {
     expect(run(['parse', c.input])).toMatchObject(c.expected);
   });
   it.each(golden.findBank.map((c) => [title(c), c] as const))('banks lookup: %s', (_, c) => {

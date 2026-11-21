@@ -216,6 +216,29 @@
     ],
     "parseVietQR": [
       {
+        "name": "merchant name, city and category code with QRIBFTTA",
+        "input": "00020101021138570010A00000072701270006970436011300110012345670208QRIBFTTA5204581253037045802VN5910CUA HANG A6006HA NOI63047523",
+        "expected": {
+          "ok": true,
+          "crcValid": true,
+          "kind": "account",
+          "service": "QRIBFTTA",
+          "merchantCategoryCode": "5812",
+          "merchantName": "CUA HANG A",
+          "merchantCity": "HA NOI"
+        }
+      },
+      {
+        "name": "card QR has kind card",
+        "input": "00020101021138570010A00000072701270006970436011300110012345670208QRIBFTTC53037045802VN5910CUA HANG A6304842F",
+        "expected": { "ok": true, "crcValid": true, "kind": "card", "merchantName": "CUA HANG A" }
+      },
+      {
+        "name": "unknown service code has kind other and raw service",
+        "input": "00020101021138520010A00000072701270006970436011300110012345670203XYZ53037045802VN5910CUA HANG A6304AA47",
+        "expected": { "ok": true, "kind": "other", "service": "XYZ" }
+      },
+      {
         "name": "additionalData is read from tag 62",
         "input": "00020101021138570010A00000072701270006970436011300110012345670208QRIBFTTA53037045802VN62120508ORDER12363040CF0",
         "expected": { "ok": true, "crcValid": true, "additionalData": { "05": "ORDER123" } }

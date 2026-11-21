@@ -58,6 +58,10 @@ All commands print JSON when piped (or with `--json`). Inside this repo use `pnp
    Check `crcValid` and `isVietQR` before trusting `bank`, `account`, `amount`, `note`. Other tag 62 sub-fields are
    returned by ID in `additionalData` (build with `--data 05=ORDER123`); vn-skills does not interpret them.
 
+   Parse also reports `kind` (`account` for `QRIBFTTA`, `card` for `QRIBFTTC`, otherwise `other`) and, when the QR
+   carries them, `merchantName`, `merchantCity` and `merchantCategoryCode`. vn-skills does not interpret other service
+   codes.
+
    **From an image** (PNG only): `npx -y @vn-skills/cli vietqr decode qr.png` reads the QR and prints the same fields
    plus `payload`. It fails with `no QR code found` when the image has no readable QR; ask the user for a sharper,
    uncropped PNG (convert screenshots or JPEGs to PNG first). The MCP tool `vietqr_decode` accepts `path` (server file)

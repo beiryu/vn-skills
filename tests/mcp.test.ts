@@ -63,6 +63,19 @@ describe('vn-skills MCP server', () => {
     expect(bad.isError).toBe(true);
   });
 
+  it('vn_lunar_ics', async () => {
+    const ok = await client.callTool({
+      name: 'vn_lunar_ics',
+      arguments: { from: '2026-03-10', months: 3 },
+    });
+    expect(ok.isError).toBeFalsy();
+    const j = text(ok);
+    expect(String(j.ics)).toContain('BEGIN:VCALENDAR');
+    expect((j.rows as unknown[]).length).toBeGreaterThan(0);
+    const bad = await client.callTool({ name: 'vn_lunar_ics', arguments: { days: [31] } });
+    expect(bad.isError).toBe(true);
+  });
+
   it('declares a title and read-only, closed-world annotations on every tool', async () => {
     const { tools } = await client.listTools();
     expect(tools.length).toBeGreaterThan(0);
@@ -102,6 +115,7 @@ describe('vn-skills MCP server', () => {
         'vn_lunar_from_solar',
         'vn_lunar_to_solar',
         'vn_lunar_month',
+        'vn_lunar_ics',
         'vn_lunar_parse_date',
         'vn_lunar_holidays',
         'vn_einvoice_validate',
@@ -148,6 +162,23 @@ describe('vn-skills MCP server', () => {
       await client.callTool({ name: 'vietqr_parse', arguments: { payload: b.payload } }),
     );
     expect(p.additionalData).toEqual({ '05': 'ORDER123' });
+  });
+  it('vietqr_parse returns merchant fields and kind', async () => {
+    const p = text(
+      await client.callTool({
+        name: 'vietqr_parse',
+        arguments: {
+          payload:
+            '00020101021138570010A00000072701270006970436011300110012345670208QRIBFTTA5204581253037045802VN5910CUA HANG A6006HA NOI63047523',
+        },
+      }),
+    );
+    expect(p).toMatchObject({
+      kind: 'account',
+      merchantName: 'CUA HANG A',
+      merchantCity: 'HA NOI',
+      merchantCategoryCode: '5812',
+    });
   });
   it('vietqr_build with template returns a card SVG; without it no card', async () => {
     const args = { bank: 'VCB', account: '0011001234567', amount: 500000 };
