@@ -5,6 +5,7 @@ import {
   findBank,
   parseVietQR,
   sanitizeNote,
+  tlvEncode,
   searchBanks,
   BANKS,
   MAX_NOTE_LENGTH,
@@ -409,5 +410,56 @@ describe('tag 62 additionalData', () => {
     if (r.ok) return;
     expect(r.error.code).toBe('INVALID_ADDITIONAL_DATA');
     expect(r.error.hint).toBeTruthy();
+  });
+});
+
+describe('parseVietQR merchant fields and kind', () => {
+  const make = (service: string | undefined, root: string): string => {
+    const ben = tlvEncode('00', '970436') + tlvEncode('01', '0011001234567');
+    const m = tlvEncode(
+      '38',
+      tlvEncode('00', 'A000000727') +
+        tlvEncode('01', ben) +
+        (service ? tlvEncode('02', service) : ''),
+    );
+    const body = tlvEncode('00', '01') + tlvEncode('01', '11') + m + root + '6304';
+    return body + crc16CcittFalse(body);
+  };
+  const tail = tlvEncode('53', '704') + tlvEncode('58', 'VN');
+  it('reads tags 52, 59 and 60', () => {
+    const r = parseVietQR(
+      make(
+        'QRIBFTTA',
+        tlvEncode('52', '5812') + tail + tlvEncode('59', 'CUA HANG A') + tlvEncode('60', 'HA NOI'),
+      ),
+    );
+    expect(r).toMatchObject({
+      crcValid: true,
+      kind: 'account',
+      merchantCategoryCode: '5812',
+      merchantName: 'CUA HANG A',
+      merchantCity: 'HA NOI',
+    });
+  });
+  it('leaves absent tags out and adds no warnings', () => {
+    const r = parseVietQR(make('QRIBFTTA', tail + tlvEncode('59', 'SHOP')));
+    expect(r).toMatchObject({ merchantName: 'SHOP', warnings: [] });
+    expect(r.ok && r.merchantCity).toBeUndefined();
+    expect(r.ok && r.merchantCategoryCode).toBeUndefined();
+  });
+  it('maps card, unknown and missing service codes', () => {
+    const kind = (s?: string) => {
+      const r = parseVietQR(make(s, tail));
+      return r.ok ? r.kind : undefined;
+    };
+    expect(kind('QRIBFTTC')).toBe('card');
+    expect(kind('QRPUSH')).toBe('other');
+    expect(kind(undefined)).toBe('other');
+  });
+  it('buildVietQR payload parses with kind account and no merchant fields', () => {
+    const b = buildVietQR({ bank: 'VCB', account: '0011001234567' });
+    const r = b.ok ? parseVietQR(b.payload) : undefined;
+    expect(r).toMatchObject({ kind: 'account' });
+    expect(r && r.ok && r.merchantName).toBeUndefined();
   });
 });

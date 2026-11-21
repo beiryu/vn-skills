@@ -27,6 +27,10 @@ function printParsed(payload: string, c: Command, extra: Record<string, unknown>
       : undefined,
     account: r.account,
     service: r.service,
+    kind: r.kind,
+    merchantName: r.merchantName,
+    merchantCity: r.merchantCity,
+    merchantCategoryCode: r.merchantCategoryCode,
     amount: r.amount,
     currency: r.currency,
     country: r.country,
@@ -46,7 +50,11 @@ function printParsed(payload: string, c: Command, extra: Record<string, unknown>
         ['CRC', r.crcValid ? `valid (${r.crc})` : `INVALID (${r.crc}, expected ${r.expectedCrc})`],
         ['Bank', r.bank ? `${r.bank.shortName} (${r.bin})` : r.bin],
         ['Account', r.account],
+        ['Merchant', r.merchantName],
+        ['City', r.merchantCity],
+        ['Category', r.merchantCategoryCode],
         ['Service', r.service],
+        ['Kind', r.kind],
         [
           'Amount',
           r.amount !== undefined

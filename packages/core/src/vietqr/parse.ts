@@ -10,6 +10,14 @@ export interface ParsedVietQR {
   bank?: Bank;
   account?: string;
   service?: string;
+  /** `QRIBFTTA` → account, `QRIBFTTC` → card, anything else or missing → other. */
+  kind: 'account' | 'card' | 'other';
+  /** Tag 52, passed through unchecked. */
+  merchantCategoryCode?: string;
+  /** Tag 59. */
+  merchantName?: string;
+  /** Tag 60. */
+  merchantCity?: string;
   amount?: number;
   currency?: string;
   country?: string;
@@ -90,6 +98,10 @@ export function parseVietQR(input: string): Result<ParsedVietQR> {
     } else warnings.push(`Malformed beneficiary template: ${b.error}`);
   }
   const service = tlvFind(merchant?.children, '02')?.value;
+  const kind = service === 'QRIBFTTA' ? 'account' : service === 'QRIBFTTC' ? 'card' : 'other';
+  const merchantCategoryCode = tlvFind(fields, '52')?.value;
+  const merchantName = tlvFind(fields, '59')?.value;
+  const merchantCity = tlvFind(fields, '60')?.value;
   const bank = bin ? findBank(bin) : undefined;
   if (bin && !bank) warnings.push(`BIN ${bin} not found in bank list.`);
 
@@ -112,6 +124,10 @@ export function parseVietQR(input: string): Result<ParsedVietQR> {
     bank,
     account,
     service,
+    kind,
+    merchantCategoryCode,
+    merchantName,
+    merchantCity,
     amount,
     currency,
     country,

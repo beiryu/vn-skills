@@ -163,6 +163,23 @@ describe('vn-skills MCP server', () => {
     );
     expect(p.additionalData).toEqual({ '05': 'ORDER123' });
   });
+  it('vietqr_parse returns merchant fields and kind', async () => {
+    const p = text(
+      await client.callTool({
+        name: 'vietqr_parse',
+        arguments: {
+          payload:
+            '00020101021138570010A00000072701270006970436011300110012345670208QRIBFTTA5204581253037045802VN5910CUA HANG A6006HA NOI63047523',
+        },
+      }),
+    );
+    expect(p).toMatchObject({
+      kind: 'account',
+      merchantName: 'CUA HANG A',
+      merchantCity: 'HA NOI',
+      merchantCategoryCode: '5812',
+    });
+  });
   it('vietqr_build with template returns a card SVG; without it no card', async () => {
     const args = { bank: 'VCB', account: '0011001234567', amount: 500000 };
     const withCard = text(
