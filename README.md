@@ -114,7 +114,7 @@ Setup for other clients is in [MCP client setup](#mcp-client-setup). Or in any M
 { "mcpServers": { "vn-skills": { "command": "npx", "args": ["-y", "@vn-skills/mcp"] } } }
 ```
 
-The server exposes 40 tools, grouped by skill. All tools are declared read-only and offline (`readOnlyHint: true`, `openWorldHint: false`).
+The server exposes 41 tools, grouped by skill. All tools are declared read-only and offline (`readOnlyHint: true`, `openWorldHint: false`).
 
 | Skill              | Tools                                                                                                                                                                |
 | ------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -125,7 +125,7 @@ The server exposes 40 tools, grouped by skill. All tools are declared read-only 
 | `vn-phone`         | `vn_phone`, `vn_phone_parse_batch`                                                                                                                                   |
 | `vn-holidays`      | `vn_holidays_year`, `vn_holidays_ics`, `vn_holidays_is_working_day`, `vn_holidays_add_working_days`, `vn_holidays_count_working_days`                                |
 | `vn-money-words`   | `vn_money_to_words`, `vn_money_parse`, `vn_text_speech_normalize`                                                                                                    |
-| `vn-lunar`         | `vn_lunar_from_solar`, `vn_lunar_to_solar`, `vn_lunar_month`, `vn_lunar_parse_date`, `vn_lunar_holidays`, `vn_lunar_tet`, `vn_lunar_canchi`                          |
+| `vn-lunar`         | `vn_lunar_from_solar`, `vn_lunar_to_solar`, `vn_lunar_month`, `vn_lunar_ics`, `vn_lunar_parse_date`, `vn_lunar_holidays`, `vn_lunar_tet`, `vn_lunar_canchi`          |
 | `vn-einvoice`      | `vn_einvoice_validate`, `vn_einvoice_totals`, `vn_einvoice_vat`, `vn_einvoice_mock_issue`, `vn_einvoice_example`                                                     |
 | `vn-name`          | `vn_name`                                                                                                                                                            |
 | `vn-number-format` | `vn_number_format`                                                                                                                                                   |

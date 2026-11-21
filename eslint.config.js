@@ -92,7 +92,7 @@ export default tseslint.config(
   },
   {
     // vm.createContext() hands back the sandbox typed loosely; the double cast reads the globals.
-    files: ['tests/sheets.test.ts'],
+    files: ['tests/sheets.test.ts', 'tests/lunar-ics.test.ts'],
     rules: { '@typescript-eslint/no-unnecessary-type-assertion': 'off' },
   },
   {

@@ -22,7 +22,8 @@ function run(args: string[], input?: string) {
     code: r.status,
     out: r.stdout,
     err: r.stderr,
-    json: () => JSON.parse(r.stdout) as Record<string, unknown>,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    json: () => JSON.parse(r.stdout) as Record<string, any>,
   };
 }
 
@@ -270,6 +271,17 @@ describe('vn-skills CLI', () => {
     const bad = run(['holidays', 'ics', '1999', '--json']);
     expect(bad.code).not.toBe(0);
     expect(bad.json()).toMatchObject({ ok: false, error: { code: 'OUT_OF_RANGE' } });
+  });
+  it('lunar ics prints raw ICS, writes -o file and --json rows', () => {
+    const r = run(['lunar', 'ics', '--from', '10/03/2026', '--months', '3']);
+    expect(r.code).toBe(0);
+    expect(r.out.startsWith('BEGIN:VCALENDAR\r\n')).toBe(true);
+    const file = join(mkdtempSync(join(tmpdir(), 'vn-skills-')), 'am.ics');
+    expect(run(['lunar', 'ics', '--from', '10/03/2026', '--days', '1', '-o', file]).code).toBe(0);
+    expect(readFileSync(file, 'utf8')).toContain('BEGIN:VEVENT');
+    const j = run(['lunar', 'ics', '--from', '10/03/2026', '--json']).json();
+    expect(j.rows.length).toBeGreaterThan(20);
+    expect(run(['lunar', 'ics', '--days', '31', '--json']).code).not.toBe(0);
   });
   it('vietqr build writes SVG', () => {
     const dir = mkdtempSync(join(tmpdir(), 'vn-skills-'));
