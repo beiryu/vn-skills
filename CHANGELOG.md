@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.11.0](https://github.com/beiryu/vn-skills/compare/v0.10.0...v0.11.0) (2026-11-25)
+
+
+### Features
+
+* **vietqr:** parse merchant name, city, category code and kind ([#371](https://github.com/beiryu/vn-skills/issues/371)) ([11a9a19](https://github.com/beiryu/vn-skills/commit/11a9a191ffdce4e71997388443d5fb1b9422b562)), closes [#369](https://github.com/beiryu/vn-skills/issues/369)
+* **vn-lunar:** add --tz and timeZone option to lunar conversions ([#374](https://github.com/beiryu/vn-skills/issues/374)) ([e7bbf36](https://github.com/beiryu/vn-skills/commit/e7bbf360435bba86d24f6fa1c17e49679ce427b3)), closes [#372](https://github.com/beiryu/vn-skills/issues/372)
+* **vn-lunar:** export mùng 1 and rằm as an .ics calendar ([#370](https://github.com/beiryu/vn-skills/issues/370)) ([b5b5e18](https://github.com/beiryu/vn-skills/commit/b5b5e18bf11b7a1127152dcfdba8db6abb20439e)), closes [#368](https://github.com/beiryu/vn-skills/issues/368)
+
+
+### Documentation
+
+* **readme:** add Glama MCP server score badge ([#377](https://github.com/beiryu/vn-skills/issues/377)) ([a65a68e](https://github.com/beiryu/vn-skills/commit/a65a68e11276f3ffcbe7a4874929826905605893))
+
 ## [0.10.0](https://github.com/beiryu/vn-skills/compare/v0.9.0...v0.10.0) (2026-11-18)
 
 
