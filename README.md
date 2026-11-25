@@ -1,5 +1,7 @@
 # vn-skills
 
+[![beiryu/vn-skills MCP server](https://glama.ai/mcp/servers/beiryu/vn-skills/badges/score.svg)](https://glama.ai/mcp/servers/beiryu/vn-skills)
+
 > Teach your AI agent to work with VietQR, e-invoices, the new 34-province addresses and more — with one command.
 
 [Tiếng Việt](README.vi.md) · **[5-minute quickstart](docs/quickstart.md)**
